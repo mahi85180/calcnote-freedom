@@ -116,8 +116,8 @@ body.hl-line.focused .ml.cur,body.hl-line.focused .g.cur,body.hl-line.focused .r
 .ed::selection{background:color-mix(in srgb,var(--primary) 38%,transparent);color:transparent}
 .ed::spelling-error,.ed::grammar-error{text-decoration:none}
 .ed::placeholder{color:var(--text-3);-webkit-text-fill-color:var(--text-3)}
-.t-lbl{color:var(--strong)}
-html[data-theme="dark"] .t-lbl,html[data-theme="black"] .t-lbl{color:color-mix(in srgb,var(--primary) 75%,#fff)}
+.t-lbl{color:var(--item,var(--strong))}
+html[data-theme="dark"] .t-lbl,html[data-theme="black"] .t-lbl{color:var(--item-dark,color-mix(in srgb,var(--primary) 75%,#fff))}
 .t-op{color:var(--op)} .t-fn{color:var(--fn)} .t-com{color:var(--com);font-style:italic}
 
 /* NAME SUGGESTIONS */
@@ -138,10 +138,10 @@ html[data-theme="dark"] .kb-switch button,html[data-theme="black"] .kb-switch bu
 .kb-switch button.active{opacity:1;font-weight:700;background:rgba(0,0,0,.07)}
 .kb-switch button svg{width:30px;height:30px}
 body.no-keypad .kb-switch{display:none}
-.total-right{flex:1;display:flex;align-items:baseline;justify-content:center;gap:8px;cursor:pointer;padding:8px 10px;border-radius:8px;border:none;background:none;min-width:0;color:inherit;font-style:var(--editor-style);font-family:var(--editor-font)}
+.total-right{flex:1;display:flex;overflow:hidden;padding-right:14px!important;align-items:baseline;justify-content:center;gap:8px;cursor:pointer;padding:8px 10px;border-radius:8px;border:none;background:none;min-width:0;color:inherit;font-style:var(--editor-style);font-family:var(--editor-font)}
 .total-right:active{background:rgba(0,0,0,.08)}
 .total-label{font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.total-value{font-size:24px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.total-value{font-size:24px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums;padding-right:.25em;flex-shrink:0;max-width:75%}
 .total-mode{font-size:11px;opacity:.6;white-space:nowrap;font-style:normal}
 .total-bar.sel{background:color-mix(in srgb,#1E88E5 22%,#fff);color:#0D47A1}
 html[data-theme="dark"] .total-bar.sel,html[data-theme="black"] .total-bar.sel{background:#16324F;color:#BBDEFB}
@@ -449,7 +449,7 @@ var capacitorExports=function(e){"use strict";var t;e.ExceptionCode=void 0,(t=e.
 /* =====================================================================
    CalcNote Freedom – notepad calculator
    ===================================================================== */
-const APP = { name: 'CalcNote Freedom', version: '3.1.0', build: 0, repo: 'https://github.com/mahi85180/calcnote-freedom', api: 'https://api.github.com/repos/mahi85180/calcnote-freedom/releases/latest' };
+const APP = { name: 'CalcNote Freedom', version: '3.2.0', build: 0, repo: 'https://github.com/mahi85180/calcnote-freedom', api: 'https://api.github.com/repos/mahi85180/calcnote-freedom/releases/latest' };
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 const el = (tag, props = {}, ...kids) => {
@@ -582,7 +582,7 @@ const DEFAULT_KEYS = [
   { l: 'GST 18%', i: ' + 18%' }, { l: '½', i: ' / 2' }, { l: 'round', i: 'round({c}, 2)' }, { l: 'x', i: ' x ' }
 ];
 const DEFAULTS = {
-  theme: 'light', accent: 'green', opColor: 'orange', font: 'system', italic: false, fontSize: 20, resultBold: false, resultColor: 'text', rowSpacing: 'normal',
+  theme: 'light', accent: 'green', opColor: 'orange', font: 'system', italic: false, fontSize: 20, resultBold: false, resultColor: 'text', amountColor: 'blue', itemColor: 'accent', rowSpacing: 'normal',
   lineNumbers: true, divider: true, separators: false, resultAlign: 'left', resultWidth: 36, highlightLine: true,
   showTotalBar: true, totalModeHint: true, toolbar: ['undo', 'new', 'save', 'settings'], keepAwake: false,
   syntax: true, autoBrackets: false, tapCopy: true, lineMenu: true, swipe: true, undoEnabled: true, copyFormat: 'lines',
@@ -611,13 +611,14 @@ const settings = (() => {
   }
   const out = Object.assign({}, DEFAULTS, s);
   for (const k of ['customKeys', 'toolbar', 'sideActions']) if (!Array.isArray(out[k])) out[k] = DEFAULTS[k];
-  if (s._v !== 31) {                                   // v3.0 → v3.1: new sidebar actions & date key
+  if ((s._v || 0) < 32) { if (!s.amountColor) out.amountColor = 'blue'; }   // v3.2: coloured amounts by default
+  if ((s._v || 0) < 31) {                                   // v3.0 → v3.1: new sidebar actions & date key
     for (const a of ['update', 'date', 'serial']) if (!out.sideActions.includes(a)) out.sideActions.unshift(a);
     out.sideActions = out.sideActions.filter(a => a !== 'text' && a !== 'select' && a !== 'newline');
     out.toolbar = out.toolbar.filter(a => a !== 'text' && a !== 'select');
     if (!out.customKeys.some(k => k.i === '{date}')) out.customKeys.splice(4, 0, { l: '📅 Today', i: '{date}' });
-    out._v = 31;
   }
+  out._v = 32;
   return out;
 })();
 function persistSettings() { LS.set(SKEY, JSON.stringify(settings)); }
@@ -1504,6 +1505,7 @@ async function moreMenu() { const keys = Object.keys(ACTIONS).filter(k => !setti
 
 /* ---------------- Apply settings ---------------- */
 const ACCENTS = { green: ['#66BB6A', '#2E7D32'], teal: ['#26A69A', '#00695C'], blue: ['#42A5F5', '#1565C0'], indigo: ['#5C6BC0', '#283593'], purple: ['#AB47BC', '#6A1B9A'], pink: ['#EC407A', '#AD1457'], red: ['#EF5350', '#C62828'], orange: ['#FFA726', '#E65100'], brown: ['#8D6E63', '#4E342E'], grey: ['#78909C', '#37474F'], black: ['#424242', '#212121'] };
+const AMOUNTS = { blue: ['#1565C0', '#64B5F6'], green: ['#2E7D32', '#81C784'], purple: ['#6A1B9A', '#CE93D8'], orange: ['#E65100', '#FFB74D'], red: ['#C62828', '#EF9A9A'], teal: ['#00695C', '#4DB6AC'], brown: ['#5D4037', '#BCAAA4'], text: ['#1B1F1C', '#E6EAE7'] };
 const OPCOLORS = { orange: '#E69100', red: '#E53935', blue: '#1E88E5', purple: '#8E24AA', pink: '#D81B60', accent: 'var(--strong)', text: 'var(--text)' };
 const FONTS = { system: "system-ui,'Segoe UI',Roboto,sans-serif", condensed: "'Roboto Condensed','Arial Narrow',sans-serif-condensed,sans-serif", serif: "Georgia,'Noto Serif',serif", mono: "ui-monospace,'Roboto Mono',Menlo,Consolas,monospace", rounded: "'Nunito','Varela Round','Comic Sans MS',system-ui,sans-serif" };
 const darkMQ = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
@@ -1513,7 +1515,9 @@ function applySettings() {
   const [pri, strong] = ACCENTS[settings.accent] || ACCENTS.green;
   const set = (k, v) => root.style.setProperty(k, v);
   set('--primary', pri); set('--strong', strong); set('--op', OPCOLORS[settings.opColor] || OPCOLORS.orange);
-  set('--res', settings.resultColor === 'accent' ? (theme === 'light' ? strong : pri) : 'var(--text)');
+  const amt = AMOUNTS[settings.amountColor] || AMOUNTS.blue; set('--res', amt[theme === 'light' ? 0 : 1]);
+  const itm = settings.itemColor === 'accent' ? [strong, null] : (AMOUNTS[settings.itemColor] || [strong, null]);
+  set('--item', itm[0]); if (itm[1]) set('--item-dark', itm[1]); else root.style.removeProperty('--item-dark');
   set('--res-weight', settings.resultBold ? '700' : '400');
   set('--font-size-editor', settings.fontSize + 'px'); set('--editor-font', FONTS[settings.font] || FONTS.system);
   set('--editor-style', settings.italic ? 'italic' : 'normal'); set('--result-width', settings.resultWidth + '%');
@@ -1721,7 +1725,8 @@ function imageRows() {
     // "vfc 9" → item "vfc", amount 9 (no need to show the same number twice)
     let text = l.text.trim(); const mm = text.match(/^(.*\S)\s+(?:₹|rs\.?\s*)?(-?[\d,]*\.?\d+)$/i);
     if (mm && l.kind === 'num' && Number(mm[2].replace(/,/g, '')) === Number(l.raw) && /[^\d\s.,+\-*/]/.test(mm[1])) text = mm[1].replace(/:$/, '');
-    return { type: l.agg ? 'sum' : 'item', no: l.kind === 'num' && l.countable ? ++n : '', text, amt: l.result, neg: l.kind === 'num' && Number(l.raw) < 0 };
+    const lbl = (l.label || '').trim();
+    return { type: l.agg ? 'sum' : 'item', no: l.kind === 'num' && l.countable ? ++n : '', text, label: lbl && text.startsWith(lbl) ? lbl : '', amt: l.result, neg: l.kind === 'num' && Number(l.raw) < 0 };
   });
 }
 function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); ctx.fill(); }
@@ -1731,6 +1736,8 @@ function drawNoteImage(opt = {}) {
   const showDate = opt.date !== undefined ? opt.date : settings.imgDate;
   const FONT = '"Roboto","Segoe UI",system-ui,"Noto Sans","Noto Sans Devanagari",Arial,sans-serif';
   const [pri, strong] = ACCENTS[settings.accent] || ACCENTS.green;
+  const amtCol = (AMOUNTS[settings.amountColor] || AMOUNTS.blue)[0];
+  const itemCol = settings.itemColor === 'accent' ? strong : (AMOUNTS[settings.itemColor] || [strong])[0];
   const rows = imageRows();
   const m = document.createElement('canvas').getContext('2d');
   const F = { item: `700 ${size}px ${FONT}`, amt: `800 ${size}px ${FONT}`, sno: `700 ${Math.round(size * .8)}px ${FONT}`, head: `800 ${Math.round(size * .92)}px ${FONT}`, note: `italic 600 ${Math.round(size * .85)}px ${FONT}` };
@@ -1772,7 +1779,7 @@ function drawNoteImage(opt = {}) {
   const titleH = Math.round(size * 3.3), totH = Math.round(size * 2.3), footH = Math.round(size * 1.6);
   const subFont = `700 ${Math.round(size * .72)}px ${FONT}`;
   const subText = [state.folder ? '📁 ' + folderName(state.folder) : '', showDate ? new Date().toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '', `${items.filter(r => r.type === 'item').length} entries`].filter(Boolean).join('   •   ');
-  const Wimg = Math.ceil(Math.max(OUT * 2 + colRows.length * colW + (colRows.length - 1) * GAP, Math.round(size * 18), W(subText, subFont) + OUT * 2));
+  const Wimg = Math.ceil(Math.max(OUT * 2 + colRows.length * colW + (colRows.length - 1) * GAP, Math.round(size * 18), W(subText, subFont) + OUT * 2, W(totalString(), `900 ${Math.round(size * 1.45)}px ${FONT}`) + W(state.total.label, `800 ${Math.round(size * 1.05)}px ${FONT}`) + OUT * 2 + PADX * 6));
   colW = Math.floor((Wimg - OUT * 2 - (colRows.length - 1) * GAP) / colRows.length);   // tables fill the full width
   const H = OUT + titleH + bodyH + Math.round(size * .6) + totH + footH;
   const scale = Math.min(3, Math.max(1, Math.sqrt(16000000 / (Wimg * H))));
@@ -1802,9 +1809,16 @@ function drawNoteImage(opt = {}) {
       else if (zebra++ % 2 === 1) { ctx.fillStyle = tint(.1); ctx.fillRect(x0, yy, colW, r.h); }
       const base = yy + ROWH / 2 + 1;
       if (sno && r.no !== '') { ctx.fillStyle = '#6A6A6A'; ctx.font = F.sno; ctx.textAlign = 'right'; ctx.fillText(String(r.no), x0 + PADX + snoW - PADX * .6, base); }
-      ctx.fillStyle = r.type === 'sum' ? '#0D47A1' : '#111'; ctx.font = F.item; ctx.textAlign = 'left';
-      r.lines.forEach((t, k) => ctx.fillText(t, x0 + PADX + snoW, base + k * LINEH));
-      ctx.fillStyle = r.type === 'sum' ? '#0D47A1' : r.neg ? '#C62828' : '#111'; ctx.font = F.amt; ctx.textAlign = 'right';
+      ctx.font = F.item; ctx.textAlign = 'left';
+      r.lines.forEach((t, k) => {
+        const x = x0 + PADX + snoW, yy2 = base + k * LINEH;
+        if (r.type === 'sum') { ctx.fillStyle = '#0D47A1'; ctx.fillText(t, x, yy2); return; }
+        if (k === 0 && r.label && t.startsWith(r.label)) {            // name in colour, numbers after it in black
+          ctx.fillStyle = itemCol; ctx.fillText(r.label, x, yy2);
+          ctx.fillStyle = '#111'; ctx.fillText(t.slice(r.label.length), x + ctx.measureText(r.label).width, yy2);
+        } else { ctx.fillStyle = k === 0 && !/\d/.test(t) ? itemCol : '#111'; ctx.fillText(t, x, yy2); }
+      });
+      ctx.fillStyle = r.type === 'sum' ? '#0D47A1' : r.neg ? '#C62828' : amtCol; ctx.font = F.amt; ctx.textAlign = 'right';
       ctx.fillText(r.amt, x0 + colW - PADX, base);
       yy += r.h;
     });
@@ -1812,7 +1826,7 @@ function drawNoteImage(opt = {}) {
   y += bodyH + Math.round(size * .6);
   ctx.fillStyle = strong; roundRect(ctx, OUT, y, Wimg - OUT * 2, totH, size * .35);
   ctx.fillStyle = '#fff'; ctx.font = `800 ${Math.round(size * 1.05)}px ${FONT}`; ctx.textAlign = 'left'; ctx.fillText(state.total.label, OUT + PADX * 1.5, y + totH / 2 + 1);
-  ctx.font = `900 ${Math.round(size * 1.45)}px ${FONT}`; ctx.textAlign = 'right'; ctx.fillText(totalString(), Wimg - OUT - PADX * 1.5, y + totH / 2 + 2);
+  ctx.font = `900 ${Math.round(size * 1.45)}px ${FONT}`; ctx.textAlign = 'right'; ctx.fillText(totalString(), Wimg - OUT - PADX * 2.2, y + totH / 2 + 2);
   ctx.fillStyle = '#9A9A9A'; ctx.font = `600 ${Math.round(size * .6)}px ${FONT}`; ctx.textAlign = 'center'; ctx.fillText('Made with ' + APP.name, Wimg / 2, H - footH / 2);
   return c;
 }
@@ -2074,7 +2088,8 @@ const SETTINGS_PAGES = {
     { t: 'section', label: 'Colours' },
     { t: 'switch', key: 'syntax', icon: '🎨', label: 'Syntax colours', sub: 'Labels, numbers and operators in different colours' },
     { t: 'swatch', key: 'opColor', icon: '±', label: 'Operator colour', options: Object.entries(OPCOLORS) },
-    { t: 'chips', key: 'resultColor', icon: '=', label: 'Result colour', options: [opt('text', 'Text colour'), opt('accent', 'Accent colour')] },
+    { t: 'swatch', key: 'amountColor', icon: '=', label: 'Amount (result) colour', options: () => Object.entries(AMOUNTS).map(([k, v]) => [k, v[0]]) },
+    { t: 'swatch', key: 'itemColor', icon: 'Aa', label: 'Item / name colour', sub: 'Numbers you type after the name stay black', options: () => [['accent', (ACCENTS[settings.accent] || ACCENTS.green)[1]], ...Object.entries(AMOUNTS).filter(([k]) => k !== 'text').map(([k, v]) => [k, v[0]])] },
     { t: 'section', label: 'Typing' },
     { t: 'switch', key: 'autoBrackets', icon: '()', label: 'Auto-close brackets' },
     { t: 'chips', key: 'copyFormat', icon: '⧉', label: 'Copy all format', options: [opt('lines', 'Lines'), opt('both', 'Lines = results'), opt('results', 'Results'), opt('table', 'Table'), opt('report', 'Report')] }
@@ -2199,7 +2214,7 @@ function renderItem(it) {
     case 'chips': { const options = typeof it.options === 'function' ? it.options() : it.options; return el('div', { class: 'p-item col' }, el('div', { class: 'p-row' }, pIcon(it.icon), txt()),
       el('div', { class: 'p-chips p-ctrl' }, ...options.map(([v, l]) => el('button', { class: 'p-chip' + (String(settings[it.key]) === String(v) ? ' active' : ''), 'data-key': it.key, 'data-v': v, text: l, onclick: e => { setSetting(it.key, v); e.currentTarget.parentNode.querySelectorAll('.p-chip').forEach(c => c.classList.toggle('active', c === e.currentTarget)); if (it.key === 'theme') refreshOpenPage(); } })))); }
     case 'swatch': return el('div', { class: 'p-item col' }, el('div', { class: 'p-row' }, pIcon(it.icon), txt()),
-      el('div', { class: 'p-sw p-ctrl' }, ...it.options.map(([v, c]) => el('button', { class: 'swatch' + (settings[it.key] === v ? ' active' : ''), title: v, 'aria-label': v, 'data-v': v, style: `background:${c.startsWith('var') ? (v === 'accent' ? (ACCENTS[settings.accent] || ACCENTS.green)[1] : '#ECECEC') : c}`, onclick: e => { setSetting(it.key, v); e.currentTarget.parentNode.querySelectorAll('.swatch').forEach(s => s.classList.toggle('active', s === e.currentTarget)); } }))));
+      el('div', { class: 'p-sw p-ctrl' }, ...(typeof it.options === 'function' ? it.options() : it.options).map(([v, c]) => el('button', { class: 'swatch' + (settings[it.key] === v ? ' active' : ''), title: v, 'aria-label': v, 'data-v': v, style: `background:${c.startsWith('var') ? (v === 'accent' ? (ACCENTS[settings.accent] || ACCENTS.green)[1] : '#ECECEC') : c}`, onclick: e => { setSetting(it.key, v); e.currentTarget.parentNode.querySelectorAll('.swatch').forEach(s => s.classList.toggle('active', s === e.currentTarget)); } }))));
     case 'range': {
       const val = el('b', { text: settings[it.key] + (it.unit || '') }); const input = el('input', { type: 'range', min: it.min, max: it.max, step: 1, 'data-key': it.key }); input.value = settings[it.key];
       input.addEventListener('input', () => { val.textContent = input.value + (it.unit || ''); setSetting(it.key, parseInt(input.value, 10)); });
@@ -2247,7 +2262,7 @@ function listEditor({ all, key, max, label, sub, icon }) {
 }
 async function resetSettings() {
   const ok = await dialogConfirm({ title: 'Reset all settings?', message: 'Theme, keypad, toolbar, extensions etc. go back to default. Files and app lock are kept.', okText: 'Reset', danger: true }); if (!ok) return;
-  const keep = { lock: settings.lock, pinHash: settings.pinHash, pinSalt: settings.pinSalt, _v: 31 };
+  const keep = { lock: settings.lock, pinHash: settings.pinHash, pinSalt: settings.pinSalt, _v: 32 };
   Object.keys(settings).forEach(k => delete settings[k]); Object.assign(settings, JSON.parse(JSON.stringify(DEFAULTS)), keep);
   persistSettings(); fmtCache.clear(); applySettings(); render(true); refreshOpenPage(); toast('Settings reset ✓');
 }
