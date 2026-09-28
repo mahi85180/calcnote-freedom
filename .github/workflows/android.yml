@@ -71,7 +71,12 @@ jobs:
         uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: '21', cache: gradle }
       - id: android_sdk
-        uses: android-actions/setup-android@v3
+        name: Android SDK (pre-installed on the runner)
+        shell: bash
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          ls "$ANDROID_HOME/platforms" "$ANDROID_HOME/build-tools" | tail -8
 
       - name: Version
         id: ver
