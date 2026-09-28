@@ -972,13 +972,15 @@ function render(forcePaint) {
   const varsKey = [...res.vars].sort().join(',') + '|' + [...labelVars].join(',') + '|' + settings.syntax;
   const repaint = forcePaint || varsKey !== lastVarsKey; lastVarsKey = varsKey;
   syncCount(texts.length);
+  let serial = 0;                                              // numbering starts at 1 below each date
   texts.forEach((t, i) => {
     const l = res.lines[i];
     const key = (settings.syntax ? 'S' : 'P') + t;
     if (repaint || htmlCache[i] !== key) { cells.m[i].innerHTML = settings.syntax ? highlightHTML(t, res.vars, labelVars) : (t ? escHtml(t) : '​'); htmlCache[i] = key; }
     const isDate = l.kind === 'date'; const cur = i === state.curLine ? ' cur' : '';
     const mc = 'ml' + (isDate ? ' dl' : '') + cur; if (cells.m[i].className !== mc) cells.m[i].className = mc;
-    const g = cells.g[i]; const gt = isDate ? '📅' : String(i + 1);
+    serial = isDate ? 0 : serial + 1;
+    const g = cells.g[i]; const gt = isDate ? '📅' : String(serial);
     if (g.textContent !== gt) g.textContent = gt;
     const gc = 'g' + (isDate ? ' dl' : '') + cur; if (g.className !== gc) g.className = gc;
     const r = cells.r[i]; let html = '', cls = 'r';
@@ -1119,7 +1121,7 @@ function setLines(lines, caretLine = -1) {
 async function lineMenu(i) {
   const lines = getTexts(); if (i < 0 || i >= lines.length) return;
   const l = state.calc && state.calc.lines[i]; const isDate = l && l.kind === 'date';
-  const key = await dialogMenu(isDate ? lines[i] : `Line ${i + 1}`, [
+  const key = await dialogMenu(isDate ? lines[i] : `Line ${cells.g[i] ? cells.g[i].textContent : i + 1}`, [
     isDate ? { key: 'date', icon: '📅', label: 'Change date' } : null,
     { key: 'above', icon: '⤒', label: 'Insert line above' }, { key: 'below', icon: '⤓', label: 'Insert line below' },
     { key: 'today', icon: '📅', label: "Insert today's date above" },
@@ -1269,6 +1271,7 @@ async function openFile(id) {
   setTitle(String(rec.title || '').replace(/^Untitled( note)?$/i, ''));
   state.total = normTotal(rec.totalSettings);
   const texts = Array.isArray(rec.rows) ? rec.rows.map(r => String((r && r.text) || '')) : [''];
+  if (settings.dateOnNew && !texts.some(t => t.trim())) { texts.length = 0; texts.push(fmtDate(), ''); }
   if (texts.length && texts[texts.length - 1].trim() !== '') texts.push('');
   if (document.activeElement === ED) ED.blur();
   state.curLine = -1;

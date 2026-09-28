@@ -70,7 +70,7 @@ const aligned = p => p.evaluate(() => { const m = [...document.querySelectorAll(
   await typeLines(p, ['vfc 9', 'gns 13+27', 'gopi 12+7', 'aryan 11+3+4 with a long text that wraps onto the next line', 'x = 5', 'x * 3']);
   ok(JSON.stringify((await results(p)).slice(0, 7)) === JSON.stringify(['', '9', '40', '19', '18', '5', '15']) && await total(p) === '101', 'Typing gives results & total', await results(p));
   ok(await aligned(p), 'Line numbers, text and results stay aligned (also wrapped lines)');
-  const gut0 = await p.$eval('#gutter .g', e => e.textContent); ok(gut0 === '📅', 'Date line marked in gutter', gut0);
+  const gut0 = await p.$$eval('#gutter .g', e => e.slice(0, 3).map(x => x.textContent)); ok(gut0.join() === '📅,1,2', 'Date on top, numbering starts at 1 below it', gut0);
   ok(await p.$eval('#mirror .ml:nth-child(3)', e => /t-lbl">gns</.test(e.innerHTML) && /t-op">\+</.test(e.innerHTML)), 'Syntax colours');
 
   // 3. Native editing: keyboard suggestions, select all, copy, paste
@@ -123,9 +123,9 @@ const aligned = p => p.evaluate(() => { const m = [...document.querySelectorAll(
   await newFile(p, ['']); await p.click('#btnKp123');
   ok(await p.$eval('#ed', e => e.getAttribute('inputmode')) === 'none', 'Keypad hides phone keyboard');
   await tapKeys(p, ['1', '1', '1', '+', '2', '2', '×', '3']);
-  ok((await texts(p))[0] === '111+22×3' && (await results(p))[0] === '177', 'Fast keypad taps', await texts(p));
+  ok((await texts(p))[0] === today() && (await texts(p))[1] === '111+22×3' && (await results(p))[1] === '177', 'Empty file gets date; fast keypad taps', await texts(p));
   await tapKeys(p, ['⌫', '◀', '5', '⏎']);
-  tx = await texts(p); ok(tx[0] === '111+225' && tx[1] === '×', 'Keypad ⌫ ◀ ⏎', tx);
+  tx = await texts(p); ok(tx[1] === '111+225' && tx[2] === '×', 'Keypad ⌫ ◀ ⏎', tx);
   await p.click('.keypad-tab[data-tab="custom"]'); await tapKeys(p, ['📅 Today']);
   tx = await texts(p); ok(tx.includes(today()), 'Keypad "Today" key inserts date line', tx);
   await p.click('#btnKpABC');
