@@ -578,7 +578,7 @@ const DEFAULT_KEYS = [
 ];
 const DEFAULTS = {
   theme: 'light', accent: 'green', opColor: 'orange', font: 'system', italic: false, fontSize: 20, resultBold: false, resultColor: 'text', amountColor: 'blue', itemColor: 'accent', dateHl: 'yellow', dateColor: 'purple', rowSpacing: 'normal',
-  lineNumbers: true, divider: true, separators: false, resultAlign: 'left', resultWidth: 36, highlightLine: true,
+  lineNumbers: true, divider: true, separators: false, resultAlign: 'right', resultWidth: 36, highlightLine: true,
   showTotalBar: true, totalModeHint: true, toolbar: ['undo', 'new', 'save', 'settings'], keepAwake: false,
   syntax: true, autoBrackets: false, tapCopy: true, lineMenu: true, swipe: true, undoEnabled: true, copyFormat: 'lines',
   kbSuggest: true, autoCorrect: false, autoCap: false, nameSuggest: true, selectionSum: true, runningTotal: false, negRed: true, openAtEnd: true,
@@ -606,14 +606,15 @@ const settings = (() => {
   }
   const out = Object.assign({}, DEFAULTS, s);
   for (const k of ['customKeys', 'toolbar', 'sideActions']) if (!Array.isArray(out[k])) out[k] = DEFAULTS[k];
-  if ((s._v || 0) < 32) { if (!s.amountColor) out.amountColor = 'blue'; }   // v3.2: coloured amounts by default
+  if ((s._v || 0) < 32) { if (!s.amountColor) out.amountColor = 'blue'; }
+  if ((s._v || 0) < 33) out.resultAlign = 'right';                       // v3.3: amounts lined up on the right   // v3.2: coloured amounts by default
   if ((s._v || 0) < 31) {                                   // v3.0 → v3.1: new sidebar actions & date key
     for (const a of ['update', 'date', 'serial']) if (!out.sideActions.includes(a)) out.sideActions.unshift(a);
     out.sideActions = out.sideActions.filter(a => a !== 'text' && a !== 'select' && a !== 'newline');
     out.toolbar = out.toolbar.filter(a => a !== 'text' && a !== 'select');
     if (!out.customKeys.some(k => k.i === '{date}')) out.customKeys.splice(4, 0, { l: '📅 Today', i: '{date}' });
   }
-  out._v = 32;
+  out._v = 33;
   return out;
 })();
 function persistSettings() { LS.set(SKEY, JSON.stringify(settings)); }
@@ -1729,6 +1730,12 @@ function imageRows() {
     return { type: l.agg ? 'sum' : 'item', no: l.kind === 'num' && l.countable ? ++n : '', text, label: lbl && text.startsWith(lbl) ? lbl : '', amt: l.result, neg: l.kind === 'num' && Number(l.raw) < 0 };
   });
 }
+/* draws a number right-aligned with every digit in an equal-width cell → amounts line up in a straight column */
+function fillTabular(ctx, text, rightX, y) {
+  const dw = Math.max(...'0123456789'.split('').map(d => ctx.measureText(d).width)); let x = rightX; ctx.textAlign = 'left';
+  for (const ch of [...String(text)].reverse()) { const w = ctx.measureText(ch).width; if (/\d/.test(ch)) { x -= dw; ctx.fillText(ch, x + (dw - w) / 2, y); } else { x -= w; ctx.fillText(ch, x, y); } }
+  ctx.textAlign = 'right';
+}
 function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); ctx.fill(); }
 function drawNoteImage(opt = {}) {
   const size = { M: 26, L: 31, XL: 38 }[opt.size || settings.imgSize] || 31;
@@ -1748,7 +1755,8 @@ function drawNoteImage(opt = {}) {
   cols = Math.max(1, Math.min(cols, Math.max(1, count)));
   const items = rows.filter(r => r.type === 'item' || r.type === 'sum');
   const snoW = sno ? Math.max(W('00', F.sno), ...items.map(r => W(r.no, F.sno))) + PADX : 0;
-  const amtW = Math.max(W('Amount', F.head), ...items.map(r => W(r.amt, F.amt))) + PADX;
+  const tabW = t => { m.font = F.amt; const dw = Math.max(...'0123456789'.split('').map(d => m.measureText(d).width)); let w = 0; for (const ch of String(t)) w += /\d/.test(ch) ? dw : m.measureText(ch).width; return w; };
+  const amtW = Math.max(W('Amount', F.head), ...items.map(r => tabW(r.amt))) + PADX;
   const maxText = Math.max(W('Item', F.head), ...rows.map(r => r.text ? W(r.text, r.type === 'item' || r.type === 'sum' ? F.item : F.head) : 0));
   const textW = Math.min(Math.max(maxText, size * 5), size * (cols >= 3 ? 9 : 12));
   let colW = Math.ceil(PADX + snoW + textW + PADX + amtW + PADX);
@@ -1797,10 +1805,10 @@ function drawNoteImage(opt = {}) {
     const x0 = OUT + ci * (colW + GAP); let yy = y;
     ctx.fillStyle = strong; roundRect(ctx, x0, yy, colW, headerH, size * .25);
     ctx.fillStyle = '#fff'; ctx.font = F.head; const mid = yy + headerH / 2 + 1;
-    if (sno) { ctx.textAlign = 'right'; ctx.fillText('#', x0 + PADX + snoW - PADX * .6, mid); }
-    ctx.textAlign = 'left'; ctx.fillText('Item', x0 + PADX + snoW, mid);
+    if (sno) { ctx.textAlign = 'right'; ctx.fillText('#', x0 + PADX + snoW - PADX * .95, mid); }
+    ctx.textAlign = 'left'; ctx.fillText('Item', x0 + PADX + snoW + PADX * .15, mid);
     ctx.textAlign = 'right'; ctx.fillText('Amount', x0 + colW - PADX, mid);
-    yy += headerH; let zebra = 0;
+    yy += headerH; let zebra = 0; const segs = [];
     col.forEach(r => {
       if (r.type === 'gap') { yy += r.h; return; }
       if (r.type === 'date') {
@@ -1817,10 +1825,10 @@ function drawNoteImage(opt = {}) {
       if (r.type === 'sum') { ctx.fillStyle = '#E3F2FD'; ctx.fillRect(x0, yy, colW, r.h); }
       else if (zebra++ % 2 === 1) { ctx.fillStyle = tint(.1); ctx.fillRect(x0, yy, colW, r.h); }
       const base = yy + ROWH / 2 + 1;
-      if (sno && r.no !== '') { ctx.fillStyle = '#6A6A6A'; ctx.font = F.sno; ctx.textAlign = 'right'; ctx.fillText(String(r.no), x0 + PADX + snoW - PADX * .6, base); }
+      if (sno && r.no !== '') { ctx.fillStyle = '#6A6A6A'; ctx.font = F.sno; ctx.textAlign = 'right'; ctx.fillText(String(r.no), x0 + PADX + snoW - PADX * .95, base); }
       ctx.font = F.item; ctx.textAlign = 'left';
       r.lines.forEach((t, k) => {
-        const x = x0 + PADX + snoW, yy2 = base + k * LINEH;
+        const x = x0 + PADX + snoW + (sno ? PADX * .15 : 0), yy2 = base + k * LINEH;
         if (r.type === 'sum') { ctx.fillStyle = '#0D47A1'; ctx.fillText(t, x, yy2); return; }
         if (k === 0 && r.label && t.startsWith(r.label)) {            // name in colour, numbers after it in black
           ctx.fillStyle = itemCol; ctx.fillText(r.label, x, yy2);
@@ -1828,9 +1836,17 @@ function drawNoteImage(opt = {}) {
         } else { ctx.fillStyle = k === 0 && !/\d/.test(t) ? itemCol : '#111'; ctx.fillText(t, x, yy2); }
       });
       ctx.fillStyle = r.type === 'sum' ? '#0D47A1' : r.neg ? '#C62828' : amtCol; ctx.font = F.amt; ctx.textAlign = 'right';
-      ctx.fillText(r.amt, x0 + colW - PADX, base);
+      fillTabular(ctx, r.amt, x0 + colW - PADX, base);
+      const lastSeg = segs[segs.length - 1]; if (lastSeg && lastSeg[1] === yy) lastSeg[1] = yy + r.h; else segs.push([yy, yy + r.h]);
       yy += r.h;
     });
+    // separator lines: after the serial number and before the amount
+    const top = y + headerH * .18;
+    ctx.lineWidth = Math.max(1.5, size * .06);
+    const vline = (x, y1, y2, c) => { ctx.strokeStyle = c; ctx.beginPath(); ctx.moveTo(x, y1); ctx.lineTo(x, y2); ctx.stroke(); };
+    const xA = x0 + colW - amtW - PADX * .45;
+    if (sno) { const xS = x0 + PADX + snoW - PADX * .42; vline(xS, top, y + headerH * .82, 'rgba(255,255,255,.6)'); segs.forEach(([a, b]) => vline(xS, a, b, 'rgba(0,0,0,.22)')); }
+    vline(xA, top, y + headerH * .82, 'rgba(255,255,255,.6)'); segs.forEach(([a, b]) => vline(xA, a, b, 'rgba(0,0,0,.22)'));
   });
   y += bodyH + Math.round(size * .6);
   ctx.fillStyle = strong; roundRect(ctx, OUT, y, Wimg - OUT * 2, totH, size * .35);
@@ -2282,7 +2298,7 @@ function listEditor({ all, key, max, label, sub, icon }) {
 }
 async function resetSettings() {
   const ok = await dialogConfirm({ title: 'Reset all settings?', message: 'Theme, keypad, toolbar, extensions etc. go back to default. Files and app lock are kept.', okText: 'Reset', danger: true }); if (!ok) return;
-  const keep = { lock: settings.lock, pinHash: settings.pinHash, pinSalt: settings.pinSalt, _v: 32 };
+  const keep = { lock: settings.lock, pinHash: settings.pinHash, pinSalt: settings.pinSalt, _v: 33 };
   Object.keys(settings).forEach(k => delete settings[k]); Object.assign(settings, JSON.parse(JSON.stringify(DEFAULTS)), keep);
   persistSettings(); fmtCache.clear(); applySettings(); render(true); refreshOpenPage(); toast('Settings reset ✓');
 }

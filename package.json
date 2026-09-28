@@ -1,6 +1,6 @@
 {
   "name": "calcnote-freedom",
-  "version": "3.3.0",
+  "version": "3.3.1",
   "private": true,
   "description": "CalcNote Freedom – notepad calculator (web + Android)",
   "scripts": {
