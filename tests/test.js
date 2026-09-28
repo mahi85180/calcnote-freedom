@@ -177,9 +177,9 @@ const aligned = p => p.evaluate(() => { const m = [...document.querySelectorAll(
   await newFile(p, many);
   const dims = await p.evaluate(() => { const c = drawNoteImage({ cols: 'auto', size: 'L' }); return [c.width, c.height]; });
   ok(dims[1] / dims[0] < 1.6, '100 entries → multi-column image, not a long strip', dims);
-  ok(dims[0] >= 1800, 'High resolution image', dims);
+  ok(dims[0] >= 1400 && dims[0] * dims[1] <= 6100000, 'Sharp but light image (fast to share)', dims);
   const one = await p.evaluate(() => { const c = drawNoteImage({ cols: '1', size: 'L' }); return [c.width, c.height]; });
-  ok(one[1] > one[0] * 3, 'Columns option respected (1 column is long)', one);
+  ok(one[1] > one[0] * 2.5, 'Columns option respected (1 column is long)', one);
   await p.evaluate(() => shareImage()); await p.waitForTimeout(500);
   ok(await p.$eval('#sharePreview', i => i.naturalWidth > 0), 'Share preview shows');
   await p.click('#shareOpts button[data-opt="imgSize"][data-v="XL"]'); await p.waitForTimeout(400);
@@ -189,6 +189,11 @@ const aligned = p => p.evaluate(() => { const m = [...document.querySelectorAll(
   await p.evaluate(() => setTitle('Daily hisab'));
   await p.evaluate(() => shareImage()); await p.waitForTimeout(400);
   [dl] = await Promise.all([p.waitForEvent('download'), p.click('#btnDownload')]); fs.copyFileSync(await dl.path(), path.join(OUT, 'share_small.png'));
+  ok(await p.evaluate(() => imageRows().find(r => r.type === 'item').text) === 'vfc 9', 'Image keeps the number after the item (vfc 9)');
+  ok(await p.$eval('#mirror .ml.dl .dmark', e => getComputedStyle(e).backgroundColor) === 'rgb(255, 241, 118)' && await p.$eval('#mirror .ml.dl', e => getComputedStyle(e).textAlign) === 'center', 'Date centred with yellow highlighter');
+  await p.evaluate(() => setSetting('dateHl', 'pink'));
+  ok(await p.$eval('#mirror .ml.dl .dmark', e => getComputedStyle(e).backgroundColor) === 'rgb(248, 187, 208)', 'Highlighter colour can be changed');
+  await p.evaluate(() => setSetting('dateHl', 'yellow'));
   const txt = await p.evaluate(() => buildText('table'));
   ok(txt.startsWith('*Daily hisab*\n```') && /1 vfc 9\s+9/.test(txt) && /Total\s+1?[0-9,]+\n```$/.test(txt), 'Share as text = WhatsApp table', txt);
 

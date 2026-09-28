@@ -105,8 +105,9 @@ body.divider .rescol{border-left:1.5px solid var(--divider)}
 }
 .mirror{color:var(--text);pointer-events:none;min-height:100%}
 .ml{min-height:var(--row-h)}
-.ml.dl{font-weight:700;color:var(--strong)}
-html[data-theme="dark"] .ml.dl,html[data-theme="black"] .ml.dl{color:color-mix(in srgb,var(--primary) 75%,#fff)}
+.ml.dl:not(.cur){text-align:center;font-weight:700}
+.dmark{background:var(--date-hl,#FFF176);color:var(--date-col,#4A148C);box-shadow:.25em 0 0 var(--date-hl,#FFF176),-.25em 0 0 var(--date-hl,#FFF176);border-radius:2px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.dmark.none{background:none;box-shadow:none}
 body.separators .ml,body.separators .g,body.separators .r{box-shadow:inset 0 -1px 0 var(--row-border)}
 body.hl-line.focused .ml.cur,body.hl-line.focused .g.cur,body.hl-line.focused .r.cur{background:var(--row-active)}
 .ed{
@@ -449,7 +450,7 @@ var capacitorExports=function(e){"use strict";var t;e.ExceptionCode=void 0,(t=e.
 /* =====================================================================
    CalcNote Freedom – notepad calculator
    ===================================================================== */
-const APP = { name: 'CalcNote Freedom', version: '3.2.0', build: 0, repo: 'https://github.com/mahi85180/calcnote-freedom', api: 'https://api.github.com/repos/mahi85180/calcnote-freedom/releases/latest' };
+const APP = { name: 'CalcNote Freedom', version: '3.3.0', build: 0, repo: 'https://github.com/mahi85180/calcnote-freedom', api: 'https://api.github.com/repos/mahi85180/calcnote-freedom/releases/latest' };
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 const el = (tag, props = {}, ...kids) => {
@@ -582,7 +583,7 @@ const DEFAULT_KEYS = [
   { l: 'GST 18%', i: ' + 18%' }, { l: '½', i: ' / 2' }, { l: 'round', i: 'round({c}, 2)' }, { l: 'x', i: ' x ' }
 ];
 const DEFAULTS = {
-  theme: 'light', accent: 'green', opColor: 'orange', font: 'system', italic: false, fontSize: 20, resultBold: false, resultColor: 'text', amountColor: 'blue', itemColor: 'accent', rowSpacing: 'normal',
+  theme: 'light', accent: 'green', opColor: 'orange', font: 'system', italic: false, fontSize: 20, resultBold: false, resultColor: 'text', amountColor: 'blue', itemColor: 'accent', dateHl: 'yellow', dateColor: 'purple', rowSpacing: 'normal',
   lineNumbers: true, divider: true, separators: false, resultAlign: 'left', resultWidth: 36, highlightLine: true,
   showTotalBar: true, totalModeHint: true, toolbar: ['undo', 'new', 'save', 'settings'], keepAwake: false,
   syntax: true, autoBrackets: false, tapCopy: true, lineMenu: true, swipe: true, undoEnabled: true, copyFormat: 'lines',
@@ -981,8 +982,9 @@ function render(forcePaint) {
   let serial = 0;                                              // numbering starts at 1 below each date
   texts.forEach((t, i) => {
     const l = res.lines[i];
-    const key = (settings.syntax ? 'S' : 'P') + t;
-    if (repaint || htmlCache[i] !== key) { cells.m[i].innerHTML = settings.syntax ? highlightHTML(t, res.vars, labelVars) : (t ? escHtml(t) : '​'); htmlCache[i] = key; }
+    const isDateLine0 = l.kind === 'date';
+    const key = (isDateLine0 ? 'D' + settings.dateHl : settings.syntax ? 'S' : 'P') + t;
+    if (repaint || htmlCache[i] !== key) { cells.m[i].innerHTML = isDateLine0 ? `<mark class="dmark${settings.dateHl === 'none' ? ' none' : ''}">${escHtml(t)}</mark>` : settings.syntax ? highlightHTML(t, res.vars, labelVars) : (t ? escHtml(t) : '​'); htmlCache[i] = key; }
     const isDate = l.kind === 'date'; const cur = i === state.curLine ? ' cur' : '';
     const mc = 'ml' + (isDate ? ' dl' : '') + cur; if (cells.m[i].className !== mc) cells.m[i].className = mc;
     serial = isDate ? 0 : serial + 1;
@@ -1509,6 +1511,8 @@ async function moreMenu() { const keys = Object.keys(ACTIONS).filter(k => !setti
 /* ---------------- Apply settings ---------------- */
 const ACCENTS = { green: ['#66BB6A', '#2E7D32'], teal: ['#26A69A', '#00695C'], blue: ['#42A5F5', '#1565C0'], indigo: ['#5C6BC0', '#283593'], purple: ['#AB47BC', '#6A1B9A'], pink: ['#EC407A', '#AD1457'], red: ['#EF5350', '#C62828'], orange: ['#FFA726', '#E65100'], brown: ['#8D6E63', '#4E342E'], grey: ['#78909C', '#37474F'], black: ['#424242', '#212121'] };
 const AMOUNTS = { blue: ['#1565C0', '#64B5F6'], green: ['#2E7D32', '#81C784'], purple: ['#6A1B9A', '#CE93D8'], orange: ['#E65100', '#FFB74D'], red: ['#C62828', '#EF9A9A'], teal: ['#00695C', '#4DB6AC'], brown: ['#5D4037', '#BCAAA4'], text: ['#1B1F1C', '#E6EAE7'] };
+const HILITES = { yellow: '#FFF176', green: '#C5E1A5', pink: '#F8BBD0', orange: '#FFCC80', blue: '#B3E5FC', purple: '#E1BEE7', none: 'transparent' };
+const DATECOLS = { purple: '#4A148C', red: '#B71C1C', blue: '#0D47A1', green: '#1B5E20', brown: '#4E342E', black: '#111111' };
 const OPCOLORS = { orange: '#E69100', red: '#E53935', blue: '#1E88E5', purple: '#8E24AA', pink: '#D81B60', accent: 'var(--strong)', text: 'var(--text)' };
 const FONTS = { system: "system-ui,'Segoe UI',Roboto,sans-serif", condensed: "'Roboto Condensed','Arial Narrow',sans-serif-condensed,sans-serif", serif: "Georgia,'Noto Serif',serif", mono: "ui-monospace,'Roboto Mono',Menlo,Consolas,monospace", rounded: "'Nunito','Varela Round','Comic Sans MS',system-ui,sans-serif" };
 const darkMQ = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
@@ -1520,6 +1524,7 @@ function applySettings() {
   set('--primary', pri); set('--strong', strong); set('--op', OPCOLORS[settings.opColor] || OPCOLORS.orange);
   const amt = AMOUNTS[settings.amountColor] || AMOUNTS.blue; set('--res', amt[theme === 'light' ? 0 : 1]);
   const itm = settings.itemColor === 'accent' ? [strong, null] : (AMOUNTS[settings.itemColor] || [strong, null]);
+  set('--date-hl', HILITES[settings.dateHl] || HILITES.yellow); set('--date-col', DATECOLS[settings.dateColor] || DATECOLS.purple);
   set('--item', itm[0]); if (itm[1]) set('--item-dark', itm[1]); else root.style.removeProperty('--item-dark');
   set('--res-weight', settings.resultBold ? '700' : '400');
   set('--font-size-editor', settings.fontSize + 'px'); set('--editor-font', FONTS[settings.font] || FONTS.system);
@@ -1725,9 +1730,7 @@ function imageRows() {
     if (l.kind === 'label') return { type: 'head', text: l.text.trim().replace(/:$/, '') };
     if (l.kind === 'comment') return { type: 'note', text: l.text.trim().replace(/^(\/\/|#)\s*/, '') };
     if (l.kind === 'empty') return { type: 'gap' };
-    // "vfc 9" → item "vfc", amount 9 (no need to show the same number twice)
-    let text = l.text.trim(); const mm = text.match(/^(.*\S)\s+(?:₹|rs\.?\s*)?(-?[\d,]*\.?\d+)$/i);
-    if (mm && l.kind === 'num' && Number(mm[2].replace(/,/g, '')) === Number(l.raw) && /[^\d\s.,+\-*/]/.test(mm[1])) text = mm[1].replace(/:$/, '');
+    const text = l.text.trim();
     const lbl = (l.label || '').trim();
     return { type: l.agg ? 'sum' : 'item', no: l.kind === 'num' && l.countable ? ++n : '', text, label: lbl && text.startsWith(lbl) ? lbl : '', amt: l.result, neg: l.kind === 'num' && Number(l.raw) < 0 };
   });
@@ -1743,7 +1746,7 @@ function drawNoteImage(opt = {}) {
   const itemCol = settings.itemColor === 'accent' ? strong : (AMOUNTS[settings.itemColor] || [strong])[0];
   const rows = imageRows();
   const m = document.createElement('canvas').getContext('2d');
-  const F = { item: `700 ${size}px ${FONT}`, amt: `800 ${size}px ${FONT}`, sno: `700 ${Math.round(size * .8)}px ${FONT}`, head: `800 ${Math.round(size * .92)}px ${FONT}`, note: `italic 600 ${Math.round(size * .85)}px ${FONT}` };
+  const F = { item: `700 ${size}px ${FONT}`, amt: `800 ${size}px ${FONT}`, sno: `700 ${Math.round(size * .8)}px ${FONT}`, head: `800 ${Math.round(size * .92)}px ${FONT}`, date: `800 ${Math.round(size * 1.02)}px ${FONT}`, note: `italic 600 ${Math.round(size * .85)}px ${FONT}` };
   const W = (t, f) => { m.font = f; return m.measureText(String(t)).width; };
   const PADX = Math.round(size * .45), ROWH = Math.round(size * 1.42), LINEH = Math.round(size * 1.18);
   const count = rows.filter(r => r.type !== 'gap').length;
@@ -1785,7 +1788,7 @@ function drawNoteImage(opt = {}) {
   const Wimg = Math.ceil(Math.max(OUT * 2 + colRows.length * colW + (colRows.length - 1) * GAP, Math.round(size * 18), W(subText, subFont) + OUT * 2, W(totalString(), `900 ${Math.round(size * 1.45)}px ${FONT}`) + W(state.total.label, `800 ${Math.round(size * 1.05)}px ${FONT}`) + OUT * 2 + PADX * 6));
   colW = Math.floor((Wimg - OUT * 2 - (colRows.length - 1) * GAP) / colRows.length);   // tables fill the full width
   const H = OUT + titleH + bodyH + Math.round(size * .6) + totH + footH;
-  const scale = Math.min(3, Math.max(1, Math.sqrt(16000000 / (Wimg * H))));
+  const scale = Math.max(0.5, Math.min(2, 1500 / Wimg, Math.sqrt(6000000 / (Wimg * H))));   // sharp but light → shares fast
   const c = document.createElement('canvas'); c.width = Math.floor(Wimg * scale); c.height = Math.floor(H * scale);
   const ctx = c.getContext('2d'); ctx.scale(scale, scale); ctx.textBaseline = 'middle';
   ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, Wimg, H);
@@ -1806,7 +1809,16 @@ function drawNoteImage(opt = {}) {
     yy += headerH; let zebra = 0;
     col.forEach(r => {
       if (r.type === 'gap') { yy += r.h; return; }
-      if (r.type === 'date' || r.type === 'head') { ctx.fillStyle = tint(.22); ctx.fillRect(x0, yy, colW, r.h); ctx.fillStyle = strong; ctx.font = F.head; ctx.textAlign = 'left'; r.lines.forEach((t, k) => ctx.fillText(t, x0 + PADX, yy + ROWH / 2 + k * LINEH + 1)); yy += r.h; zebra = 0; return; }
+      if (r.type === 'date') {
+        const hl = HILITES[settings.dateHl] || HILITES.yellow; ctx.font = F.date; ctx.textAlign = 'center';
+        r.lines.forEach((t, k) => {
+          const cy = yy + ROWH / 2 + k * LINEH + 1, tw = ctx.measureText(t).width;
+          if (hl !== 'transparent') { ctx.fillStyle = hl; roundRect(ctx, x0 + colW / 2 - tw / 2 - size * .4, cy - size * .68, tw + size * .8, size * 1.36, size * .2); }
+          ctx.fillStyle = DATECOLS[settings.dateColor] || DATECOLS.purple; ctx.fillText(t, x0 + colW / 2, cy);
+        });
+        yy += r.h; zebra = 0; return;
+      }
+      if (r.type === 'head') { ctx.fillStyle = tint(.22); ctx.fillRect(x0, yy, colW, r.h); ctx.fillStyle = strong; ctx.font = F.head; ctx.textAlign = 'left'; r.lines.forEach((t, k) => ctx.fillText(t, x0 + PADX, yy + ROWH / 2 + k * LINEH + 1)); yy += r.h; zebra = 0; return; }
       if (r.type === 'note') { ctx.fillStyle = '#666'; ctx.font = F.note; ctx.textAlign = 'left'; r.lines.forEach((t, k) => ctx.fillText(t, x0 + PADX, yy + ROWH / 2 + k * LINEH + 1)); yy += r.h; return; }
       if (r.type === 'sum') { ctx.fillStyle = '#E3F2FD'; ctx.fillRect(x0, yy, colW, r.h); }
       else if (zebra++ % 2 === 1) { ctx.fillStyle = tint(.1); ctx.fillRect(x0, yy, colW, r.h); }
@@ -1837,6 +1849,8 @@ async function renderShareImage() {
   const c = drawNoteImage({ cols: settings.imgCols, size: settings.imgSize, sno: settings.imgSno, date: settings.imgDate });
   imageBlob = await new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error('toBlob failed')), 'image/png'));
   if (imageUrl) URL.revokeObjectURL(imageUrl); imageUrl = URL.createObjectURL(imageBlob); $('#sharePreview').src = imageUrl;
+  // on the phone: save the image to a temp file right away, so "Share" opens instantly
+  if (Native.on) { const blob = imageBlob, name = safeName(displayTitle()) + '.png'; preparedShare = { blob, name, uri: Native.write(name, blob, 'CACHE') }; preparedShare.uri.catch(() => {}); }
 }
 function renderShareOpts() {
   const grp = (label, key, opts) => el('div', { class: 'grp' }, el('span', { text: label }), ...opts.map(([v, t]) => el('button', { class: String(settings[key]) === String(v) ? 'active' : '', 'data-opt': key, 'data-v': v, text: t, onclick: async () => { setSetting(key, typeof DEFAULTS[key] === 'boolean' ? v === 'true' : v); renderShareOpts(); await renderShareImage(); } })));
@@ -1847,9 +1861,16 @@ async function shareImage() {
   try { renderShareOpts(); await renderShareImage(); $('#shareModal').classList.add('open'); Overlays.push('share', () => $('#shareModal').classList.remove('open')); }
   catch (e) { console.error(e); toast('Could not create image'); }
 }
+let preparedShare = null;
 async function doShareImage() {
   if (!imageBlob) return; const name = safeName(displayTitle()) + '.png';
-  if (Native.on) { await saveBlob(imageBlob, name, { share: true }); return; }
+  if (Native.on) {
+    try {
+      const uri = preparedShare && preparedShare.blob === imageBlob ? await preparedShare.uri : await Native.write(name, imageBlob, 'CACHE');
+      await Native.p('Share').share({ title: name, files: [uri], dialogTitle: name });
+    } catch (e) { if (!/cancel/i.test(String(e && e.message))) toast('Could not share image'); }
+    return;
+  }
   const file = new File([imageBlob], name, { type: 'image/png' });
   if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: displayTitle() }); Overlays.remove('share'); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
   downloadImage();
@@ -2101,7 +2122,9 @@ const SETTINGS_PAGES = {
     { t: 'switch', key: 'dateOnNew', icon: '📅', label: "Today's date on new files", sub: 'A new file starts with the date – entries go below it' },
     { t: 'switch', key: 'autoDate', icon: '🗓', label: 'New day → add date automatically', sub: 'When you add entries at the end of a dated file on a new day' },
     { t: 'chips', key: 'dateFormat', icon: '🔤', label: 'Date format', options: () => Object.entries(DATE_FORMATS).map(([k, f]) => opt(k, f(new Date()))) },
-    { t: 'note', text: 'Tap the 📅 next to a date line to change it, or edit the text directly.' }
+    { t: 'swatch', key: 'dateHl', icon: '🖍', label: 'Date highlighter colour', options: () => Object.entries(HILITES).map(([k, v]) => [k, v === 'transparent' ? '#FFFFFF' : v]) },
+    { t: 'swatch', key: 'dateColor', icon: 'A', label: 'Date text colour', options: () => Object.entries(DATECOLS) },
+    { t: 'note', text: 'Dates are shown in the centre with a highlighter. Tap the 📅 next to a date line to change it, or edit the text directly.' }
   ] },
   keypad: { title: 'Keypad Settings', items: [
     { t: 'switch', key: 'keypadEnabled', icon: '⌨', label: 'Calculator keypad', sub: 'Turn off to use only the phone keyboard' },
