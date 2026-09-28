@@ -11,7 +11,9 @@ let html = fs.readFileSync(path.join(root, 'src/index.html'), 'utf8');
 const mathjs = fs.readFileSync(require.resolve('mathjs/lib/browser/math.js'), 'utf8')
   .replace(/\/\/# sourceMappingURL=.*$/m, '').replace(/<\/script/gi, '<\\/script');
 html = html.replace('/*MATHJS_INLINE*/', () => '/* math.js 11.8.0 | Apache-2.0 | https://mathjs.org */\n' + mathjs);
-html = html.replace(/version: '[\d.]+'/, `version: '${pkg.version}'`);
+html = html.replace(/version: '[\d.]+'/, `version: '${pkg.version}'`).replace(/build: 0,/, `build: ${parseInt(process.env.BUILD_NUMBER || '0', 10) || 0},`);
+const cap = fs.readFileSync(require.resolve('@capacitor/core/dist/capacitor.js'), 'utf8').replace(/\/\/# sourceMappingURL=.*$/m, '').replace(/<\/script/gi, '<\\/script');
+html = html.replace('/*CAPACITOR_INLINE*/', () => cap);
 fs.writeFileSync(path.join(out, 'index.html'), html);
 
 fs.copyFileSync(path.join(root, 'assets/icon.svg'), path.join(out, 'icon.svg'));

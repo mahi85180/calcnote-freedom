@@ -16,12 +16,14 @@ Every push to `main` builds a new APK automatically (see the **Actions** tab).
 | | |
 |---|---|
 | **Smart lines** | `name 13+27`, `Milk 2 × 28`, `Rent: ₹5,000`, `2500 + 18%`, `18% of 2500`, `rent = 15000` → `rent * 12`, `line2 + line3`, `ans / 2`, `sum`, `avg`, `// comment`, `5 km to mile`, scientific functions |
-| **Copy** | Copy all (lines / lines = results / results only / report), select many lines, edit the whole note as plain text, tap an answer to copy it, drag-select across lines |
+| **Editing like any notes app** | Long-press select / copy / paste across lines, keyboard word suggestions, name suggestions from earlier entries, sum of selected lines, Copy all (lines / results / WhatsApp table / report) |
+| **Dates & folders** | New files start with today's date, a new day adds its date automatically, tap 📅 to change a date · folders, pin, sort, recycle bin (30 days) |
+| **Update inside the app** | Settings → Check for update downloads and installs the newest APK |
 | **Editing** | Undo/redo, Enter splits a line, Backspace joins lines, paste many lines at once, line menu (move / duplicate / delete) |
 | **Keypad** | 123 keypad, scientific ƒ(x) tab, **★ Keys tab with your own buttons** (long-press a key to edit it) |
 | **Total** | Sum, Average, Min, Max, Count, Manual or your own formula (`total * 1.18`) |
 | **Files** | Many files, search, rename, duplicate, delete, "Save file" dialog |
-| **Share** | As an image, as text or as CSV. You can also back up and restore all files |
+| **Share** | Bold, sharp table image (auto 1–4 columns so 100 entries fit), WhatsApp table text, CSV, backup/restore with folders |
 | **Custom** | Every feature can be switched on/off, and the toolbar and sidebar buttons can be chosen and reordered. You can also set the theme (light/dark/black), accent colour, operator colour, font, italic, font size, result column (width, left/right, divider), number format (1,00,000 / 100,000 / 100.000), decimal places, your own functions and constants (`gst(x) = x * 1.18`), and custom CSS |
 | **Security** | PIN app lock |
 

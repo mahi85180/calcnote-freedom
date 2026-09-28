@@ -87,6 +87,7 @@ jobs:
           echo "name=$V" >> "$GITHUB_OUTPUT"
           echo "VERSION_NAME=$V" >> "$GITHUB_ENV"
           echo "VERSION_CODE=$((100 + GITHUB_RUN_NUMBER))" >> "$GITHUB_ENV"
+          echo "BUILD_NUMBER=$GITHUB_RUN_NUMBER" >> "$GITHUB_ENV"
 
       - id: signing
         name: Use your own signing key (optional – only if the secrets exist)
