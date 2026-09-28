@@ -67,9 +67,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: npm }
-      - uses: actions/setup-java@v4
+      - id: java
+        uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: '21', cache: gradle }
-      - uses: android-actions/setup-android@v3
+      - id: android_sdk
+        uses: android-actions/setup-android@v3
 
       - name: Version
         id: ver
@@ -81,7 +83,8 @@ jobs:
           echo "VERSION_NAME=$V" >> "$GITHUB_ENV"
           echo "VERSION_CODE=$((100 + GITHUB_RUN_NUMBER))" >> "$GITHUB_ENV"
 
-      - name: Use your own signing key (optional – only if the secrets exist)
+      - id: signing
+        name: Use your own signing key (optional – only if the secrets exist)
         shell: bash
         env:
           KS_B64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -97,11 +100,15 @@ jobs:
             echo "Using the key stored in the repository"
           fi
 
-      - run: npm ci
-      - run: npm run build
-      - run: npx cap sync android
+      - id: npm_ci
+        run: npm ci
+      - id: web_build
+        run: npm run build
+      - id: cap_sync
+        run: npx cap sync android
 
-      - name: Gradle build
+      - id: gradle
+        name: Gradle build
         shell: bash
         working-directory: android
         run: |
@@ -121,10 +128,12 @@ jobs:
           echo "file=dist/$NAME" >> "$GITHUB_OUTPUT"
           ls -la dist
 
-      - uses: actions/upload-artifact@v4
+      - id: upload_apk
+        uses: actions/upload-artifact@v4
         with: { name: CalcNote-Freedom-APK, path: dist/*.apk }
 
-      - name: Publish release
+      - id: release
+        name: Publish release
         if: github.event_name == 'push' || inputs.publish_release
         uses: softprops/action-gh-release@v2
         with:
@@ -138,10 +147,18 @@ jobs:
 
             Commit: ${{ github.sha }}
 
-      - name: Upload build log
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with: { name: gradle-log, path: gradle.log, if-no-files-found: ignore }
+      - name: Build report
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '${{ toJSON(steps) }}'
+            echo '--- gradle.log (tail) ---'
+            [ -f gradle.log ] && tail -250 gradle.log || echo "(gradle did not run)"
+          } > build-report.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: build-report, path: build-report.txt, if-no-files-found: ignore }
 
   # Writes a small status file to the "ci-status" branch so the result can be read without opening GitHub.
   status:
@@ -164,7 +181,7 @@ jobs:
             echo "time: $(date -u +%FT%TZ)"
           } > status.txt
           [ -f "$GITHUB_WORKSPACE/artifacts/test-log/test.log" ] && tail -60 "$GITHUB_WORKSPACE/artifacts/test-log/test.log" > test-tail.txt || true
-          [ -f "$GITHUB_WORKSPACE/artifacts/gradle-log/gradle.log" ] && tail -250 "$GITHUB_WORKSPACE/artifacts/gradle-log/gradle.log" > gradle-tail.txt || true
+          [ -f "$GITHUB_WORKSPACE/artifacts/build-report/build-report.txt" ] && cp "$GITHUB_WORKSPACE/artifacts/build-report/build-report.txt" build-report.txt || true
           git init -q && git checkout -q -b ci-status
           git config user.name "github-actions" && git config user.email "actions@github.com"
           git add . && git commit -qm "CI status for run ${{ github.run_number }}"
