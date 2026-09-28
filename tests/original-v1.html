@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#4CAF50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>CalcNote</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #388E3C;
+            --bg-editor: #FFFFFF;
+            --bg-sidebar: #F9FBE7;
+            --text-main: #212121;
+            --text-light: #757575;
+            --text-result: #2E7D32;
+            --row-hover: #F5F5F5;
+            --row-active: #E8F5E9;
+            --font-size-editor: 16px;
+            --header-height: 56px;
+            --bottom-bar-height: 52px;
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-left: env(safe-area-inset-left, 0px);
+            --safe-right: env(safe-area-inset-right, 0px);
+        }
+
+        [data-theme="dark"] {
+            --bg-editor: #1E1E1E;
+            --bg-sidebar: #2D2D2D;
+            --text-main: #E0E0E0;
+            --text-result: #81C784;
+            --row-hover: #2A2A2A;
+            --row-active: #1B3A1F;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        html, body {
+            overscroll-behavior: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-editor);
+            color: var(--text-main);
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: background 0.3s, color 0.3s;
+            -webkit-font-smoothing: antialiased;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+        }
+
+        /* --- HEADER --- */
+        .header {
+            background-color: var(--primary);
+            color: white;
+            height: calc(var(--header-height) + var(--safe-top));
+            padding-top: var(--safe-top);
+            padding-left: max(8px, var(--safe-left));
+            padding-right: max(8px, var(--safe-right));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 100;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .header-left { display: flex; align-items: center; gap: 4px; flex: 1; min-width: 0; }
+        .header-title { 
+            font-size: 17px; font-weight: 500;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            padding-left: 4px;
+        }
+        .header-actions { display: flex; align-items: center; gap: 0; }
+        .icon-btn {
+            background: none; border: none; color: white;
+            cursor: pointer; width: 44px; height: 44px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; transition: background 0.15s;
+            font-size: 18px; flex-shrink: 0;
+        }
+        .icon-btn:active { background: rgba(255,255,255,0.25); }
+
+        /* --- MAIN WORKSPACE --- */
+        .workspace {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 4px 0 8px;
+            background-color: var(--bg-editor);
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+        }
+        
+        .row {
+            display: flex;
+            min-height: 40px;
+            font-size: 16px;
+            align-items: flex-start;
+            border-bottom: 1px solid rgba(0,0,0,0.04);
+            transition: background 0.15s;
+        }
+        [data-theme="dark"] .row { border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .row.focused { background: var(--row-active); }
+        
+        .line-num {
+            width: 34px; text-align: right; padding-right: 8px;
+            color: var(--text-light); font-weight: 400;
+            user-select: none; flex-shrink: 0; font-size: 13px;
+            font-variant-numeric: tabular-nums;
+            padding-top: 10px;
+        }
+        .line-editor {
+            flex: 1; padding: 8px 6px;
+            font-family: inherit;
+            font-size: var(--font-size-editor);
+            outline: none; word-break: break-word;
+            border-left: 3px solid transparent;
+            transition: border 0.2s, font-size 0.2s;
+            color: var(--text-main);
+            -webkit-user-select: text;
+            user-select: text;
+            line-height: 1.4;
+            min-height: 40px;
+        }
+        .line-editor:focus { border-left: 3px solid var(--primary); }
+        .line-result {
+            min-width: 80px; max-width: 130px;
+            text-align: right; padding: 8px 10px 8px 4px;
+            font-weight: 600; color: var(--text-result);
+            flex-shrink: 0; font-size: 15px;
+            font-variant-numeric: tabular-nums;
+            line-height: 1.4;
+            word-break: break-all;
+        }
+
+        /* --- TOTAL BAR --- */
+        .total-bar {
+            background-color: #E8F5E9;
+            border-top: 2px solid #C8E6C9;
+            height: calc(var(--bottom-bar-height) + var(--safe-bottom));
+            padding-bottom: var(--safe-bottom);
+            padding-left: max(8px, var(--safe-left));
+            padding-right: max(8px, var(--safe-right));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 15px;
+            color: #1B5E20;
+            z-index: 100;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        [data-theme="dark"] .total-bar { 
+            background: #1B3A1F; 
+            border-top: 2px solid #2E7D32; 
+            color: #A5D6A7; 
+        }
+        
+        .total-left { display: flex; gap: 4px; font-weight: 600; align-items: center; }
+        .total-left button {
+            background: none; border: none; color: inherit;
+            font: inherit; font-weight: 600;
+            padding: 8px 10px; border-radius: 6px;
+            cursor: pointer; min-height: 40px;
+            transition: background 0.15s;
+        }
+        .total-left button:active { background: rgba(0,0,0,0.1); }
+        .keypad-icon { font-size: 18px !important; }
+        
+        .total-right { 
+            font-weight: 700; font-size: 16px; 
+            display: flex; align-items: center; gap: 4px;
+            cursor: pointer; padding: 8px 10px;
+            border-radius: 6px; transition: background 0.15s;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+            min-height: 40px;
+            max-width: 60%;
+            overflow: hidden;
+        }
+        .total-right:active { background: rgba(0,0,0,0.15); }
+        .total-edit-hint { font-size: 12px; opacity: 0.7; }
+
+        /* --- BOTTOM SHEET MODAL --- */
+        .sheet-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 400;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+        .sheet-overlay.open { display: block; opacity: 1; }
+        
+        .sheet {
+            position: fixed;
+            left: 0; right: 0; bottom: 0;
+            background: var(--bg-editor);
+            color: var(--text-main);
+            border-radius: 20px 20px 0 0;
+            padding: 8px 16px calc(20px + var(--safe-bottom));
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 401;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 -8px 32px rgba(0,0,0,0.3);
+        }
+        .sheet.open { transform: translateY(0); }
+        
+        .sheet-handle {
+            width: 40px; height: 4px;
+            background: #CCC; border-radius: 2px;
+            margin: 0 auto 12px;
+        }
+        [data-theme="dark"] .sheet-handle { background: #555; }
+        
+        .sheet h3 {
+            font-size: 17px; font-weight: 600;
+            margin-bottom: 12px; color: var(--primary);
+            padding: 0 4px;
+        }
+        .sheet label {
+            display: block; font-size: 12px; font-weight: 600;
+            color: var(--text-light); margin-bottom: 6px; margin-top: 14px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            padding: 0 4px;
+        }
+        .sheet input[type="text"],
+        .sheet input[type="number"] {
+            width: 100%; padding: 12px 14px; font-size: 16px;
+            border: 1.5px solid #DDD; border-radius: 10px;
+            background: var(--bg-editor); color: var(--text-main);
+            font-family: inherit; outline: none;
+            -webkit-appearance: none;
+            -webkit-user-select: text;
+            user-select: text;
+        }
+        [data-theme="dark"] .sheet input { border-color: #444; }
+        .sheet input:focus { border-color: var(--primary); }
+        
+        .mode-options { display: flex; gap: 8px; margin-top: 8px; }
+        .mode-option {
+            flex: 1; padding: 12px 8px; border-radius: 10px;
+            border: 2px solid #DDD; background: transparent;
+            cursor: pointer; font-size: 12px; font-weight: 600;
+            color: var(--text-main); transition: all 0.15s;
+            text-align: center; min-height: 48px;
+            font-family: inherit;
+        }
+        [data-theme="dark"] .mode-option { border-color: #444; }
+        .mode-option.active {
+            border-color: var(--primary); background: rgba(76,175,80,0.15);
+            color: var(--primary-dark);
+        }
+        [data-theme="dark"] .mode-option.active { color: #81C784; }
+        .mode-option:active { transform: scale(0.97); }
+        
+        .sheet-actions {
+            display: flex; gap: 10px; margin-top: 20px;
+        }
+        .sheet-btn {
+            flex: 1; padding: 14px 20px; border-radius: 10px;
+            border: none; font-size: 15px; font-weight: 600;
+            cursor: pointer; font-family: inherit;
+            transition: all 0.15s; min-height: 48px;
+        }
+        .sheet-btn.cancel { background: #EEE; color: #555; }
+        [data-theme="dark"] .sheet-btn.cancel { background: #333; color: #DDD; }
+        .sheet-btn.save { background: var(--primary); color: white; }
+        .sheet-btn:active { transform: scale(0.97); }
+
+        /* --- KEYPAD --- */
+        .keypad {
+            position: fixed; 
+            bottom: 0; left: 0; right: 0;
+            background: #ECEFF1;
+            z-index: 200;
+            display: none; 
+            padding: 6px 6px calc(6px + var(--safe-bottom));
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+            border-radius: 16px 16px 0 0;
+            touch-action: manipulation;
+        }
+        [data-theme="dark"] .keypad { background: #252525; }
+        .keypad.open { 
+            display: block; 
+            animation: slideUpKeypad 0.2s ease-out;
+        }
+        @keyframes slideUpKeypad {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        
+        .keypad-tabs {
+            display: flex; gap: 4px; margin-bottom: 6px;
+            padding: 0 4px;
+            align-items: center;
+        }
+        .keypad-tab {
+            flex: 1; padding: 8px; border: none; border-radius: 8px;
+            font-size: 12px; font-weight: 600; cursor: pointer;
+            background: transparent; color: #666; font-family: inherit;
+            transition: all 0.15s;
+        }
+        [data-theme="dark"] .keypad-tab { color: #AAA; }
+        .keypad-tab.active { background: white; color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        [data-theme="dark"] .keypad-tab.active { background: #333; color: #81C784; }
+
+        .keypad-close {
+            flex: 0 0 40px;
+            height: 36px;
+            border: none;
+            border-radius: 8px;
+            background: #FFCDD2;
+            color: #B71C1C;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+            font-family: inherit;
+            margin-left: 4px;
+        }
+        .keypad-close:active {
+            background: #EF9A9A;
+            transform: scale(0.94);
+        }
+        [data-theme="dark"] .keypad-close {
+            background: #5D2B2B;
+            color: #FFCDD2;
+        }
+        
+        .keypad-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+        }
+        .key {
+            background: white; border: none;
+            padding: 0;
+            height: 52px;
+            font-size: 20px; font-weight: 500;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+            transition: transform 0.08s, background 0.1s; 
+            color: #333;
+            font-family: inherit;
+            display: flex; align-items: center; justify-content: center;
+            touch-action: manipulation;
+            user-select: none;
+        }
+        [data-theme="dark"] .key { background: #333; color: white; }
+        .key:active { transform: scale(0.95); background: #CFD8DC; }
+        [data-theme="dark"] .key:active { background: #444; }
+        .key.op { background: #E8F5E9; color: var(--primary-dark); }
+        [data-theme="dark"] .key.op { background: #2E7D32; color: white; }
+        .key.ac { background: #FFCDD2; color: #B71C1C; }
+        .key.eq { background: var(--primary); color: white; }
+        .key.scientific { background: #E3F2FD; color: #1565C0; font-size: 14px; font-weight: 600; }
+        [data-theme="dark"] .key.scientific { background: #1565C0; color: white; }
+
+        /* --- SIDEBAR --- */
+        .sidebar-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 200;
+            display: none; opacity: 0; transition: opacity 0.3s;
+        }
+        .sidebar-overlay.active { display: block; opacity: 1; }
+        .sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0;
+            width: min(85vw, 320px);
+            background: var(--bg-sidebar); z-index: 201;
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; flex-direction: column;
+            box-shadow: 2px 0 12px rgba(0,0,0,0.15);
+            padding-top: var(--safe-top);
+        }
+        .sidebar.open { transform: translateX(0); }
+        .sidebar-header {
+            background: var(--primary); color: white;
+            padding: 20px 16px; display: flex; align-items: center; gap: 12px;
+            flex-shrink: 0;
+        }
+        .sidebar-header-title { font-size: 22px; font-weight: 500; }
+        .sidebar-content { flex: 1; overflow-y: auto; padding: 8px 0; }
+        .sidebar-item {
+            padding: 14px 16px; font-size: 15px; color: var(--text-main);
+            display: flex; align-items: center; gap: 16px; cursor: pointer;
+            min-height: 48px;
+        }
+        .sidebar-item:active { background: rgba(0,0,0,0.08); }
+        .sidebar-item-icon { font-size: 20px; width: 24px; text-align: center; }
+        .sidebar-section-title {
+            padding: 16px 16px 8px; font-size: 12px; font-weight: 700;
+            color: #666; text-transform: uppercase; letter-spacing: 0.8px;
+        }
+        [data-theme="dark"] .sidebar-section-title { color: #AAA; }
+        .sidebar-file {
+            padding: 14px 16px; display: flex; justify-content: space-between;
+            align-items: center; cursor: pointer; min-height: 48px;
+        }
+        .sidebar-file:active { background: rgba(0,0,0,0.08); }
+        .sidebar-file-title { font-size: 15px; color: var(--text-main); }
+        .three-dots { color: #757575; font-size: 20px; padding: 4px 12px; cursor: pointer; }
+        .active-file { background: rgba(76, 175, 80, 0.15); border-right: 4px solid var(--primary); }
+
+        /* --- SETTINGS MODAL --- */
+        .settings-modal {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: #1E1E1E; z-index: 300;
+            display: none; flex-direction: column; overflow-y: auto;
+            color: #E0E0E0;
+            padding-top: var(--safe-top);
+            padding-bottom: var(--safe-bottom);
+        }
+        .settings-modal.open { display: flex; }
+        .settings-header {
+            height: 56px; display: flex; align-items: center;
+            padding: 0 8px; background: #1E1E1E;
+            border-bottom: 1px solid #333; flex-shrink: 0;
+        }
+        .settings-title { font-size: 17px; font-weight: 500; }
+        .settings-list { padding: 8px 0; }
+        .settings-section { 
+            padding: 16px 16px 8px; font-size: 12px; color: #81C784;
+            font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;
+        }
+        .settings-item {
+            padding: 16px; display: flex; align-items: center;
+            gap: 16px; font-size: 15px; cursor: pointer;
+            min-height: 56px;
+        }
+        .settings-item:active { background: #333; }
+        .settings-item-icon { font-size: 20px; color: #9E9E9E; width: 24px; text-align: center; }
+        .settings-control { margin-left: auto; }
+        
+        .switch { position: relative; display: inline-block; width: 48px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #555; transition: .3s; border-radius: 26px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 20px; width: 20px;
+            left: 3px; bottom: 3px; background-color: white;
+            transition: .3s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(22px); }
+        input[type="range"] { width: 120px; margin-left: auto; accent-color: var(--primary); }
+
+        .theme-options {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+        }
+        .theme-chip {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 2px solid #444;
+            background: #2A2A2A;
+            color: #CCC;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.15s;
+            min-width: 60px;
+        }
+        .theme-chip .chip-icon { font-size: 18px; line-height: 1; }
+        .theme-chip:active { transform: scale(0.96); }
+        .theme-chip.active {
+            border-color: var(--primary);
+            background: rgba(76, 175, 80, 0.2);
+            color: #81C784;
+        }
+
+        /* --- TOAST --- */
+        .toast {
+            position: fixed; 
+            bottom: calc(var(--bottom-bar-height) + var(--safe-bottom) + 16px);
+            left: 50%; transform: translateX(-50%) translateY(100px);
+            background: #333; color: white; padding: 12px 20px;
+            border-radius: 24px; font-size: 14px; font-weight: 500;
+            z-index: 500; opacity: 0; transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            pointer-events: none; max-width: 90vw; text-align: center;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* --- SHARE MODAL --- */
+        .share-modal {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9); z-index: 450;
+            display: none; flex-direction: column;
+            align-items: center; justify-content: center; padding: 16px;
+            padding-top: calc(16px + var(--safe-top));
+            padding-bottom: calc(16px + var(--safe-bottom));
+        }
+        .share-modal.open { display: flex; }
+        .share-preview {
+            max-width: 100%; max-height: 60vh; border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5); background: white;
+            object-fit: contain;
+        }
+        .share-actions {
+            display: flex; gap: 10px; margin-top: 20px;
+            flex-wrap: wrap; justify-content: center; width: 100%;
+        }
+        .share-btn {
+            padding: 14px 20px; border-radius: 10px; border: none;
+            font-size: 14px; font-weight: 600; cursor: pointer;
+            font-family: inherit; background: var(--primary); color: white;
+            transition: all 0.15s; display: flex; align-items: center; gap: 8px;
+            min-height: 48px;
+        }
+        .share-btn.secondary { background: #444; color: white; }
+        .share-btn:active { transform: scale(0.96); }
+
+        /* --- TABLET/DESKTOP --- */
+        @media (min-width: 768px) {
+            .line-num { width: 48px; font-size: 14px; }
+            .line-result { min-width: 120px; font-size: 16px; }
+            .header-title { font-size: 19px; }
+            .sidebar { width: 320px; }
+            .sheet { max-width: 500px; margin: 0 auto; border-radius: 20px; bottom: 20px; left: 20px; right: 20px; }
+        }
+
+        @media screen and (max-width: 767px) {
+            input, .line-editor { font-size: 16px !important; }
+        }
+
+        /* Export-specific styles applied during capture */
+        .export-mode {
+            position: static !important;
+            height: auto !important;
+            overflow: visible !important;
+            max-height: none !important;
+            flex: none !important;
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-left">
+            <button class="icon-btn" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+            <div class="header-title" id="headerTitle">CalcNote</div>
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" onclick="quickToggleTheme()" aria-label="Toggle Theme" id="quickThemeBtn">🌙</button>
+            <button class="icon-btn" onclick="addNewRow()" aria-label="Add Row">＋</button>
+            <button class="icon-btn" onclick="shareAsImage()" aria-label="Share">📤</button>
+            <button class="icon-btn" onclick="saveCurrentFile()" aria-label="Save">💾</button>
+            <button class="icon-btn" onclick="toggleSettings()" aria-label="Settings">⚙</button>
+        </div>
+    </header>
+
+    <!-- MAIN WORKSPACE -->
+    <div class="workspace" id="workspace"></div>
+
+    <!-- TOTAL BAR -->
+    <div class="total-bar">
+        <div class="total-left">
+            <button onclick="toggleKeypad()">123</button>
+            <button onclick="toggleKeypad()">ABC</button>
+            <button class="keypad-icon" onclick="toggleKeypad()" aria-label="Keypad">⌨</button>
+        </div>
+        <div class="total-right" onclick="openTotalEditor()" title="Tap to edit">
+            <span id="totalLabel">Total:</span>
+            <span id="totalValue">0</span>
+            <span class="total-edit-hint">✎</span>
+        </div>
+    </div>
+
+    <!-- TOTAL EDITOR BOTTOM SHEET -->
+    <div class="sheet-overlay" id="totalOverlay" onclick="closeTotalEditor()"></div>
+    <div class="sheet" id="totalSheet">
+        <div class="sheet-handle"></div>
+        <h3>✎ Customize Total</h3>
+        
+        <label>Label Name</label>
+        <input type="text" id="totalLabelInput" placeholder="Total" value="Total">
+        
+        <label>Calculation Mode</label>
+        <div class="mode-options">
+            <button class="mode-option active" data-mode="auto" onclick="setTotalMode('auto')">Auto Sum</button>
+            <button class="mode-option" data-mode="manual" onclick="setTotalMode('manual')">Manual</button>
+            <button class="mode-option" data-mode="formula" onclick="setTotalMode('formula')">Formula</button>
+        </div>
+        
+        <div id="manualInputWrap" style="display:none;">
+            <label>Manual Value</label>
+            <input type="number" id="totalManualInput" placeholder="Enter value" inputmode="decimal">
+        </div>
+        
+        <div id="formulaInputWrap" style="display:none;">
+            <label>Formula (use row1, row2, ... or variable names)</label>
+            <input type="text" id="totalFormulaInput" placeholder="e.g. row1 + row2 * 0.5">
+        </div>
+        
+        <div class="sheet-actions">
+            <button class="sheet-btn cancel" onclick="closeTotalEditor()">Cancel</button>
+            <button class="sheet-btn save" onclick="saveTotalSettings()">Save</button>
+        </div>
+    </div>
+
+    <!-- KEYPAD -->
+    <div class="keypad" id="keypad">
+        <div class="keypad-tabs">
+            <button class="keypad-tab active" data-tab="basic" onclick="switchKeypadTab('basic')">123</button>
+            <button class="keypad-tab" data-tab="scientific" onclick="switchKeypadTab('scientific')">ƒ(x)</button>
+            <button class="keypad-close" onclick="toggleKeypad()" aria-label="Hide Keypad">✕</button>
+        </div>
+        
+        <div class="keypad-grid" id="keypadGrid"></div>
+    </div>
+
+    <!-- SIDEBAR OVERLAY -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div style="font-size: 26px;">🧮</div>
+            <div class="sidebar-header-title">CalcNote</div>
+        </div>
+        <div class="sidebar-content">
+            <div class="sidebar-item" onclick="createNewFile()">
+                <span class="sidebar-item-icon">＋</span> New file
+            </div>
+            <div class="sidebar-section-title" id="fileCount">Saved Files (0)</div>
+            <div id="fileListContainer"></div>
+            
+            <div style="height: 8px;"></div>
+            <div class="sidebar-item" onclick="saveCurrentFile()">
+                <span class="sidebar-item-icon">💾</span> Save
+            </div>
+            <div class="sidebar-item" onclick="shareAsImage()">
+                <span class="sidebar-item-icon">📤</span> Share as Image
+            </div>
+            <div class="sidebar-item" onclick="toggleSettings()">
+                <span class="sidebar-item-icon">⚙</span> Settings
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div class="settings-modal" id="settingsModal">
+        <div class="settings-header">
+            <button class="icon-btn" onclick="toggleSettings()" style="color: white;">←</button>
+            <div class="settings-title" style="margin-left: 8px;">Settings</div>
+        </div>
+        <div class="settings-list">
+            <div class="settings-section">Appearance</div>
+
+            <div class="settings-item" style="flex-wrap: wrap;">
+                <span class="settings-item-icon">🎨</span> Theme
+                <div class="theme-options">
+                    <button class="theme-chip" data-theme="light" onclick="setTheme('light')">
+                        <span class="chip-icon">☀️</span>
+                        <span>Light</span>
+                    </button>
+                    <button class="theme-chip" data-theme="dark" onclick="setTheme('dark')">
+                        <span class="chip-icon">🌙</span>
+                        <span>Dark</span>
+                    </button>
+                    <button class="theme-chip" data-theme="system" onclick="setTheme('system')">
+                        <span class="chip-icon">📱</span>
+                        <span>System</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="settings-item">
+                <span class="settings-item-icon">📝</span> Font Size
+                <input type="range" min="14" max="24" value="16" oninput="changeFontSize(this.value)" id="fontSizeSlider">
+            </div>
+            
+            <div class="settings-section">Backup/Restore</div>
+            <div class="settings-item" onclick="exportBackup()">
+                <span class="settings-item-icon">📤</span> Export Backup
+            </div>
+            <div class="settings-item" onclick="alert('Import coming soon!')">
+                <span class="settings-item-icon">📥</span> Import Backup
+            </div>
+        </div>
+    </div>
+
+    <!-- SHARE MODAL -->
+    <div class="share-modal" id="shareModal">
+        <img id="sharePreviewImg" class="share-preview" alt="Note Preview">
+        <div class="share-actions">
+            <button class="share-btn" onclick="doShare()">📤 Share</button>
+            <button class="share-btn secondary" onclick="downloadImage()">⬇ Download</button>
+            <button class="share-btn secondary" onclick="closeShareModal()">✕ Close</button>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ================= DATABASE =================
+        const db = localforage.createInstance({ name: "CalcNoteDB", storeName: "documents" });
+
+        // ================= STATE =================
+        let currentFileId = null;
+        let rowCounter = 0;
+        let activeEditor = null;
+        let files = [];
+        let saveTimeout = null;
+        let totalSettings = { label: "Total", mode: "auto", manualValue: 0, formula: "" };
+        let generatedImageBlob = null;
+        let currentKeypadTab = 'basic';
+        let currentThemeMode = 'light';
+        let systemDarkQuery = null;
+
+        // ================= KEYPAD LAYOUTS =================
+        const keypadLayouts = {
+            basic: [
+                { label: 'C', action: 'clearRow', class: 'ac' },
+                { label: 'AC', action: 'clearAll', class: 'ac' },
+                { label: '⌫', action: 'backspace', class: 'op' },
+                { label: '÷', action: '÷', class: 'op' },
+                { label: '7', action: '7' },
+                { label: '8', action: '8' },
+                { label: '9', action: '9' },
+                { label: '×', action: '×', class: 'op' },
+                { label: '4', action: '4' },
+                { label: '5', action: '5' },
+                { label: '6', action: '6' },
+                { label: '−', action: '-', class: 'op' },
+                { label: '1', action: '1' },
+                { label: '2', action: '2' },
+                { label: '3', action: '3' },
+                { label: '+', action: '+', class: 'op' },
+                { label: '(', action: '(', class: 'op' },
+                { label: '0', action: '0' },
+                { label: '.', action: '.' },
+                { label: '=', action: '=', class: 'eq' },
+                { label: ')', action: ')', class: 'op' },
+                { label: '%', action: '%', class: 'op' },
+                { label: '^', action: '^', class: 'op' },
+                { label: ',', action: ',', class: 'op' },
+                { label: 'NEW', action: 'newLine', class: 'eq' }
+            ],
+            scientific: [
+                { label: 'sin', action: 'sin(', class: 'scientific' },
+                { label: 'cos', action: 'cos(', class: 'scientific' },
+                { label: 'tan', action: 'tan(', class: 'scientific' },
+                { label: '√', action: 'sqrt(', class: 'scientific' },
+                { label: 'log', action: 'log(', class: 'scientific' },
+                { label: 'ln', action: 'log10(', class: 'scientific' },
+                { label: 'abs', action: 'abs(', class: 'scientific' },
+                { label: 'π', action: 'pi', class: 'scientific' },
+                { label: 'e', action: 'e', class: 'scientific' },
+                { label: 'x²', action: '^2', class: 'scientific' },
+                { label: 'xʸ', action: '^', class: 'scientific' },
+                { label: '!', action: '!', class: 'scientific' },
+                { label: 'asin', action: 'asin(', class: 'scientific' },
+                { label: 'acos', action: 'acos(', class: 'scientific' },
+                { label: 'atan', action: 'atan(', class: 'scientific' },
+                { label: 'floor', action: 'floor(', class: 'scientific' },
+                { label: 'ceil', action: 'ceil(', class: 'scientific' },
+                { label: 'round', action: 'round(', class: 'scientific' },
+                { label: 'min', action: 'min(', class: 'scientific' },
+                { label: 'max', action: 'max(', class: 'scientific' },
+                { label: 'sum', action: 'sum(', class: 'scientific' },
+                { label: 'mean', action: 'mean(', class: 'scientific' },
+                { label: 'C', action: 'clearRow', class: 'ac' },
+                { label: '⌫', action: 'backspace', class: 'op' }
+            ]
+        };
+
+        function renderKeypad() {
+            const grid = document.getElementById('keypadGrid');
+            grid.innerHTML = '';
+            keypadLayouts[currentKeypadTab].forEach(k => {
+                const btn = document.createElement('button');
+                btn.className = 'key ' + (k.class || '');
+                btn.textContent = k.label;
+                btn.onclick = () => handleKeypadAction(k.action);
+                grid.appendChild(btn);
+            });
+        }
+
+        function switchKeypadTab(tab) {
+            currentKeypadTab = tab;
+            document.querySelectorAll('.keypad-tab').forEach(t => {
+                t.classList.toggle('active', t.dataset.tab === tab);
+            });
+            renderKeypad();
+        }
+
+        function handleKeypadAction(action) {
+            if (action === 'clearRow') clearCurrentRow();
+            else if (action === 'clearAll') { if(confirm("Clear all rows?")) clearAll(); }
+            else if (action === 'backspace') backspace();
+            else if (action === 'newLine') { addNewRow(); }
+            else if (action === '=') { /* no-op, live calc already */ }
+            else insertKey(action);
+        }
+
+        function backspace() {
+            if (!activeEditor) return;
+            activeEditor.focus();
+            const sel = window.getSelection();
+            if (sel.rangeCount > 0) {
+                const range = sel.getRangeAt(0);
+                if (range.startOffset > 0) {
+                    range.setStart(range.startContainer, range.startOffset - 1);
+                    range.deleteContents();
+                } else {
+                    const text = activeEditor.textContent;
+                    if (text.length > 0) activeEditor.textContent = text.slice(0, -1);
+                }
+            } else {
+                const text = activeEditor.textContent;
+                if (text.length > 0) activeEditor.textContent = text.slice(0, -1);
+            }
+            calculateAll();
+            debouncedSave();
+        }
+
+        // ================= THEME MANAGEMENT =================
+        function initSystemThemeListener() {
+            if (!window.matchMedia) return;
+            systemDarkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            const handler = (e) => {
+                if (currentThemeMode === 'system') {
+                    applyResolvedTheme(e.matches ? 'dark' : 'light');
+                }
+            };
+            if (systemDarkQuery.addEventListener) {
+                systemDarkQuery.addEventListener('change', handler);
+            } else if (systemDarkQuery.addListener) {
+                systemDarkQuery.addListener(handler);
+            }
+        }
+
+        function applyResolvedTheme(resolved) {
+            document.body.setAttribute('data-theme', resolved);
+            const btn = document.getElementById('quickThemeBtn');
+            if (btn) btn.textContent = resolved === 'dark' ? '☀️' : '🌙';
+            const meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', resolved === 'dark' ? '#1E1E1E' : '#4CAF50');
+        }
+
+        function setTheme(mode) {
+            currentThemeMode = mode;
+            localStorage.setItem('calcnote_theme', mode);
+
+            document.querySelectorAll('.theme-chip').forEach(chip => {
+                chip.classList.toggle('active', chip.dataset.theme === mode);
+            });
+
+            if (mode === 'system') {
+                const prefersDark = systemDarkQuery ? systemDarkQuery.matches : false;
+                applyResolvedTheme(prefersDark ? 'dark' : 'light');
+                showToast('Theme: System 📱');
+            } else {
+                applyResolvedTheme(mode);
+                showToast(`Theme: ${mode === 'dark' ? 'Dark 🌙' : 'Light ☀️'}`);
+            }
+        }
+
+        function quickToggleTheme() {
+            const order = ['light', 'dark', 'system'];
+            const next = order[(order.indexOf(currentThemeMode) + 1) % order.length];
+            setTheme(next);
+        }
+
+        function loadTheme() {
+            const saved = localStorage.getItem('calcnote_theme');
+            currentThemeMode = saved || 'light';
+            initSystemThemeListener();
+
+            if (currentThemeMode === 'system') {
+                const prefersDark = systemDarkQuery ? systemDarkQuery.matches : false;
+                applyResolvedTheme(prefersDark ? 'dark' : 'light');
+            } else {
+                applyResolvedTheme(currentThemeMode);
+            }
+
+            document.querySelectorAll('.theme-chip').forEach(chip => {
+                chip.classList.toggle('active', chip.dataset.theme === currentThemeMode);
+            });
+        }
+
+        // ================= INIT =================
+        async function initApp() {
+            renderKeypad();
+            await loadFilesList();
+            const lastFileId = await db.getItem('lastFileId');
+            if (lastFileId && files.some(f => f.id === lastFileId)) {
+                await loadFile(lastFileId);
+            } else if (files.length > 0) {
+                await loadFile(files[0].id);
+            } else {
+                await createNewFile("Untitled Note");
+            }
+        }
+
+        // ================= FILES =================
+        async function loadFilesList() {
+            files = await db.getItem('filesList') || [];
+            renderFileList();
+        }
+
+        async function saveFilesList() {
+            await db.setItem('filesList', files);
+            renderFileList();
+        }
+
+        function renderFileList() {
+            const container = document.getElementById('fileListContainer');
+            const countSpan = document.getElementById('fileCount');
+            container.innerHTML = '';
+            countSpan.textContent = `Saved Files (${files.length})`;
+            files.forEach(file => {
+                const div = document.createElement('div');
+                div.className = `sidebar-file ${file.id === currentFileId ? 'active-file' : ''}`;
+                div.innerHTML = `
+                    <span class="sidebar-file-title">${escapeHtml(file.title)}</span>
+                    <span class="three-dots" onclick="deleteFile(event, '${file.id}')">⋮</span>
+                `;
+                div.onclick = () => loadFile(file.id);
+                container.appendChild(div);
+            });
+        }
+
+        async function createNewFile(title = null) {
+            if (title === null) {
+                title = prompt("Enter file name:", `Note ${files.length + 1}`);
+                if (!title) return;
+            }
+            const newFile = {
+                id: 'file_' + Date.now(),
+                title: title,
+                rows: [{ id: 'row_1', text: '' }],
+                totalSettings: { label: "Total", mode: "auto", manualValue: 0, formula: "" },
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            files.push(newFile);
+            await saveFilesList();
+            await db.setItem(newFile.id, newFile);
+            await loadFile(newFile.id);
+            if (document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
+        }
+
+        async function loadFile(fileId) {
+            const file = await db.getItem(fileId);
+            if (!file) return;
+            currentFileId = fileId;
+            await db.setItem('lastFileId', fileId);
+            
+            document.getElementById('headerTitle').textContent = file.title;
+            totalSettings = file.totalSettings || { label: "Total", mode: "auto", manualValue: 0, formula: "" };
+            updateTotalLabelUI();
+            
+            const workspace = document.getElementById('workspace');
+            workspace.innerHTML = '';
+            rowCounter = 0;
+            file.rows.forEach(row => addRow(row.text, row.id));
+            if (file.rows.length === 0 || file.rows[file.rows.length - 1].text !== '') {
+                addRow("");
+            }
+            calculateAll();
+            renderFileList();
+            if (document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
+        }
+
+        async function saveCurrentFile() {
+            if (!currentFileId) return;
+            const fileIndex = files.findIndex(f => f.id === currentFileId);
+            if (fileIndex === -1) return;
+            const rows = [];
+            document.querySelectorAll('.row').forEach(row => {
+                rows.push({
+                    id: row.id,
+                    text: row.querySelector('.line-editor').textContent
+                });
+            });
+            files[fileIndex].rows = rows;
+            files[fileIndex].totalSettings = totalSettings;
+            files[fileIndex].updatedAt = new Date().toISOString();
+            await db.setItem(currentFileId, files[fileIndex]);
+            await saveFilesList();
+            
+            const saveBtn = document.querySelector('button[aria-label="Save"]');
+            if (saveBtn) {
+                const orig = saveBtn.textContent;
+                saveBtn.textContent = '✓';
+                setTimeout(() => saveBtn.textContent = orig, 1200);
+            }
+        }
+
+        async function deleteFile(event, fileId) {
+            event.stopPropagation();
+            if (!confirm("Delete this file?")) return;
+            files = files.filter(f => f.id !== fileId);
+            await db.removeItem(fileId);
+            await saveFilesList();
+            if (currentFileId === fileId) {
+                if (files.length > 0) await loadFile(files[0].id);
+                else await createNewFile("Untitled Note");
+            }
+        }
+
+        // ================= ROWS =================
+        function addRow(text = "", id = null) {
+            rowCounter++;
+            const rowId = id || `row_${Date.now()}_${rowCounter}`;
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'row';
+            rowDiv.id = rowId;
+
+            const lineNum = document.createElement('div');
+            lineNum.className = 'line-num';
+            lineNum.textContent = rowCounter;
+
+            const editor = document.createElement('div');
+            editor.className = 'line-editor';
+            editor.contentEditable = true;
+            editor.textContent = text;
+            editor.spellcheck = false;
+            editor.setAttribute('inputmode', 'text');
+            editor.oninput = () => { calculateAll(); debouncedSave(); };
+            editor.onfocus = () => { 
+                activeEditor = editor; 
+                document.querySelectorAll('.row').forEach(r => r.classList.remove('focused'));
+                rowDiv.classList.add('focused');
+                if (document.getElementById('keypad').classList.contains('open')) {
+                    setTimeout(() => rowDiv.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+                }
+            };
+            editor.onblur = () => rowDiv.classList.remove('focused');
+            editor.onkeydown = (e) => handleKeyDown(e, editor);
+
+            const result = document.createElement('div');
+            result.className = 'line-result';
+            result.id = `result_${rowId}`;
+
+            rowDiv.appendChild(lineNum);
+            rowDiv.appendChild(editor);
+            rowDiv.appendChild(result);
+            document.getElementById('workspace').appendChild(rowDiv);
+
+            if (text === "") editor.focus();
+            return editor;
+        }
+
+        function addNewRow() {
+            const editor = addRow("");
+            editor.focus();
+            debouncedSave();
+            setTimeout(() => {
+                const workspace = document.getElementById('workspace');
+                workspace.scrollTop = workspace.scrollHeight;
+            }, 100);
+        }
+
+        // ================= CALCULATION =================
+        function calculateAll() {
+            const rows = document.querySelectorAll('.row');
+            const scope = {};
+            const rowValues = {};
+
+            rows.forEach((row, index) => {
+                const editor = row.querySelector('.line-editor');
+                const resultDiv = row.querySelector('.line-result');
+                const text = editor.textContent.trim();
+
+                if (!text) { resultDiv.textContent = ""; return; }
+
+                let expression = text;
+                const parts = text.split(' ');
+                const firstWord = parts[0];
+                if (parts.length > 1 && isNaN(firstWord) && !/[0-9+\-*/^%()]/.test(firstWord)) {
+                    expression = parts.slice(1).join(' ');
+                }
+                expression = expression.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
+
+                try {
+                    const result = math.evaluate(expression, scope);
+                    if (typeof result === 'number' && !isNaN(result) && isFinite(result)) {
+                        const formatted = math.format(result, { precision: 12 });
+                        resultDiv.textContent = formatted;
+                        rowValues['row' + (index + 1)] = result;
+                        rowValues[firstWord] = result;
+                    } else {
+                        resultDiv.textContent = "";
+                    }
+                } catch (e) {
+                    resultDiv.textContent = "";
+                }
+            });
+
+            let totalValue = 0;
+            if (totalSettings.mode === "auto") {
+                Object.keys(rowValues).forEach(k => {
+                    if (k.startsWith('row')) totalValue += rowValues[k];
+                });
+            } else if (totalSettings.mode === "manual") {
+                totalValue = parseFloat(totalSettings.manualValue) || 0;
+            } else if (totalSettings.mode === "formula") {
+                try {
+                    const evalScope = { ...scope, ...rowValues };
+                    const r = math.evaluate(totalSettings.formula, evalScope);
+                    if (typeof r === 'number' && !isNaN(r)) totalValue = r;
+                } catch (e) { totalValue = 0; }
+            }
+            
+            document.getElementById('totalValue').textContent = math.format(totalValue, { precision: 12 });
+        }
+
+        // ================= TOTAL EDITOR =================
+        function openTotalEditor() {
+            document.getElementById('totalLabelInput').value = totalSettings.label;
+            document.getElementById('totalManualInput').value = totalSettings.manualValue || '';
+            document.getElementById('totalFormulaInput').value = totalSettings.formula || '';
+            setTotalMode(totalSettings.mode);
+            document.getElementById('totalOverlay').classList.add('open');
+            setTimeout(() => document.getElementById('totalSheet').classList.add('open'), 10);
+        }
+
+        function closeTotalEditor() {
+            document.getElementById('totalSheet').classList.remove('open');
+            setTimeout(() => document.getElementById('totalOverlay').classList.remove('open'), 300);
+        }
+
+        function setTotalMode(mode) {
+            document.querySelectorAll('.mode-option').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+            document.getElementById('manualInputWrap').style.display = mode === 'manual' ? 'block' : 'none';
+            document.getElementById('formulaInputWrap').style.display = mode === 'formula' ? 'block' : 'none';
+        }
+
+        function saveTotalSettings() {
+            totalSettings.label = document.getElementById('totalLabelInput').value.trim() || "Total";
+            const activeMode = document.querySelector('.mode-option.active').dataset.mode;
+            totalSettings.mode = activeMode;
+            totalSettings.manualValue = parseFloat(document.getElementById('totalManualInput').value) || 0;
+            totalSettings.formula = document.getElementById('totalFormulaInput').value.trim();
+            
+            updateTotalLabelUI();
+            calculateAll();
+            saveCurrentFile();
+            closeTotalEditor();
+            showToast("Total updated ✓");
+        }
+
+        function updateTotalLabelUI() {
+            document.getElementById('totalLabel').textContent = totalSettings.label + ":";
+        }
+
+        // ================= AUTOSAVE =================
+        function debouncedSave() {
+            if (saveTimeout) clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => saveCurrentFile(), 1000);
+        }
+
+        // ================= KEYBOARD =================
+        function handleKeyDown(e, editor) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const row = editor.parentElement;
+                const nextRow = row.nextElementSibling;
+                if (nextRow) nextRow.querySelector('.line-editor').focus();
+                else addNewRow();
+            } else if (e.key === 'Backspace' && editor.textContent === '') {
+                e.preventDefault();
+                const row = editor.parentElement;
+                const prevRow = row.previousElementSibling;
+                if (prevRow && document.querySelectorAll('.row').length > 1) {
+                    row.remove();
+                    prevRow.querySelector('.line-editor').focus();
+                    updateLineNumbers();
+                    calculateAll();
+                    debouncedSave();
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                const prevRow = editor.parentElement.previousElementSibling;
+                if (prevRow) prevRow.querySelector('.line-editor').focus();
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                const nextRow = editor.parentElement.nextElementSibling;
+                if (nextRow) nextRow.querySelector('.line-editor').focus();
+            }
+        }
+
+        function updateLineNumbers() {
+            document.querySelectorAll('.row').forEach((row, i) => {
+                row.querySelector('.line-num').textContent = i + 1;
+            });
+            rowCounter = document.querySelectorAll('.row').length;
+        }
+
+        // ================= KEYPAD =================
+        function toggleKeypad() {
+            const keypad = document.getElementById('keypad');
+            keypad.classList.toggle('open');
+            if (keypad.classList.contains('open') && activeEditor) {
+                setTimeout(() => {
+                    const row = activeEditor.parentElement;
+                    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            }
+        }
+
+        function insertKey(char) {
+            if (!activeEditor) {
+                const editors = document.querySelectorAll('.line-editor');
+                if (editors.length > 0) activeEditor = editors[editors.length - 1];
+            }
+            if (activeEditor) {
+                activeEditor.focus();
+                const sel = window.getSelection();
+                if (sel.rangeCount > 0 && activeEditor.contains(sel.anchorNode)) {
+                    const range = sel.getRangeAt(0);
+                    range.deleteContents();
+                    const node = document.createTextNode(char);
+                    range.insertNode(node);
+                    range.setStartAfter(node);
+                    range.setEndAfter(node);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                } else {
+                    activeEditor.textContent += char;
+                }
+                calculateAll();
+                debouncedSave();
+            }
+        }
+
+        function clearCurrentRow() {
+            if (activeEditor) {
+                activeEditor.textContent = "";
+                calculateAll();
+                debouncedSave();
+            }
+        }
+
+        function clearAll() {
+            document.querySelectorAll('.row .line-editor').forEach(e => e.textContent = "");
+            calculateAll();
+            debouncedSave();
+        }
+
+        // ================= SIDEBAR/SETTINGS =================
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
+
+        function toggleSettings() {
+            document.getElementById('settingsModal').classList.toggle('open');
+        }
+
+        function changeFontSize(size) {
+            document.documentElement.style.setProperty('--font-size-editor', size + 'px');
+            localStorage.setItem('calcnote_fontsize', size);
+        }
+
+        // ================= SHARE AS IMAGE (FULL CONTENT FIX) =================
+        async function shareAsImage() {
+            showToast("Generating image...");
+            const workspace = document.getElementById('workspace');
+
+            // Save original styles
+            const origBodyHeight = document.body.style.height;
+            const origBodyOverflow = document.body.style.overflow;
+            const origBodyPosition = document.body.style.position;
+            const origWorkspaceStyles = {
+                flex: workspace.style.flex,
+                overflowY: workspace.style.overflowY,
+                height: workspace.style.height,
+                maxHeight: workspace.style.maxHeight,
+                position: workspace.style.position,
+                background: workspace.style.background,
+                color: workspace.style.color
+            };
+
+            // Save editor/result/num colors
+            const editorColors = [];
+            const numColors = [];
+            const resultColors = [];
+            document.querySelectorAll('.line-editor').forEach(e => {
+                editorColors.push(e.style.color);
+                e.style.color = '#212121';
+            });
+            document.querySelectorAll('.line-num').forEach(e => {
+                numColors.push(e.style.color);
+                e.style.color = '#999';
+            });
+            document.querySelectorAll('.line-result').forEach(e => {
+                resultColors.push(e.style.color);
+                e.style.color = '#2E7D32';
+            });
+
+            // Remove constraints to expose full content
+            document.body.style.height = 'auto';
+            document.body.style.overflow = 'visible';
+            document.body.style.position = 'static';
+            workspace.style.flex = 'none';
+            workspace.style.overflowY = 'visible';
+            workspace.style.height = 'auto';
+            workspace.style.maxHeight = 'none';
+            workspace.style.position = 'static';
+            workspace.style.background = '#FFFFFF';
+            workspace.style.color = '#212121';
+
+            // Force reflow
+            void workspace.offsetHeight;
+
+            try {
+                const fullHeight = workspace.scrollHeight;
+                const fullWidth = workspace.scrollWidth;
+
+                const canvas = await html2canvas(workspace, {
+                    backgroundColor: '#FFFFFF',
+                    scale: 2,
+                    logging: false,
+                    useCORS: true,
+                    width: fullWidth,
+                    height: fullHeight,
+                    windowWidth: fullWidth,
+                    windowHeight: fullHeight,
+                    scrollX: 0,
+                    scrollY: 0
+                });
+                
+                const finalCanvas = document.createElement('canvas');
+                const padding = 30;
+                const titleHeight = 70;
+                const totalHeight = 70;
+                finalCanvas.width = canvas.width + padding * 2;
+                finalCanvas.height = canvas.height + titleHeight + totalHeight;
+                
+                const ctx = finalCanvas.getContext('2d');
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+                
+                // Title
+                ctx.fillStyle = '#212121';
+                ctx.font = 'bold ' + (22 * 2) + 'px Segoe UI, Roboto, sans-serif';
+                ctx.textAlign = 'left';
+                const title = document.getElementById('headerTitle').textContent;
+                ctx.fillText(title, padding, titleHeight - 10);
+                
+                // Green underline
+                ctx.strokeStyle = '#4CAF50';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(padding, titleHeight);
+                ctx.lineTo(finalCanvas.width - padding, titleHeight);
+                ctx.stroke();
+                
+                // Body
+                ctx.drawImage(canvas, padding, titleHeight + 15);
+                
+                // Total
+                const totalY = titleHeight + 15 + canvas.height + 40;
+                ctx.fillStyle = '#2E7D32';
+                ctx.font = 'bold ' + (20 * 2) + 'px Segoe UI, Roboto, sans-serif';
+                ctx.textAlign = 'right';
+                const totalText = totalSettings.label + ' ' + document.getElementById('totalValue').textContent;
+                ctx.fillText(totalText, finalCanvas.width - padding, totalY);
+                
+                // Footer
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#999';
+                ctx.font = (11 * 2) + 'px Segoe UI, Roboto, sans-serif';
+                ctx.fillText('Made with CalcNote', finalCanvas.width / 2, finalCanvas.height - 15);
+                
+                generatedImageBlob = await new Promise(res => finalCanvas.toBlob(res, 'image/png'));
+                const url = URL.createObjectURL(generatedImageBlob);
+                document.getElementById('sharePreviewImg').src = url;
+                document.getElementById('shareModal').classList.add('open');
+            } catch (err) {
+                console.error(err);
+                showToast("Failed to generate image");
+            } finally {
+                // Restore everything
+                document.body.style.height = origBodyHeight;
+                document.body.style.overflow = origBodyOverflow;
+                document.body.style.position = origBodyPosition;
+                workspace.style.flex = origWorkspaceStyles.flex;
+                workspace.style.overflowY = origWorkspaceStyles.overflowY;
+                workspace.style.height = origWorkspaceStyles.height;
+                workspace.style.maxHeight = origWorkspaceStyles.maxHeight;
+                workspace.style.position = origWorkspaceStyles.position;
+                workspace.style.background = origWorkspaceStyles.background;
+                workspace.style.color = origWorkspaceStyles.color;
+
+                document.querySelectorAll('.line-editor').forEach((e, i) => e.style.color = editorColors[i] || '');
+                document.querySelectorAll('.line-num').forEach((e, i) => e.style.color = numColors[i] || '');
+                document.querySelectorAll('.line-result').forEach((e, i) => e.style.color = resultColors[i] || '');
+            }
+        }
+
+        async function doShare() {
+            if (!generatedImageBlob) return;
+            const file = new File([generatedImageBlob], 'calcnote.png', { type: 'image/png' });
+            
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        files: [file],
+                        title: document.getElementById('headerTitle').textContent,
+                        text: 'Shared from CalcNote'
+                    });
+                    closeShareModal();
+                } catch (err) {
+                    if (err.name !== 'AbortError') downloadImage();
+                }
+            } else {
+                downloadImage();
+            }
+        }
+
+        function downloadImage() {
+            if (!generatedImageBlob) return;
+            const url = URL.createObjectURL(generatedImageBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `CalcNote_${Date.now()}.png`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast("Image downloaded ✓");
+            closeShareModal();
+        }
+
+        function closeShareModal() {
+            document.getElementById('shareModal').classList.remove('open');
+        }
+
+        // ================= BACKUP =================
+        async function exportBackup() {
+            const allData = {};
+            const keys = await db.keys();
+            for (const key of keys) {
+                if (key !== 'lastFileId') allData[key] = await db.getItem(key);
+            }
+            const blob = new Blob([JSON.stringify(allData, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `CalcNote_Backup_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast("Backup exported ✓");
+        }
+
+        // ================= UTILITIES =================
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2000);
+        }
+
+        // ================= PREFERENCES =================
+        function loadPreferences() {
+            loadTheme();
+            const fs = localStorage.getItem('calcnote_fontsize');
+            if (fs) {
+                document.documentElement.style.setProperty('--font-size-editor', fs + 'px');
+                const slider = document.getElementById('fontSizeSlider');
+                if (slider) slider.value = fs;
+            }
+        }
+
+        // ================= SWIPE GESTURES =================
+        let touchStartX = 0;
+        let touchStartY = 0;
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        document.addEventListener('touchend', e => {
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            const dy = e.changedTouches[0].clientY - touchStartY;
+            const sidebar = document.getElementById('sidebar');
+            
+            if (touchStartX < 30 && dx > 60 && Math.abs(dy) < 60 && !sidebar.classList.contains('open')) {
+                toggleSidebar();
+            }
+            if (sidebar.classList.contains('open') && dx < -60 && Math.abs(dy) < 60) {
+                toggleSidebar();
+            }
+        }, { passive: true });
+
+        // Prevent double-tap zoom
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', e => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) e.preventDefault();
+            lastTouchEnd = now;
+        }, false);
+
+        // ================= START =================
+        window.onload = () => {
+            loadPreferences();
+            initApp();
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape') {
+                    closeTotalEditor();
+                    closeShareModal();
+                    const kp = document.getElementById('keypad');
+                    if (kp.classList.contains('open')) toggleKeypad();
+                }
+            });
+            
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', () => {
+                    document.body.style.height = window.visualViewport.height + 'px';
+                });
+            }
+        };
+    </script>
+</body>
+</html>

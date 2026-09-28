@@ -1,0 +1,23 @@
+{
+  "name": "CalcNote Freedom",
+  "short_name": "CalcNote",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F3F9F3",
+  "theme_color": "#66BB6A",
+  "description": "Notepad calculator that works offline",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,0 +1,171 @@
+name: Build Android APK
+
+# Runs on every push to main, and can be started by hand from the "Actions" tab
+# with your own choices (build type, version, release on/off, tests on/off).
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**.md', 'ci-status/**']
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'APK type'
+        type: choice
+        options: [release, debug]
+        default: release
+      version_name:
+        description: 'Version name (empty = version from package.json)'
+        type: string
+        default: ''
+      publish_release:
+        description: 'Publish the APK on the Releases page'
+        type: boolean
+        default: true
+      run_tests:
+        description: 'Run the automatic app tests first'
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test web app
+    if: github.event_name == 'push' || inputs.run_tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm test 2>&1 | tee test.log
+        shell: bash
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: test-screenshots, path: tests/out, if-no-files-found: ignore }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: test-log, path: test.log, if-no-files-found: ignore }
+
+  build:
+    name: Build APK
+    needs: test
+    if: always() && (needs.test.result == 'success' || needs.test.result == 'skipped')
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      BUILD_TYPE: ${{ inputs.build_type || 'release' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '21', cache: gradle }
+      - uses: android-actions/setup-android@v3
+
+      - name: Version
+        id: ver
+        shell: bash
+        run: |
+          V="${{ inputs.version_name }}"
+          [ -z "$V" ] && V=$(node -p "require('./package.json').version")
+          echo "name=$V" >> "$GITHUB_OUTPUT"
+          echo "VERSION_NAME=$V" >> "$GITHUB_ENV"
+          echo "VERSION_CODE=$((100 + GITHUB_RUN_NUMBER))" >> "$GITHUB_ENV"
+
+      - name: Use your own signing key (optional – only if the secrets exist)
+        shell: bash
+        env:
+          KS_B64: ${{ secrets.KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
+          KS_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KS_KEYPASS: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -n "$KS_B64" ]; then
+            echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+            { echo "KEYSTORE_FILE=$RUNNER_TEMP/release.keystore"; echo "KEYSTORE_PASSWORD=$KS_PASS"; echo "KEY_ALIAS=$KS_ALIAS"; echo "KEY_PASSWORD=${KS_KEYPASS:-$KS_PASS}"; } >> "$GITHUB_ENV"
+            echo "Using signing key from repository secrets"
+          else
+            echo "Using the key stored in the repository"
+          fi
+
+      - run: npm ci
+      - run: npm run build
+      - run: npx cap sync android
+
+      - name: Gradle build
+        shell: bash
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          TASK=assembleRelease; [ "$BUILD_TYPE" = "debug" ] && TASK=assembleDebug
+          ./gradlew $TASK --no-daemon --stacktrace 2>&1 | tee ../gradle.log
+          exit ${PIPESTATUS[0]}
+
+      - name: Collect APK
+        id: apk
+        shell: bash
+        run: |
+          SRC=$(ls android/app/build/outputs/apk/$BUILD_TYPE/*.apk | head -1)
+          NAME="CalcNote-Freedom-v${VERSION_NAME}-build${GITHUB_RUN_NUMBER}${BUILD_TYPE/release/}.apk"
+          NAME="${NAME/debug.apk/-debug.apk}"
+          mkdir -p dist && cp "$SRC" "dist/$NAME"
+          echo "file=dist/$NAME" >> "$GITHUB_OUTPUT"
+          ls -la dist
+
+      - uses: actions/upload-artifact@v4
+        with: { name: CalcNote-Freedom-APK, path: dist/*.apk }
+
+      - name: Publish release
+        if: github.event_name == 'push' || inputs.publish_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.ver.outputs.name }}-build${{ github.run_number }}
+          name: CalcNote Freedom ${{ steps.ver.outputs.name }} (build ${{ github.run_number }})
+          files: ${{ steps.apk.outputs.file }}
+          make_latest: true
+          body: |
+            📱 **Install on Android:** download the `.apk` below → open it → allow "Install unknown apps" if asked.
+            New builds install **over** the old app – your files are kept.
+
+            Commit: ${{ github.sha }}
+
+      - name: Upload build log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with: { name: gradle-log, path: gradle.log, if-no-files-found: ignore }
+
+  # Writes a small status file to the "ci-status" branch so the result can be read without opening GitHub.
+  status:
+    needs: [test, build]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with: { path: artifacts }
+      - shell: bash
+        run: |
+          mkdir -p /tmp/s && cd /tmp/s
+          {
+            echo "commit: ${{ github.sha }}"
+            echo "run: ${{ github.run_number }} (${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+            echo "test: ${{ needs.test.result }}"
+            echo "build: ${{ needs.build.result }}"
+            echo "time: $(date -u +%FT%TZ)"
+          } > status.txt
+          [ -f "$GITHUB_WORKSPACE/artifacts/test-log/test.log" ] && tail -60 "$GITHUB_WORKSPACE/artifacts/test-log/test.log" > test-tail.txt || true
+          [ -f "$GITHUB_WORKSPACE/artifacts/gradle-log/gradle.log" ] && tail -250 "$GITHUB_WORKSPACE/artifacts/gradle-log/gradle.log" > gradle-tail.txt || true
+          git init -q && git checkout -q -b ci-status
+          git config user.name "github-actions" && git config user.email "actions@github.com"
+          git add . && git commit -qm "CI status for run ${{ github.run_number }}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" ci-status

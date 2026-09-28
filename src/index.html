@@ -1,0 +1,2250 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#66BB6A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="CalcNote Freedom">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="CalcNote Freedom – notepad calculator that works offline">
+<title>CalcNote Freedom</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{
+  --primary:#66BB6A; --strong:#2E7D32; --on-primary:#fff;
+  --bg:#F3F9F3; --surface:#FFFFFF; --surface-2:#EDF3ED; --sidebar:#F7FAF4;
+  --text:#1B1F1C; --text-2:#5F6A62; --text-3:#98A29A;
+  --res:var(--text); --res-muted:#7E8A80; --res-agg:#1565C0;
+  --op:#E69100; --fn:#1976D2; --com:#9AA39C;
+  --row-border:rgba(0,0,0,.06); --divider:#C9DEC9;
+  --row-active:color-mix(in srgb,var(--primary) 13%,var(--bg));
+  --total-bg:color-mix(in srgb,var(--primary) 30%,#fff); --total-text:color-mix(in srgb,var(--strong) 85%,#000);
+  --keypad-bg:#E7ECE8; --key-bg:#FFFFFF; --key-text:#263238;
+  --key-op-bg:color-mix(in srgb,var(--primary) 20%,#fff); --key-op-text:var(--strong);
+  --key-fn-bg:#E3EEFB; --key-fn-text:#1565C0; --key-cu-bg:#FFF3E0; --key-cu-text:#E65100;
+  --key-nav-bg:#F1F3F2; --key-danger-bg:#FFE5E5; --key-danger-text:#C62828;
+  --border:#D5DDD6; --overlay:rgba(0,0,0,.45); --danger:#D32F2F;
+  --shadow:0 10px 30px rgba(0,0,0,.18);
+  --font-size-editor:20px; --editor-font:system-ui,'Segoe UI',Roboto,sans-serif; --editor-style:normal;
+  --result-width:36%; --num-w:34px; --key-h:50px;
+  --header-h:56px; --total-h:54px;
+  --safe-top:var(--safe-area-inset-top,env(safe-area-inset-top,0px));
+  --safe-bottom:var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px));
+  --safe-left:var(--safe-area-inset-left,env(safe-area-inset-left,0px));
+  --safe-right:var(--safe-area-inset-right,env(safe-area-inset-right,0px));
+  color-scheme:light;
+}
+html[data-theme="dark"],html[data-theme="black"]{
+  --bg:#171A18; --surface:#20241F; --surface-2:#2A2F2B; --sidebar:#1B1E1C;
+  --text:#E6EAE7; --text-2:#A3ADA5; --text-3:#6E7870;
+  --res-muted:#8E998F; --res-agg:#64B5F6; --fn:#64B5F6; --com:#6E7870;
+  --row-border:rgba(255,255,255,.06); --divider:#343B35;
+  --row-active:color-mix(in srgb,var(--primary) 16%,var(--bg));
+  --total-bg:color-mix(in srgb,var(--primary) 26%,#111); --total-text:#E8F5E9;
+  --keypad-bg:#1C1F1D; --key-bg:#2D322E; --key-text:#F1F4F2;
+  --key-op-bg:color-mix(in srgb,var(--primary) 30%,#222); --key-op-text:#fff;
+  --key-fn-bg:#1D3550; --key-fn-text:#90CAF9; --key-cu-bg:#4A3218; --key-cu-text:#FFCC80;
+  --key-nav-bg:#262A27; --key-danger-bg:#4A2426; --key-danger-text:#FFCDD2;
+  --border:#3A403C; --overlay:rgba(0,0,0,.6); --danger:#EF5350; --shadow:0 10px 30px rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+html[data-theme="black"]{ --bg:#000; --surface:#0E0F0E; --surface-2:#1A1C1A; --sidebar:#0A0B0A; --keypad-bg:#0A0B0A; --key-bg:#1C1F1D; --divider:#262A27 }
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{overscroll-behavior:none}
+body{
+  font-family:system-ui,'Segoe UI',Roboto,-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,'Noto Sans Devanagari',sans-serif;
+  background:var(--bg);color:var(--text);position:fixed;top:0;left:0;right:0;height:100vh;height:100dvh;
+  overflow:hidden;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;
+}
+button{font-family:inherit;color:inherit}
+svg.i{width:24px;height:24px;fill:currentColor;display:block}
+
+/* HEADER */
+.header{
+  background:var(--primary);color:var(--on-primary);height:calc(var(--header-h) + var(--safe-top));padding-top:var(--safe-top);
+  padding-left:max(4px,var(--safe-left));padding-right:max(4px,var(--safe-right));
+  display:flex;align-items:center;gap:0;flex-shrink:0;z-index:20;box-shadow:0 2px 4px rgba(0,0,0,.12);
+}
+html[data-theme="dark"] .header,html[data-theme="black"] .header{background:color-mix(in srgb,var(--primary) 32%,#101210)}
+.icon-btn{background:none;border:none;color:inherit;cursor:pointer;width:46px;height:46px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:background .15s,opacity .15s}
+.icon-btn:active{background:rgba(255,255,255,.22)}
+.icon-btn:disabled{opacity:.4;cursor:default}
+.icon-btn svg{width:26px;height:26px}
+.header-title{flex:1;min-width:0;background:none;border:none;text-align:left;cursor:pointer;font-size:20px;font-weight:500;padding:6px 10px;border-radius:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-title:active{background:rgba(255,255,255,.15)}
+.select-bar{display:none;flex:1;align-items:center;gap:2px;min-width:0}
+body.selecting .select-bar{display:flex}
+body.selecting .header-title,body.selecting #toolbar,body.selecting #btnMenu{display:none}
+.select-count{flex:1;font-size:18px;font-weight:600;padding-left:6px;white-space:nowrap}
+#toolbar{display:flex;align-items:center}
+
+/* WORKSPACE */
+.workspace{flex:1;overflow-y:auto;overflow-x:hidden;padding:2px 0 28px;background:var(--bg);-webkit-overflow-scrolling:touch;overscroll-behavior:contain;position:relative}
+.row{display:flex;align-items:stretch;min-height:calc(var(--font-size-editor) * 1.45 + 12px)}
+body.separators .row{border-bottom:1px solid var(--row-border)}
+body.hl-line .row:focus-within{background:var(--row-active)}
+.row.selected{background:color-mix(in srgb,var(--primary) 28%,var(--bg))!important}
+.line-num{
+  width:var(--num-w);flex-shrink:0;text-align:right;padding:6px 6px 0 0;background:none;border:none;
+  color:var(--strong);font-size:calc(var(--font-size-editor) * .9);font-style:var(--editor-style);font-family:var(--editor-font);
+  font-variant-numeric:tabular-nums;cursor:pointer;line-height:1.45;
+}
+html[data-theme="dark"] .line-num,html[data-theme="black"] .line-num{color:color-mix(in srgb,var(--primary) 75%,#fff)}
+body.no-linenums .line-num{width:6px;padding:0;font-size:0}
+body.divider .line-num{border-right:1.5px solid var(--divider)}
+.row.selected .line-num::before{content:'✓ ';font-style:normal}
+.line-editor{
+  flex:1;min-width:0;padding:6px 8px;outline:none;font-family:var(--editor-font);font-style:var(--editor-style);
+  font-size:var(--font-size-editor);line-height:1.45;color:var(--text);white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;
+  -webkit-user-select:text;user-select:text;cursor:text;caret-color:var(--strong);
+}
+.line-editor:empty::before{content:attr(data-ph);color:var(--text-3);pointer-events:none}
+.t-lbl{color:var(--strong)}
+html[data-theme="dark"] .t-lbl,html[data-theme="black"] .t-lbl{color:color-mix(in srgb,var(--primary) 75%,#fff)}
+.t-op{color:var(--op)} .t-fn{color:var(--fn)} .t-com{color:var(--com);font-style:italic}
+.line-result{
+  flex-shrink:0;max-width:48%;min-width:0;text-align:right;padding:6px 12px 6px 8px;background:none;border:none;cursor:pointer;
+  font-family:var(--editor-font);font-style:var(--editor-style);font-size:var(--font-size-editor);line-height:1.45;
+  color:var(--res);font-variant-numeric:tabular-nums;word-break:break-all;font-weight:var(--res-weight,400);
+}
+body.fixed-col .line-result{flex:0 0 var(--result-width);max-width:none}
+body.align-left .line-result{text-align:left}
+body.divider .line-result{border-left:1.5px solid var(--divider)}
+body:not(.fixed-col) .line-result:empty{padding:0}
+.line-result.muted{color:var(--res-muted)}
+.line-result.agg{color:var(--res-agg)}
+.line-result:active:not(:empty){opacity:.6}
+
+/* TOTAL BAR */
+.total-bar{
+  background:var(--total-bg);color:var(--total-text);min-height:var(--total-h);flex-shrink:0;display:flex;align-items:center;gap:6px;
+  padding:0 max(6px,var(--safe-right)) 0 max(6px,var(--safe-left));
+}
+body:not(.kp-open) .total-bar{padding-bottom:var(--safe-bottom);min-height:calc(var(--total-h) + var(--safe-bottom))}
+body.no-totalbar .total-bar{display:none}
+.kb-switch{display:flex;align-items:center;gap:0;flex-shrink:0}
+.kb-switch button{border:none;background:none;font-weight:500;font-size:21px;padding:8px 8px;border-radius:8px;cursor:pointer;color:var(--strong);opacity:.75}
+html[data-theme="dark"] .kb-switch button,html[data-theme="black"] .kb-switch button{color:#C8E6C9}
+.kb-switch button.active{opacity:1;font-weight:700;background:rgba(0,0,0,.07)}
+.kb-switch button svg{width:30px;height:30px}
+body.no-keypad .kb-switch{display:none}
+.total-right{flex:1;display:flex;align-items:baseline;justify-content:center;gap:8px;cursor:pointer;padding:8px 10px;border-radius:8px;border:none;background:none;min-width:0;color:inherit;font-style:var(--editor-style);font-family:var(--editor-font)}
+.total-right:active{background:rgba(0,0,0,.08)}
+.total-label{font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.total-value{font-size:24px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.total-mode{font-size:11px;opacity:.6;white-space:nowrap;font-style:normal}
+
+/* KEYPAD */
+.keypad{display:none;flex-shrink:0;background:var(--keypad-bg);padding:6px max(6px,var(--safe-left)) calc(6px + var(--safe-bottom)) max(6px,var(--safe-right));touch-action:manipulation}
+body.kp-open .keypad{display:block}
+.keypad-tabs{display:flex;gap:6px;margin-bottom:6px;align-items:center}
+.keypad-tab{flex:1;padding:7px;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;background:transparent;color:var(--text-2)}
+.keypad-tab.active{background:var(--key-bg);color:var(--strong);box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.keypad-tab[hidden]{display:none}
+.keypad-mini{flex:0 0 auto;min-width:46px;height:32px;border:none;border-radius:8px;cursor:pointer;font-weight:800;font-size:12px;background:var(--key-fn-bg);color:var(--key-fn-text);padding:0 10px;display:flex;align-items:center;justify-content:center}
+.keypad-mini.close{background:var(--key-danger-bg);color:var(--key-danger-text);min-width:40px}
+.keypad-mini svg{width:18px;height:18px}
+.keypad-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.key{
+  height:var(--key-h);border:none;border-radius:10px;cursor:pointer;background:var(--key-bg);color:var(--key-text);font-size:22px;font-weight:500;
+  box-shadow:0 1px 1.5px rgba(0,0,0,.1);display:flex;align-items:center;justify-content:center;touch-action:manipulation;
+  -webkit-user-select:none;user-select:none;transition:transform .06s,filter .1s;overflow:hidden;white-space:nowrap;padding:0 4px;
+}
+.key:active{transform:scale(.95);filter:brightness(.9)}
+.key.op{background:var(--key-op-bg);color:var(--key-op-text);font-weight:700}
+.key.fn{background:var(--key-fn-bg);color:var(--key-fn-text);font-size:16px;font-weight:650}
+.key.cu{background:var(--key-cu-bg);color:var(--key-cu-text);font-size:17px;font-weight:650}
+.key.nav{background:var(--key-nav-bg);font-size:18px}
+.key.danger{background:var(--key-danger-bg);color:var(--key-danger-text);font-weight:700;font-size:18px}
+.key.eq{background:var(--primary);color:#fff;font-weight:700}
+.key.add{background:transparent;border:2px dashed var(--border);box-shadow:none;color:var(--text-2);font-size:14px}
+
+/* OVERLAYS */
+.overlay{position:fixed;inset:0;background:var(--overlay);z-index:60;opacity:0;pointer-events:none;transition:opacity .25s}
+.overlay.open{opacity:1;pointer-events:auto}
+
+/* SIDEBAR */
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:min(86vw,340px);background:var(--sidebar);z-index:61;transform:translateX(-102%);transition:transform .28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:2px 0 14px rgba(0,0,0,.2)}
+.sidebar.open{transform:none}
+.sidebar-header{background:var(--primary);color:#fff;padding:calc(18px + var(--safe-top)) 16px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+html[data-theme="dark"] .sidebar-header,html[data-theme="black"] .sidebar-header{background:color-mix(in srgb,var(--primary) 32%,#101210)}
+.sidebar-header .logo{width:42px;height:42px;border-radius:11px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px}
+.sidebar-header-title{font-size:20px;font-weight:600}
+.sidebar-header-sub{font-size:12px;opacity:.9}
+.sidebar-content{flex:1;overflow-y:auto;padding:8px 0 calc(12px + var(--safe-bottom))}
+.side-item{width:100%;border:none;background:none;text-align:left;padding:12px 18px;font-size:15px;color:var(--text);display:flex;align-items:center;gap:16px;cursor:pointer;min-height:48px}
+.side-item:active{background:rgba(0,0,0,.07)}
+.side-item .ic{width:24px;text-align:center;font-size:18px}
+.side-section{padding:14px 18px 6px;font-size:12px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.7px}
+.search-wrap{padding:4px 14px 6px}
+.search{width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:15px;outline:none;-webkit-user-select:text;user-select:text;font-family:inherit}
+.search:focus{border-color:var(--primary)}
+.file{display:flex;align-items:center;cursor:pointer;min-height:56px;padding-left:18px;border-right:4px solid transparent}
+.file:active{background:rgba(0,0,0,.07)}
+.file.active{background:color-mix(in srgb,var(--primary) 18%,transparent);border-right-color:var(--primary)}
+.file-info{flex:1;min-width:0;padding:8px 0}
+.file-title{font-size:15px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-sub{font-size:12px;color:var(--text-2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-more{border:none;background:none;color:var(--text-2);width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%;cursor:pointer;flex-shrink:0}
+.empty-note{padding:10px 18px;color:var(--text-2);font-size:14px}
+
+/* SETTINGS PAGES (styled like the classic CalcNote settings) */
+.page{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;background:#303030;color:#ECECEC;transform:translateX(100%);transition:transform .22s cubic-bezier(.4,0,.2,1);visibility:hidden}
+html[data-theme="black"] .page{background:#000}
+.page.open{transform:none;visibility:visible}
+.page-header{display:flex;align-items:center;gap:6px;height:calc(var(--header-h) + var(--safe-top));padding:var(--safe-top) 6px 0;flex-shrink:0;background:#212121;color:#fff}
+.page-title{font-size:19px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.page-body{flex:1;overflow-y:auto;padding:4px 0 calc(28px + var(--safe-bottom))}
+.p-section{padding:22px 16px 8px 72px;font-size:15px;color:#80CBC4;font-weight:500}
+.p-section:first-child{padding-top:14px}
+.p-sep{height:1px;background:#454545;margin:10px 0 0}
+.p-item{display:flex;align-items:center;gap:18px;padding:12px 16px;min-height:62px;width:100%;border:none;background:none;color:inherit;text-align:left;cursor:pointer;font-size:16px}
+button.p-item:active,label.p-item:active{background:rgba(255,255,255,.07)}
+.p-item .p-ic{width:38px;flex-shrink:0;text-align:center;font-size:24px;color:#BDBDBD;display:flex;justify-content:center}
+.p-item .p-ic svg{width:32px;height:32px;fill:#BDBDBD}
+.p-item .p-txt{flex:1;min-width:0}
+.p-item .p-sub{display:block;font-size:13px;color:#A8A8A8;margin-top:3px;line-height:1.35}
+.p-item.col{flex-direction:column;align-items:stretch;gap:10px}
+.p-item.col .p-row{display:flex;align-items:center;gap:18px}
+.p-ctrl{padding-left:56px}
+.p-chips{display:flex;gap:7px;flex-wrap:wrap}
+.p-chip{border:1.5px solid #5A5A5A;background:#3A3A3A;color:#E0E0E0;border-radius:999px;padding:7px 13px;font-size:13.5px;font-weight:600;cursor:pointer}
+.p-chip.active{border-color:#80CBC4;background:rgba(128,203,196,.18);color:#B2DFDB}
+.p-sw{display:flex;gap:10px;flex-wrap:wrap}
+.swatch{width:36px;height:36px;border-radius:50%;border:3px solid transparent;cursor:pointer;box-shadow:0 0 0 1px rgba(255,255,255,.25) inset}
+.swatch.active{border-color:#fff;box-shadow:0 0 0 2px #80CBC4}
+.p-range{display:flex;align-items:center;gap:12px}
+.p-range input{flex:1;accent-color:#80CBC4}
+.p-range b{min-width:52px;text-align:right;font-weight:600;color:#B2DFDB}
+.switch{position:relative;display:inline-block;width:46px;height:26px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:#6B6B6B;transition:.2s;border-radius:26px;cursor:pointer}
+.slider:before{position:absolute;content:"";height:20px;width:20px;left:3px;top:3px;background:#fff;transition:.2s;border-radius:50%}
+.switch input:checked + .slider{background:#26A69A}
+.switch input:checked + .slider:before{transform:translateX(20px)}
+.p-text{width:100%;min-height:150px;background:#232323;color:#F1F1F1;border:1.5px solid #4A4A4A;border-radius:10px;padding:10px 12px;font:14px/1.5 ui-monospace,Menlo,Consolas,monospace;-webkit-user-select:text;user-select:text;outline:none;resize:vertical}
+.p-text:focus{border-color:#80CBC4}
+.p-btn{border:none;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:700;cursor:pointer;background:#26A69A;color:#fff}
+.p-btn.ghost{background:#3D3D3D;color:#E0E0E0}
+.p-btn.danger{background:#C62828}
+.p-note{font-size:13px;color:#B0B0B0;line-height:1.5;padding:4px 16px 4px 72px}
+.p-note.err{color:#EF9A9A}.p-note.ok{color:#A5D6A7}
+.list-ed{display:flex;flex-direction:column;gap:6px}
+.list-row{display:flex;align-items:center;gap:6px;background:#3A3A3A;border-radius:10px;padding:6px 6px 6px 12px;min-height:48px}
+.list-row .lr-main{flex:1;min-width:0;font-size:15px}
+.list-row .lr-sub{font-size:12px;color:#A8A8A8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list-row.off .lr-main{opacity:.45}
+.mini{border:none;background:#4A4A4A;color:#EEE;width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:16px;flex-shrink:0}
+.mini:disabled{opacity:.3}
+
+/* BOTTOM SHEET */
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:81;background:var(--surface);color:var(--text);border-radius:20px 20px 0 0;padding:8px 16px calc(18px + var(--safe-bottom));transform:translateY(105%);transition:transform .25s cubic-bezier(.4,0,.2,1);max-height:90vh;max-height:90dvh;overflow-y:auto;box-shadow:var(--shadow);visibility:hidden}
+.sheet.open{transform:none;visibility:visible}
+#sheetOverlay{z-index:80}
+.sheet-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:2px auto 12px}
+.sheet h3{font-size:18px;font-weight:600;margin:0 4px 8px}
+.sheet p.msg{font-size:14px;color:var(--text-2);margin:0 4px 8px;line-height:1.5;white-space:pre-wrap}
+.sheet label.lbl{display:block;font-size:13px;font-weight:600;color:var(--text-2);margin:14px 4px 6px}
+.sheet input[type=text],.sheet input[type=password],.sheet textarea{width:100%;padding:12px 4px 10px;font-size:17px;border:none;border-bottom:2px solid var(--border);border-radius:0;background:transparent;color:var(--text);font-family:inherit;outline:none;-webkit-appearance:none;-webkit-user-select:text;user-select:text}
+.sheet input:focus,.sheet textarea:focus{border-bottom-color:var(--primary)}
+.sheet textarea.bulk{min-height:52vh;border:1.5px solid var(--border);border-radius:10px;padding:10px;font:16px/1.55 var(--editor-font);resize:none}
+.sheet .hint{font-size:12.5px;color:var(--text-2);margin:8px 4px 0;line-height:1.5}
+.sheet .preview{font-size:14px;margin:8px 4px 0;font-weight:700;color:var(--strong)}
+.sheet .preview.err{color:var(--danger)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1.5px solid var(--border);background:var(--surface);color:var(--text);border-radius:10px;padding:9px 12px;font-size:13.5px;font-weight:600;cursor:pointer}
+.chip.active{border-color:var(--primary);background:color-mix(in srgb,var(--primary) 16%,transparent);color:var(--strong)}
+.mode-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.mode-grid .chip{padding:10px 4px;text-align:center}
+.sheet-actions{display:flex;gap:10px;margin-top:18px;justify-content:flex-end}
+.btn{padding:12px 18px;border-radius:12px;border:none;font-size:15px;font-weight:700;cursor:pointer;min-height:46px;flex:1}
+.btn.cancel{background:var(--surface-2);color:var(--text)}
+.btn.ok{background:var(--primary);color:#fff}
+.btn.danger{background:var(--danger);color:#fff}
+.btn:active{transform:scale(.98)}
+.sheet-actions.text .btn{flex:0 0 auto;background:none;color:var(--strong);text-transform:uppercase;letter-spacing:.5px;min-width:80px}
+.sheet-actions.text .btn.danger{color:var(--danger)}
+.menu-item{width:100%;display:flex;align-items:center;gap:14px;padding:12px 8px;font-size:15.5px;border:none;background:none;color:var(--text);cursor:pointer;border-radius:10px;text-align:left;min-height:48px}
+.menu-item:active{background:var(--surface-2)}
+.menu-item .ic{width:26px;text-align:center;font-size:18px}
+.menu-item .sub{display:block;font-size:12.5px;color:var(--text-2)}
+.menu-item.danger{color:var(--danger)}
+.help-table{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
+.help-table td{padding:8px 4px;border-bottom:1px solid var(--row-border);vertical-align:top}
+.help-table td:first-child{font-family:ui-monospace,Menlo,Consolas,monospace;white-space:nowrap}
+.help-table td:nth-child(2){text-align:right;color:var(--strong);font-weight:700;white-space:nowrap;padding-right:10px}
+.help-table td:last-child{color:var(--text-2);font-size:12.5px}
+.doc{font-size:14px;line-height:1.6;color:var(--text-2);white-space:pre-wrap;margin:0 4px}
+
+/* LOCK SCREEN */
+.lock{position:fixed;inset:0;z-index:200;background:var(--primary);color:#fff;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:calc(20px + var(--safe-top)) 20px calc(20px + var(--safe-bottom))}
+html[data-theme="dark"] .lock,html[data-theme="black"] .lock{background:#121412}
+.lock.open{display:flex}
+.lock h2{font-size:22px;font-weight:600}
+.lock-dots{display:flex;gap:16px;height:20px}
+.lock-dots span{width:16px;height:16px;border-radius:50%;border:2px solid #fff}
+.lock-dots span.on{background:#fff}
+.lock-dots.shake{animation:shake .35s}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.lock-pad{display:grid;grid-template-columns:repeat(3,76px);gap:14px}
+.lock-pad button{height:76px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:28px;cursor:pointer}
+.lock-pad button:active{background:rgba(255,255,255,.35)}
+.lock-pad button.txt{font-size:14px;background:none}
+.lock-forgot{background:none;border:none;color:#fff;opacity:.8;font-size:14px;text-decoration:underline;cursor:pointer}
+
+/* SHARE MODAL */
+.share-modal{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:90;display:none;flex-direction:column;align-items:center;justify-content:center;padding:calc(16px + var(--safe-top)) 16px calc(16px + var(--safe-bottom))}
+.share-modal.open{display:flex}
+.share-preview{max-width:100%;max-height:68vh;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,.5);background:#fff;object-fit:contain}
+.share-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;justify-content:center}
+.share-btn{padding:13px 18px;border-radius:12px;border:none;font-size:14px;font-weight:700;cursor:pointer;background:var(--primary);color:#fff;min-height:48px}
+.share-btn.secondary{background:#444}
+
+/* TOAST */
+.toast{position:fixed;left:50%;bottom:calc(var(--total-h) + var(--safe-bottom) + 20px);transform:translate(-50%,120px);background:#323532;color:#fff;padding:11px 20px;border-radius:24px;font-size:14px;font-weight:500;z-index:300;opacity:0;transition:transform .25s,opacity .25s;pointer-events:none;max-width:90vw;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+body.kp-open .toast{bottom:auto;top:calc(var(--header-h) + var(--safe-top) + 14px);transform:translate(-50%,-160px)}
+.toast.show,body.kp-open .toast.show{transform:translate(-50%,0);opacity:1}
+
+@media (min-width:768px){
+  .sheet{max-width:560px;margin:0 auto;left:20px;right:20px;bottom:20px;border-radius:20px}
+  .keypad{max-width:560px;width:100%;margin:0 auto;box-shadow:0 0 0 100vmax var(--keypad-bg);clip-path:inset(0 -100vmax)}
+  .page-body{max-width:820px;width:100%;margin:0 auto}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+<style id="userCss"></style>
+<script>/*MATHJS_INLINE*/</script>
+</head>
+<body class="separators">
+
+<header class="header">
+  <button class="icon-btn" id="btnMenu" aria-label="Menu"><svg class="i" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg></button>
+  <button class="header-title" id="headerTitle" title="Tap to rename">CalcNote Freedom</button>
+  <div id="toolbar"></div>
+  <div class="select-bar">
+    <button class="icon-btn" id="selClose" aria-label="Cancel selection"><svg class="i" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+    <div class="select-count" id="selCount">0 selected</div>
+    <button class="icon-btn" id="selAll" aria-label="Select all"><svg class="i" viewBox="0 0 24 24"><path d="M3 5h2V3c-1.1 0-2 .9-2 2zm0 8h2v-2H3v2zm4 8h2v-2H7v2zM3 9h2V7H3v2zm10-6h-2v2h2V3zm6 0v2h2c0-1.1-.9-2-2-2zM5 21v-2H3c0 1.1.9 2 2 2zm-2-4h2v-2H3v2zM9 3H7v2h2V3zm2 18h2v-2h-2v2zm8-8h2v-2h-2v2zm0 8c1.1 0 2-.9 2-2h-2v2zm0-12h2V7h-2v2zm0 8h2v-2h-2v2zm-4 4h2v-2h-2v2zm0-16h2V3h-2v2zM7 17h10V7H7v10zm2-8h6v6H9V9z"/></svg></button>
+    <button class="icon-btn" id="selCopy" aria-label="Copy selected"><svg class="i" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></button>
+    <button class="icon-btn" id="selDelete" aria-label="Delete selected"><svg class="i" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
+  </div>
+</header>
+
+<main class="workspace" id="workspace" aria-label="Calculation lines"></main>
+
+<div class="total-bar">
+  <div class="kb-switch" role="group" aria-label="Keyboard">
+    <button id="btnKp123" aria-label="Calculator keypad">123</button>
+    <button id="btnKpABC" aria-label="Phone keyboard">ABC</button>
+    <button id="btnKpToggle" aria-label="Toggle keypad"><svg class="i" viewBox="0 0 24 24"><path d="M20 5H4c-1.1 0-1.99.9-1.99 2L2 17c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 2H5v-2h2v2zm0-3H5V8h2v2zm9 7H8v-2h8v2zm0-4h-2v-2h2v2zm0-3h-2V8h2v2zm3 3h-2v-2h2v2zm0-3h-2V8h2v2z"/></svg></button>
+  </div>
+  <button class="total-right" id="totalBtn" title="Tap to customise total">
+    <span class="total-label" id="totalLabel">Total:</span>
+    <span class="total-value" id="totalValue">0</span>
+    <span class="total-mode" id="totalMode"></span>
+  </button>
+</div>
+
+<div class="keypad" id="keypad" aria-label="Calculator keypad">
+  <div class="keypad-tabs">
+    <button class="keypad-tab active" data-tab="basic">123</button>
+    <button class="keypad-tab" data-tab="sci">ƒ(x)</button>
+    <button class="keypad-tab" data-tab="custom">★ Keys</button>
+    <button class="keypad-mini" id="btnAngle" title="Degree / Radian">DEG</button>
+    <button class="keypad-mini close" id="btnKpClose" aria-label="Hide keypad"><svg class="i" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+  </div>
+  <div class="keypad-grid" id="keypadGrid"></div>
+</div>
+
+<div class="overlay" id="sidebarOverlay"></div>
+<nav class="sidebar" id="sidebar" aria-label="Notes">
+  <div class="sidebar-header">
+    <div class="logo">=</div>
+    <div><div class="sidebar-header-title">CalcNote Freedom</div><div class="sidebar-header-sub">Notepad calculator · works offline</div></div>
+  </div>
+  <div class="sidebar-content">
+    <button class="side-item" id="sideNew"><span class="ic">＋</span>New file</button>
+    <div class="side-section" id="fileCount">Saved files (0)</div>
+    <div class="search-wrap"><input class="search" id="fileSearch" type="search" placeholder="Search files…" autocomplete="off"></div>
+    <div id="fileList"></div>
+    <div class="side-section">Actions</div>
+    <div id="sideActions"></div>
+  </div>
+</nav>
+
+<div id="pages"></div>
+
+<div class="overlay" id="sheetOverlay"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+
+<div class="share-modal" id="shareModal">
+  <img id="sharePreview" class="share-preview" alt="Note preview">
+  <div class="share-actions">
+    <button class="share-btn" id="btnDoShare">📤 Share</button>
+    <button class="share-btn secondary" id="btnDownload">⬇ Save</button>
+    <button class="share-btn secondary" id="btnShareClose">✕ Close</button>
+  </div>
+</div>
+
+<div class="lock" id="lock">
+  <h2>CalcNote Freedom</h2>
+  <div id="lockMsg">Enter PIN</div>
+  <div class="lock-dots" id="lockDots"></div>
+  <div class="lock-pad" id="lockPad"></div>
+  <button class="lock-forgot" id="lockForgot">Forgot PIN?</button>
+</div>
+
+<input type="file" id="importInput" accept=".json,application/json" hidden>
+<input type="file" id="importSettingsInput" accept=".json,application/json" hidden>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   CalcNote Freedom 3 – notepad calculator
+   ===================================================================== */
+const APP = { name: 'CalcNote Freedom', version: '3.0.0', repo: 'https://github.com/mahi85180/calcnote-freedom' };
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const el = (tag, props = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (k === 'class') n.className = v;
+    else if (k === 'text') n.textContent = v;
+    else if (k === 'html') n.innerHTML = v;
+    else if (k.startsWith('on') && typeof v === 'function') n.addEventListener(k.slice(2), v);
+    else if (v !== undefined && v !== null && v !== false) n.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of kids) if (c != null && c !== false) n.append(c);
+  return n;
+};
+const ICON = {
+  undo: 'M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z',
+  redo: 'M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z',
+  add: 'M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z',
+  save: 'M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z',
+  settings: 'M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z',
+  share: 'M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z',
+  copy: 'M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z',
+  more: 'M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z',
+  back: 'M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z',
+  text: 'M14 17H4v2h10v-2zm6-8H4v2h16V9zM4 15h16v-2H4v2zM4 5v2h16V5H4z',
+  keyboard: 'M20 5H4c-1.1 0-1.99.9-1.99 2L2 17c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 2H5v-2h2v2zm0-3H5V8h2v2zm9 7H8v-2h8v2zm0-4h-2v-2h2v2zm0-3h-2V8h2v2zm3 3h-2v-2h2v2zm0-3h-2V8h2v2z',
+  newline: 'M19 7v4H5.83l3.58-3.59L8 6l-6 6 6 6 1.41-1.41L5.83 13H21V7z',
+  select: 'M3 5h2V3c-1.1 0-2 .9-2 2zm0 8h2v-2H3v2zm4 8h2v-2H7v2zM3 9h2V7H3v2zm10-6h-2v2h2V3zm6 0v2h2c0-1.1-.9-2-2-2zM5 21v-2H3c0 1.1.9 2 2 2zm-2-4h2v-2H3v2zM9 3H7v2h2V3zm2 18h2v-2h-2v2zm8-8h2v-2h-2v2zm0 8c1.1 0 2-.9 2-2h-2v2zm0-12h2V7h-2v2zm0 8h2v-2h-2v2zm-4 4h2v-2h-2v2zm0-16h2V3h-2v2z',
+  theme: 'M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z',
+  image: 'M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z',
+  phone: 'M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z',
+  calc: 'M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5.97 4.06L14.09 6l1.41 1.41L16.91 6l1.06 1.06-1.41 1.41 1.41 1.41-1.06 1.06-1.41-1.4-1.41 1.41-1.06-1.06 1.41-1.41-1.41-1.42zm-6.78.66h5v1.5h-5v-1.5zM11.5 16h-2v2H8v-2H6v-1.5h2v-2h1.5v2h2V16zm6.5 1.25h-5v-1.5h5v1.5zm0-2.5h-5v-1.5h5v1.5z',
+  edit: 'M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 0 0 0-1.41l-2.34-2.34a.996.996 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z',
+  palette: 'M12 3a9 9 0 0 0 0 18c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z',
+  puzzle: 'M20.5 11H19V7c0-1.1-.9-2-2-2h-4V3.5a2.5 2.5 0 0 0-5 0V5H4c-1.1 0-1.99.9-1.99 2v3.8H3.5c1.49 0 2.7 1.21 2.7 2.7s-1.21 2.7-2.7 2.7H2V20c0 1.1.9 2 2 2h3.8v-1.5c0-1.49 1.21-2.7 2.7-2.7 1.49 0 2.7 1.21 2.7 2.7V22H17c1.1 0 2-.9 2-2v-4h1.5a2.5 2.5 0 0 0 0-5z',
+  toggles: 'M17 7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h10c2.76 0 5-2.24 5-5s-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z',
+  shield: 'M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z',
+  import: 'M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z',
+  file: 'M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z',
+  send: 'M2.01 21L23 12 2.01 3 2 10l15 2-15 2z',
+  help: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z',
+  lock: 'M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z',
+  award: 'M12 1l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 14.3 6.8 17.1l1-5.8L3.5 7.2l5.9-.9z',
+  wrench: 'M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z',
+  star: 'M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z',
+  menu: 'M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z'
+};
+const svg = (name, size) => `<svg class="i" viewBox="0 0 24 24"${size ? ` style="width:${size}px;height:${size}px"` : ''}><path d="${ICON[name] || ICON.star}"/></svg>`;
+
+/* ---------------- safe localStorage ---------------- */
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+
+/* ---------------- Native bridge (Android app via Capacitor) ---------------- */
+const Native = {
+  get on() { try { return !!(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform()); } catch (e) { return false; } },
+  p(name) { try { return this.on && Capacitor.Plugins ? Capacitor.Plugins[name] || null : null; } catch (e) { return null; } },
+  blobToB64(blob) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1] || ''); r.onerror = rej; r.readAsDataURL(blob); }); },
+  async write(name, blob, dir) {
+    const fs = this.p('Filesystem'); if (!fs) throw new Error('no fs');
+    const data = await this.blobToB64(blob);
+    const r = await fs.writeFile({ path: (dir === 'CACHE' ? '' : 'CalcNote Freedom/') + name, data, directory: dir, recursive: true });
+    return r.uri;
+  },
+  async shareFile(name, blob, title) {
+    const sh = this.p('Share'); const uri = await this.write(name, blob, 'CACHE');
+    if (sh) await sh.share({ title, files: [uri], dialogTitle: title });
+  },
+  async saveFile(name, blob) {
+    try { await this.write(name, blob, 'DOCUMENTS'); return 'Documents/CalcNote Freedom/' + name; }
+    catch (e) { await this.shareFile(name, blob, name); return null; }
+  },
+  async shareText(title, text) { const sh = this.p('Share'); if (!sh) return false; await sh.share({ title, text, dialogTitle: title }); return true; },
+  haptic() { const h = this.p('Haptics'); if (h) { h.impact({ style: 'LIGHT' }).catch(() => {}); return true; } return false; },
+  bars(dark) { const sb = this.p('SystemBars'); if (sb) sb.setStyle({ style: dark ? 'DARK' : 'LIGHT' }).catch(() => {}); }
+};
+
+/* ---------------- Storage: IndexedDB (same DB as v1/v2 → old notes still load) ---------------- */
+const Store = (() => {
+  const DB = 'CalcNoteDB', OS = 'documents';
+  const mem = new Map();
+  let p = null;
+  function open(version) {
+    return new Promise(resolve => {
+      let req;
+      try { req = version ? indexedDB.open(DB, version) : indexedDB.open(DB); } catch (e) { return resolve(null); }
+      req.onupgradeneeded = () => { const d = req.result; if (!d.objectStoreNames.contains(OS)) d.createObjectStore(OS); };
+      req.onsuccess = () => {
+        const d = req.result;
+        if (!d.objectStoreNames.contains(OS)) { const v = d.version + 1; d.close(); open(v).then(resolve); return; }
+        d.onversionchange = () => d.close();
+        resolve(d);
+      };
+      req.onerror = () => resolve(null);
+      req.onblocked = () => resolve(null);
+    });
+  }
+  const db = () => (p = p || (typeof indexedDB === 'undefined' ? Promise.resolve(null) : open()));
+  const lk = k => 'calcnote_db_' + k;
+  function tx(d, mode, fn) {
+    return new Promise((res, rej) => {
+      const t = d.transaction(OS, mode); const s = t.objectStore(OS); let out;
+      const r = fn(s); if (r) r.onsuccess = () => { out = r.result; };
+      t.oncomplete = () => res(out); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error);
+    });
+  }
+  return {
+    async kind() { return (await db()) ? 'IndexedDB' : 'localStorage'; },
+    async get(k) {
+      const d = await db();
+      if (d) { try { const v = await tx(d, 'readonly', s => s.get(k)); return v === undefined ? null : v; } catch (e) {} }
+      try { const v = localStorage.getItem(lk(k)); if (v !== null) return JSON.parse(v); } catch (e) {}
+      return mem.has(k) ? mem.get(k) : null;
+    },
+    async set(k, v) {
+      const d = await db();
+      if (d) { try { await tx(d, 'readwrite', s => { s.put(v, k); }); return; } catch (e) {} }
+      try { localStorage.setItem(lk(k), JSON.stringify(v)); return; } catch (e) {}
+      mem.set(k, v);
+    },
+    async remove(k) {
+      const d = await db();
+      if (d) { try { await tx(d, 'readwrite', s => { s.delete(k); }); } catch (e) {} }
+      try { localStorage.removeItem(lk(k)); } catch (e) {}
+      mem.delete(k);
+    },
+    async clear() {
+      const d = await db();
+      if (d) { try { await tx(d, 'readwrite', s => { s.clear(); }); } catch (e) {} }
+      mem.clear();
+    }
+  };
+})();
+
+/* ---------------- Settings (everything is customisable) ---------------- */
+const DEFAULT_KEYS = [
+  { l: '00', i: '00' }, { l: '000', i: '000' }, { l: '₹', i: '₹' }, { l: ':', i: ': ' },
+  { l: '=', i: ' = ' }, { l: 'sum', i: 'sum' }, { l: 'avg', i: 'avg' }, { l: 'ans', i: 'ans' },
+  { l: 'GST 18%', i: ' + 18%' }, { l: '½', i: ' / 2' }, { l: 'round', i: 'round({c}, 2)' }, { l: 'x', i: ' x ' }
+];
+const DEFAULTS = {
+  theme: 'light', accent: 'green', opColor: 'orange', font: 'system', italic: false, fontSize: 20, resultBold: false, resultColor: 'text',
+  lineNumbers: true, divider: true, separators: false, resultAlign: 'left', resultWidth: 36, highlightLine: true,
+  showTotalBar: true, totalModeHint: true, toolbar: ['undo', 'new', 'save', 'settings'], keepAwake: false,
+  syntax: true, autoBrackets: false, tapCopy: true, lineMenu: true, swipe: true, pasteSplit: true, undoEnabled: true, copyFormat: 'lines',
+  angle: 'deg', numFormat: 'in', decimals: 'auto', labelVars: true, excludeAssign: true, units: true, sumKeyword: true,
+  xMultiply: true, currency: true, defaultTotal: 'sum',
+  keypadEnabled: true, kpStart: false, vibrate: true, keySound: false, kpHeight: 'normal', kpOrder: '789',
+  sciTab: true, customTab: true, customKeys: DEFAULT_KEYS,
+  sideActions: ['copy', 'text', 'select', 'image', 'sharetext', 'csv', 'newline', 'redo', 'clear', 'settings', 'help'],
+  lock: false, lockDelay: 0, pinHash: '', pinSalt: '',
+  extensions: '// Your own functions & constants – available in every note\n// gst(x) = x * 1.18\n// usd = 83.5\n',
+  customCss: ''
+};
+const SKEY = 'cnf_settings';
+const settings = (() => {
+  let s = {};
+  try { s = JSON.parse(LS.get(SKEY, '{}')) || {}; } catch (e) { s = {}; }
+  if (!LS.get(SKEY, null)) {                    // migrate v2 keys
+    const m = { theme: 'calcnote_theme', angle: 'calcnote_angle', numFormat: 'calcnote_numformat', decimals: 'calcnote_decimals' };
+    for (const [k, lk] of Object.entries(m)) { const v = LS.get(lk, null); if (v) s[k] = v; }
+    const fs = parseInt(LS.get('calcnote_fontsize', ''), 10); if (fs) s.fontSize = fs;
+  }
+  const out = Object.assign({}, DEFAULTS, s);
+  if (!Array.isArray(out.customKeys)) out.customKeys = DEFAULT_KEYS;
+  if (!Array.isArray(out.toolbar)) out.toolbar = DEFAULTS.toolbar;
+  if (!Array.isArray(out.sideActions)) out.sideActions = DEFAULTS.sideActions;
+  return out;
+})();
+function persistSettings() { LS.set(SKEY, JSON.stringify(settings)); }
+const CALC_KEYS = new Set(['angle', 'numFormat', 'decimals', 'labelVars', 'excludeAssign', 'units', 'sumKeyword', 'xMultiply', 'currency', 'extensions']);
+function setSetting(key, value) {
+  settings[key] = value; persistSettings();
+  if (key === 'numFormat' || key === 'decimals') fmtCache.clear();
+  applySettings();
+  if (CALC_KEYS.has(key)) recalc(true);
+}
+
+/* ---------------- Math engine ---------------- */
+try { math.import({ import: () => { throw new Error('disabled'); }, createUnit: () => { throw new Error('disabled'); } }, { override: true }); } catch (e) {}
+
+const Engine = (() => {
+  const AGG = { sum: 'sum', total: 'sum', subtotal: 'sum', 'sub total': 'sum', avg: 'avg', average: 'avg', count: 'count' };
+  const compiled = new Map(); const FAIL = {};
+  function compile(expr) {
+    let c = compiled.get(expr);
+    if (c === undefined) { try { c = math.compile(expr); } catch (e) { c = FAIL; } if (compiled.size > 4000) compiled.clear(); compiled.set(expr, c); }
+    return c;
+  }
+  function preprocess(s, o = {}) {
+    s = s.replace(/[   ]/g, ' ');
+    s = s.replace(/√\s*(\d+(?:\.\d+)?)/g, 'sqrt($1)').replace(/√/g, 'sqrt');
+    s = s.replace(/×/g, '*').replace(/÷/g, '/').replace(/[−–]/g, '-').replace(/π/g, 'pi');
+    if (o.xMultiply !== false) s = s.replace(/([\d.)])\s*[xX]\s*(?=[\d.(])/g, '$1*');
+    if (o.currency !== false) { s = s.replace(/[₹$€£¥]/g, ''); s = s.replace(/\b(?:rs|inr)\.?\s*(?=\d)/gi, ''); }
+    s = s.replace(/%\s*of\b/gi, '% *');
+    if (!/[(\[]/.test(s)) s = s.replace(/(\d),(?=\d)/g, '$1');
+    s = s.replace(/=\s*$/, '');
+    return s.trim();
+  }
+  function classify(r, cand, o) {
+    const t = math.typeOf(r);
+    if (t === 'number') { if (Number.isFinite(r)) return { kind: 'num', value: r }; if (Number.isNaN(r)) return null; return { kind: 'other', display: r > 0 ? '∞' : '-∞' }; }
+    if (t === 'ResultSet') return r.entries && r.entries.length ? classify(r.entries[r.entries.length - 1], cand, o) : null;
+    if (t === 'boolean') return { kind: 'other', display: r ? 'true' : 'false' };
+    if (t === 'Unit') { if (o.units === false || r.value === null || !/\d/.test(cand)) return null; return { kind: 'other', display: math.format(r, { precision: 10 }) }; }
+    if (t === 'BigNumber' || t === 'Fraction') { const n = math.number(r); return Number.isFinite(n) ? { kind: 'num', value: n } : null; }
+    if (t === 'Complex' || t === 'DenseMatrix' || t === 'SparseMatrix' || t === 'Array') return { kind: 'other', display: math.format(r, { precision: 10 }) };
+    return null;
+  }
+  const WORD_OPS = new Set(['mod', 'to', 'in', 'and', 'or', 'not', 'xor', 'of']);
+  function tryEval(expr, scope, o) {
+    if (!expr) return null;
+    const lead = expr.match(/^([A-Za-z_][A-Za-z0-9_]*)\s+[\d.]/);
+    if (lead && !WORD_OPS.has(lead[1])) return null;       // "rent 700" = label + number, never rent×700
+    const c = compile(expr);
+    if (c === FAIL) return null;
+    try { return classify(c.evaluate(scope), expr, o); } catch (e) { return null; }
+  }
+  function evalWithLabel(text, scope, userVars, o) {
+    const whole = tryEval(text, scope, o);
+    if (whole) return { r: whole, label: '' };
+    const tokens = text.split(/\s+/).filter(Boolean); const n = tokens.length; let tries = 0;
+    for (let len = n - 1; len >= 1; len--) {
+      for (let start = n - len; start >= 0; start--) {
+        if (++tries > 90) return null;
+        const end = start + len;
+        const cand = tokens.slice(start, end).join(' ');
+        const lbl = tokens.slice(0, start).join(' '), tail = tokens.slice(end).join(' ');
+        if (/[+\-*\/^(,=×÷]$/.test(lbl) || /^[+\-*\/^),=×÷!%]/.test(tail)) continue;
+        if (!/\d/.test(cand) && !(len === 1 && userVars.has(cand))) continue;
+        const r = tryEval(cand, scope, o);
+        if (r) return { r, label: lbl };
+      }
+    }
+    return null;
+  }
+  function degScope() {
+    const d = Math.PI / 180; const s = {};
+    ['sin', 'cos', 'tan', 'sec', 'csc', 'cot'].forEach(f => { s[f] = x => (typeof x === 'number' ? math[f](x * d) : math[f](x)); });
+    ['asin', 'acos', 'atan', 'asec', 'acsc', 'acot'].forEach(f => { s[f] = x => { const r = math[f](x); return typeof r === 'number' ? r / d : r; }; });
+    s.atan2 = (y, x) => math.atan2(y, x) / d;
+    return s;
+  }
+  const IDENT = /^[A-Za-z_][A-Za-z0-9_]*$/;
+  const RESERVED = new Set(['ans', 'prev', 'total', 'sum', 'avg', 'count', 'e', 'i', 'pi', 'to', 'in', 'mod', 'of']);
+
+  /** Load user extensions (functions / constants) into scope. Returns per-line status. */
+  function loadExtensions(src, scope, userVars, o) {
+    const status = [];
+    String(src || '').split('\n').forEach((line, i) => {
+      const t = line.trim();
+      if (!t || t.startsWith('//') || t.startsWith('#')) return;
+      const name = (t.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*(?:\(|=)/) || [])[1];
+      const c = compile(preprocess(t, o));
+      if (c === FAIL || !name) { status.push({ line: i + 1, ok: false, msg: 'Cannot understand this line' }); return; }
+      try { c.evaluate(scope); userVars.add(name); status.push({ line: i + 1, ok: true, name }); }
+      catch (e) { status.push({ line: i + 1, ok: false, msg: e.message }); }
+    });
+    return status;
+  }
+
+  function run(texts, o = {}) {
+    const scope = o.angle === 'deg' ? degScope() : {};
+    const userVars = new Set();
+    const extStatus = loadExtensions(o.extensions, scope, userVars, o);
+    const lines = []; let block = []; let last;
+    texts.forEach((raw, idx) => {
+      const lineNo = idx + 1;
+      let text = String(raw || '').replace(/[\r\n]+/g, ' ').trim();
+      const out = { kind: 'empty', value: null, display: '', countable: false, label: '' };
+      lines.push(out);
+      if (!text) { block = []; return; }
+      if (/^(\/\/|#)/.test(text)) { out.kind = 'comment'; return; }
+      text = text.replace(/\s\/\/.*$/, '').trim();
+      if (last !== undefined) { scope.ans = last; scope.prev = last; } else { delete scope.ans; delete scope.prev; }
+      let label = '', body = text;
+      const colon = text.match(/^([^:]*[A-Za-z\u0080-￿][^:]*?)\s*:\s*(.*)$/);
+      if (colon) { label = colon[1].trim(); body = colon[2].trim(); if (!body) { out.kind = 'label'; out.label = label; return; } }
+      const kw = body.toLowerCase().replace(/\s+/g, ' ');
+      if (o.sumKeyword !== false && AGG[kw]) {
+        const type = AGG[kw]; let v = 0;
+        if (type === 'sum') v = block.reduce((a, b) => a + b, 0);
+        else if (type === 'avg') v = block.length ? block.reduce((a, b) => a + b, 0) / block.length : 0;
+        else v = block.length;
+        Object.assign(out, { kind: 'num', value: v, agg: true, label });
+        finish(out, lineNo); return;
+      }
+      const expr = preprocess(body, o);
+      const assign = expr.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*(?:\([^)]*\))?\s*=(?!=)/);
+      let res;
+      if (assign) { const r = tryEval(expr, scope, o); if (r) { res = { r, label: '' }; out.assign = true; userVars.add(assign[1]); } else if (/\(/.test(expr.split('=')[0])) { try { compile(expr).evaluate(scope); userVars.add(assign[1]); out.kind = 'other'; out.display = 'ƒ'; out.label = assign[1]; return; } catch (e) {} } }
+      else res = evalWithLabel(expr, scope, userVars, o);
+      if (!res) { out.kind = 'label'; out.label = text; return; }
+      label = [label, res.label].filter(Boolean).join(' ');
+      if (res.r.kind === 'num') {
+        Object.assign(out, { kind: 'num', value: res.r.value, label });
+        if (o.labelVars !== false && label && IDENT.test(label) && !RESERVED.has(label) && !(label in math) && !/^(line|row)\d+$/.test(label)) { scope[label] = res.r.value; userVars.add(label); }
+        finish(out, lineNo);
+      } else Object.assign(out, { kind: 'other', display: res.r.display, label });
+    });
+    function finish(out, lineNo) {
+      scope['line' + lineNo] = out.value; scope['row' + lineNo] = out.value;
+      last = out.value;
+      if (!out.agg) block.push(out.value);
+      out.countable = !out.agg && !(out.assign && o.excludeAssign !== false);
+    }
+    const values = lines.filter(l => l.kind === 'num' && l.countable).map(l => l.value);
+    const sum = values.reduce((a, b) => a + b, 0);
+    const t = o.total || { mode: 'sum' };
+    let total = 0, totalError = false;
+    switch (t.mode) {
+      case 'avg': total = values.length ? sum / values.length : 0; break;
+      case 'min': total = values.length ? Math.min(...values) : 0; break;
+      case 'max': total = values.length ? Math.max(...values) : 0; break;
+      case 'count': total = values.length; break;
+      case 'manual': total = parseFloat(t.manualValue) || 0; break;
+      case 'formula': {
+        const fs = Object.assign({}, scope, { total: sum, sum, avg: values.length ? sum / values.length : 0, count: values.length });
+        const f = preprocess(String(t.formula || ''), o);
+        const r = f ? tryEval(f, fs, o) : null;
+        if (r && r.kind === 'num') total = r.value; else { total = 0; totalError = !!f; }
+        break;
+      }
+      default: total = sum;
+    }
+    return { lines, total, totalError, values, sum, vars: userVars, extStatus };
+  }
+  return { run, preprocess };
+})();
+const engineOpts = extra => Object.assign({
+  angle: settings.angle, labelVars: settings.labelVars, excludeAssign: settings.excludeAssign, units: settings.units,
+  sumKeyword: settings.sumKeyword, xMultiply: settings.xMultiply, currency: settings.currency, extensions: settings.extensions
+}, extra || {});
+
+/* ---------------- Number formatting ---------------- */
+const fmtCache = new Map();
+function clean(v) { let x = parseFloat(Number(v).toPrecision(12)); if (Object.is(x, -0)) x = 0; return x; }
+function fmtNum(v) {
+  if (!Number.isFinite(v)) return v > 0 ? '∞' : v < 0 ? '-∞' : '—';
+  const x = clean(v); const a = Math.abs(x);
+  if (a !== 0 && (a >= 1e15 || a < 1e-7)) return math.format(x, { notation: 'exponential', precision: 8 });
+  const key = settings.numFormat + '|' + settings.decimals;
+  let f = fmtCache.get(key);
+  if (!f) {
+    const auto = settings.decimals === 'auto'; const d = auto ? 10 : parseInt(settings.decimals, 10);
+    const loc = settings.numFormat === 'intl' ? 'en-US' : settings.numFormat === 'eu' ? 'de-DE' : 'en-IN';
+    try { f = new Intl.NumberFormat(loc, { maximumFractionDigits: d, minimumFractionDigits: auto ? 0 : d, useGrouping: settings.numFormat !== 'plain' }); }
+    catch (e) { f = { format: n => String(n) }; }
+    fmtCache.set(key, f);
+  }
+  return f.format(x);
+}
+const rawNum = v => String(clean(v));
+
+/* ---------------- Syntax highlighting ---------------- */
+const escHtml = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const TOKEN = /(\/\/.*$)|(\d[\d,]*(?:\.\d+)?(?:e[+-]?\d+)?%?|\.\d+%?)|([+\-*\/×÷^=()%!−,<>:[\]]|\bmod\b|\bof\b|\bto\b|\bin\b)|([A-Za-z_À-￿][\wÀ-￿]*)|(\s+)|([\s\S])/g;
+function highlightHTML(text, vars) {
+  if (!text) return '';
+  if (/^\s*(\/\/|#)/.test(text)) return `<span class="t-com">${escHtml(text)}</span>`;
+  let out = '', m; TOKEN.lastIndex = 0;
+  while ((m = TOKEN.exec(text))) {
+    const s = escHtml(m[0]);
+    if (m[1]) out += `<span class="t-com">${s}</span>`;
+    else if (m[2]) out += s;
+    else if (m[3]) out += `<span class="t-op">${s}</span>`;
+    else if (m[4]) {
+      const w = m[4]; const next = text.slice(TOKEN.lastIndex).trimStart()[0];
+      const isFn = next === '(' || (vars && vars.has(w) && !isLabelOnly(w)) || /^(sum|total|avg|average|count|ans|prev|pi|e|line\d+|row\d+)$/i.test(w) || (w in math && typeof math[w] === 'function' && next === '(');
+      out += `<span class="${isFn ? 't-fn' : 't-lbl'}">${s}</span>`;
+    }
+    else if (m[5]) out += m[5];
+    else out += `<span class="t-lbl">${s}</span>`;
+  }
+  return out;
+}
+let labelVarNames = new Set();
+const isLabelOnly = w => labelVarNames.has(w);
+function paintRow(row) {
+  const ed = edOf(row);
+  if (!settings.syntax) { if (ed.childElementCount) ed.textContent = ed.textContent; return; }
+  if (document.activeElement === ed) return;               // never repaint while typing (keeps IME & caret smooth)
+  const html = highlightHTML(ed.textContent, state.calc && state.calc.vars);
+  if (ed.innerHTML !== html) ed.innerHTML = html;
+}
+let paintedVarsKey = '';
+function paintAll(force) {
+  const key = state.calc ? [...state.calc.vars].sort().join(',') : '';
+  if (!force && key === paintedVarsKey) return;
+  paintedVarsKey = key;
+  rows().forEach(paintRow);
+}
+
+/* ---------------- App state ---------------- */
+const state = { fileId: null, title: '', files: [], total: defaultTotal(), active: null, keypadTab: 'basic', calc: null, dirty: false, loading: false, selecting: false };
+function defaultTotal() { return { label: 'Total', mode: settings.defaultTotal || 'sum', manualValue: 0, formula: '' }; }
+function normTotal(t) {
+  t = Object.assign({ label: 'Total', mode: 'sum', manualValue: 0, formula: '' }, t || {});
+  if (t.mode === 'auto' || !['sum', 'avg', 'min', 'max', 'count', 'manual', 'formula'].includes(t.mode)) t.mode = 'sum';
+  t.label = String(t.label || 'Total'); t.formula = String(t.formula || '');
+  return t;
+}
+const displayTitle = () => state.title || APP.name;
+const ws = $('#workspace');
+
+/* ---------------- Toast / clipboard / feedback ---------------- */
+let toastTimer = null;
+function toast(msg, ms = 2000) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), ms); }
+async function copyText(text) {
+  try { if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(text); return true; } } catch (e) {}
+  try { const ta = el('textarea', { style: 'position:fixed;top:-1000px;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); const ok = document.execCommand('copy'); ta.remove(); return ok; } catch (e) { return false; }
+}
+let audioCtx = null;
+function keyFeedback() {
+  if (settings.vibrate) { if (!Native.haptic() && navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} } }
+  if (settings.keySound) {
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.frequency.value = 1500; g.gain.value = .04; o.connect(g); g.connect(audioCtx.destination);
+      o.start(); g.gain.exponentialRampToValueAtTime(.0001, audioCtx.currentTime + .04); o.stop(audioCtx.currentTime + .05);
+    } catch (e) {}
+  }
+}
+
+/* ---------------- Overlay stack (back button / Esc) ---------------- */
+const Overlays = {
+  stack: [], ignore: 0, pendingBack: null,
+  push(name, closeFn) {
+    this.stack = this.stack.filter(o => o.name !== name);
+    this.stack.push({ name, closeFn });
+    if (this.stack.length === 1 && !Native.on) {
+      if (this.pendingBack) { clearTimeout(this.pendingBack); this.pendingBack = null; }
+      else { try { history.pushState({ cnf: 1 }, ''); } catch (e) {} }
+    }
+  },
+  remove(name) {
+    const i = this.stack.findIndex(o => o.name === name);
+    if (i < 0) return;
+    const [o] = this.stack.splice(i, 1);
+    o.closeFn();
+    if (this.stack.length === 0 && !this.pendingBack && !Native.on) {
+      this.pendingBack = setTimeout(() => { this.pendingBack = null; if (this.stack.length === 0) { this.ignore++; try { history.back(); } catch (e) { this.ignore--; } } }, 40);
+    }
+  },
+  has(name) { return this.stack.some(o => o.name === name); },
+  top() { return this.stack[this.stack.length - 1]; },
+  closeTop() { const o = this.top(); if (o) { this.remove(o.name); return true; } return false; }
+};
+window.addEventListener('popstate', () => {
+  if (Overlays.ignore > 0) { Overlays.ignore--; return; }
+  const o = Overlays.stack.pop();
+  if (o) { o.closeFn(); if (Overlays.stack.length) { try { history.pushState({ cnf: 1 }, ''); } catch (e) {} } }
+});
+
+/* ---------------- Bottom sheet + dialogs ---------------- */
+const Sheet = {
+  isOpen: false, onClose: null,
+  show(content, onClose) {
+    const s = $('#sheet');
+    const prev = this.onClose; this.onClose = null; if (prev) prev();
+    s.replaceChildren(el('div', { class: 'sheet-handle' }), content); s.scrollTop = 0;
+    this.onClose = onClose || null;
+    if (!this.isOpen) { this.isOpen = true; $('#sheetOverlay').classList.add('open'); s.classList.add('open'); Overlays.push('sheet', () => this._hide()); }
+  },
+  close() { if (this.isOpen) Overlays.remove('sheet'); },
+  _hide() { this.isOpen = false; $('#sheet').classList.remove('open'); $('#sheetOverlay').classList.remove('open'); const cb = this.onClose; this.onClose = null; if (cb) cb(); }
+};
+function dialogText({ title, message, label, value = '', placeholder = '', okText = 'OK', inputmode, type = 'text', textual = true }) {
+  return new Promise(resolve => {
+    const input = el('input', { type, placeholder, autocomplete: 'off', inputmode }); input.value = value;
+    const ok = () => { const v = input.value; Sheet.onClose = null; Sheet.close(); resolve(v); };
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); ok(); } });
+    Sheet.show(el('div', {},
+      el('h3', { text: title }), message ? el('p', { class: 'msg', text: message }) : null,
+      label ? el('label', { class: 'lbl', text: label }) : null, input,
+      el('div', { class: 'sheet-actions' + (textual ? ' text' : '') },
+        el('button', { class: 'btn cancel', text: 'Cancel', onclick: () => Sheet.close() }),
+        el('button', { class: 'btn ok', text: okText, onclick: ok }))), () => resolve(null));
+    setTimeout(() => { input.focus(); input.select(); }, 60);
+  });
+}
+function dialogConfirm({ title, message, okText = 'OK', danger = false }) {
+  return new Promise(resolve => {
+    const ok = () => { Sheet.onClose = null; Sheet.close(); resolve(true); };
+    Sheet.show(el('div', {},
+      el('h3', { text: title }), message ? el('p', { class: 'msg', text: message }) : null,
+      el('div', { class: 'sheet-actions text' },
+        el('button', { class: 'btn cancel', text: 'Cancel', onclick: () => Sheet.close() }),
+        el('button', { class: 'btn ' + (danger ? 'danger' : 'ok'), text: okText, onclick: ok }))), () => resolve(false));
+  });
+}
+function dialogMenu(title, items) {
+  return new Promise(resolve => {
+    const list = el('div', {});
+    items.filter(Boolean).forEach(it => list.append(el('button', {
+      class: 'menu-item' + (it.danger ? ' danger' : ''), 'data-key': it.key,
+      onclick: () => { Sheet.onClose = null; Sheet.close(); resolve(it.key); }
+    }, el('span', { class: 'ic', text: it.icon || '' }), el('span', {}, it.label, it.sub ? el('span', { class: 'sub', text: it.sub }) : null))));
+    Sheet.show(el('div', {}, title ? el('h3', { text: title }) : null, list), () => resolve(null));
+  });
+}
+
+/* ---------------- Rows / editor ---------------- */
+const rows = () => Array.from(ws.children);
+const edOf = row => row.children[1];
+const getText = ed => ed.textContent.replace(/[\r\n]+/g, ' ');
+const getTexts = () => rows().map(r => getText(edOf(r)));
+
+function makeRow(text = '') {
+  const row = el('div', { class: 'row' });
+  const num = el('button', { class: 'line-num', tabindex: '-1', 'aria-label': 'Line options' });
+  const ed = el('div', { class: 'line-editor', spellcheck: 'false', autocapitalize: 'off', autocomplete: 'off', autocorrect: 'off', enterkeyhint: 'next', role: 'textbox' });
+  try { ed.contentEditable = 'plaintext-only'; } catch (e) {}
+  if (ed.contentEditable !== 'plaintext-only') ed.contentEditable = 'true';
+  ed.setAttribute('inputmode', document.body.classList.contains('kp-open') ? 'none' : 'text');
+  ed.textContent = text;
+  row.append(num, ed, el('button', { class: 'line-result', tabindex: '-1' }));
+  return row;
+}
+function renumber() {
+  const rs = rows();
+  rs.forEach((r, i) => { const n = String(i + 1); if (r.firstChild.textContent !== n) r.firstChild.textContent = n; });
+  rs.forEach((r, i) => { const e = edOf(r); if (i === 0 && rs.length <= 2 && !e.textContent) e.dataset.ph = 'Type here…  e.g.  Milk 2 × 28'; else delete e.dataset.ph; });
+  const digits = String(rs.length).length;
+  document.documentElement.style.setProperty('--num-w', `calc(${Math.max(2, digits)} * 0.62em + 14px)`);
+}
+function renderRows(texts) {
+  const frag = document.createDocumentFragment();
+  (texts.length ? texts : ['']).forEach(t => frag.append(makeRow(t)));
+  ws.replaceChildren(frag); state.active = null; renumber();
+}
+function insertRowAfter(row, text = '') { const r = makeRow(text); if (row && row.parentNode === ws) row.after(r); else ws.append(r); renumber(); return r; }
+function selOffsets(ed) {
+  const sel = window.getSelection(); const len = ed.textContent.length;
+  if (!sel || !sel.rangeCount) return { start: len, end: len };
+  const r = sel.getRangeAt(0);
+  if (!ed.contains(r.startContainer)) return { start: len, end: len };
+  const pre = document.createRange(); pre.selectNodeContents(ed);
+  pre.setEnd(r.startContainer, r.startOffset); const start = pre.toString().length;
+  let end = start; if (ed.contains(r.endContainer)) { pre.setEnd(r.endContainer, r.endOffset); end = pre.toString().length; }
+  return { start, end };
+}
+function setCaret(ed, pos) {
+  if (document.activeElement !== ed) ed.focus({ preventScroll: true });
+  const sel = window.getSelection(); const range = document.createRange();
+  let rem = Math.max(0, pos), placed = false;
+  const walker = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let node;
+  while ((node = walker.nextNode())) { if (rem <= node.length) { range.setStart(node, rem); placed = true; break; } rem -= node.length; }
+  if (!placed) { range.selectNodeContents(ed); range.collapse(false); } else range.collapse(true);
+  sel.removeAllRanges(); sel.addRange(range);
+  state.active = ed; keepVisible(ed.parentNode);
+}
+function keepVisible(row) {
+  if (!row) return;
+  const a = ws.getBoundingClientRect(), b = row.getBoundingClientRect();
+  if (b.bottom > a.bottom - 8) ws.scrollTop += b.bottom - a.bottom + 16;
+  else if (b.top < a.top + 4) ws.scrollTop -= a.top - b.top + 8;
+}
+function activeEditor(create = true) {
+  if (state.active && state.active.isConnected) return state.active;
+  if (!create) return null;
+  const rs = rows(); state.active = edOf(rs[rs.length - 1]); return state.active;
+}
+const setEdText = (ed, t) => { ed.textContent = t; };
+
+function insertText(str) {
+  const ed = activeEditor();
+  const { start, end } = document.activeElement === ed ? selOffsets(ed) : { start: ed.textContent.length, end: ed.textContent.length };
+  const t = ed.textContent;
+  if (str.includes('\n')) {                                   // multi-line custom key
+    const parts = str.split('\n'); setEdText(ed, t.slice(0, start) + parts[0]);
+    let row = ed.parentNode;
+    parts.slice(1).forEach((p, i, arr) => { row = insertRowAfter(row, p + (i === arr.length - 1 ? t.slice(end) : '')); });
+    setCaret(edOf(row), parts[parts.length - 1].length); changed(true); return;
+  }
+  let caretAt = -1;
+  if (str.includes('{c}')) { caretAt = str.indexOf('{c}'); str = str.replace('{c}', ''); }
+  else if (settings.autoBrackets && /\($/.test(str) && t[end] !== ')') { str += ')'; caretAt = str.length - 1; }
+  setEdText(ed, t.slice(0, start) + str + t.slice(end));
+  setCaret(ed, start + (caretAt >= 0 ? caretAt : str.length));
+  changed();
+}
+function splitAtCaret(ed) {
+  const { start, end } = selOffsets(ed); const t = ed.textContent;
+  setEdText(ed, t.slice(0, start));
+  const r = insertRowAfter(ed.parentNode, t.slice(end));
+  setCaret(edOf(r), 0); changed(true); paintRow(ed.parentNode);
+}
+function mergeWithPrev(ed) {
+  const row = ed.parentNode, prev = row.previousElementSibling; if (!prev) return false;
+  const pe = edOf(prev); const pos = pe.textContent.length;
+  setEdText(pe, pe.textContent + ed.textContent); row.remove(); renumber(); setCaret(pe, pos); changed(true); return true;
+}
+function mergeWithNext(ed) {
+  const next = ed.parentNode.nextElementSibling; if (!next) return false;
+  const pos = ed.textContent.length; setEdText(ed, ed.textContent + edOf(next).textContent);
+  next.remove(); renumber(); setCaret(ed, pos); changed(true); return true;
+}
+function backspaceKey() {
+  const ed = activeEditor();
+  if (document.activeElement !== ed) setCaret(ed, ed.textContent.length);
+  const { start, end } = selOffsets(ed); const t = ed.textContent;
+  if (start !== end) { setEdText(ed, t.slice(0, start) + t.slice(end)); setCaret(ed, start); changed(); return; }
+  if (start === 0) { mergeWithPrev(ed); return; }
+  let s = start - 1; const code = t.charCodeAt(s);
+  if (code >= 0xDC00 && code <= 0xDFFF && s > 0) s--;
+  setEdText(ed, t.slice(0, s) + t.slice(start)); setCaret(ed, s); changed();
+}
+function moveCaret(dir) {
+  const ed = activeEditor();
+  if (document.activeElement !== ed) { setCaret(ed, ed.textContent.length); return; }
+  const { start, end } = selOffsets(ed);
+  if (dir < 0) { if (start !== end) return setCaret(ed, start); if (start > 0) return setCaret(ed, start - 1); const p = ed.parentNode.previousElementSibling; if (p) setCaret(edOf(p), edOf(p).textContent.length); }
+  else { if (start !== end) return setCaret(ed, end); if (end < ed.textContent.length) return setCaret(ed, end + 1); const n = ed.parentNode.nextElementSibling; if (n) setCaret(edOf(n), 0); }
+}
+function moveVertical(ed, dir) {
+  const target = dir < 0 ? ed.parentNode.previousElementSibling : ed.parentNode.nextElementSibling; if (!target) return;
+  const { start } = selOffsets(ed); const te = edOf(target); setCaret(te, Math.min(start, te.textContent.length));
+}
+function newLineAfterActive() { const ed = activeEditor(false); const r = insertRowAfter(ed ? ed.parentNode : null, ''); setCaret(edOf(r), 0); changed(true); }
+function clearRow() { const ed = activeEditor(); setEdText(ed, ''); setCaret(ed, 0); changed(true); }
+async function clearAll() {
+  if (!getTexts().some(t => t.trim())) return toast('Note is already empty');
+  const ok = await dialogConfirm({ title: 'Clear all lines?', message: 'Every line in this note will be removed. You can Undo it.', okText: 'Clear all', danger: true });
+  if (!ok) return;
+  History.commit(); renderRows(['']); changed(true); toast('Cleared · Undo to restore');
+}
+
+/* workspace events */
+ws.addEventListener('focusin', e => { if (e.target.classList.contains('line-editor')) state.active = e.target; });
+ws.addEventListener('focusout', e => { if (e.target.classList && e.target.classList.contains('line-editor')) { const row = e.target.parentNode; setTimeout(() => { if (row.isConnected) paintRow(row); }, 0); } });
+ws.addEventListener('input', e => {
+  const ed = e.target; if (!ed.classList || !ed.classList.contains('line-editor')) return;
+  if (ed.querySelector(':scope > :not(span), span span, br')) { const pos = selOffsets(ed).start; ed.textContent = ed.textContent; setCaret(ed, pos); }
+  changed();
+});
+ws.addEventListener('keydown', e => {
+  const ed = e.target; if (!ed.classList || !ed.classList.contains('line-editor') || e.isComposing) return;
+  const mod = e.ctrlKey || e.metaKey;
+  if (e.key === 'Enter') { e.preventDefault(); splitAtCaret(ed); }
+  else if (e.key === 'Backspace' && !mod) { const { start, end } = selOffsets(ed); if (start === 0 && end === 0) { e.preventDefault(); mergeWithPrev(ed); } }
+  else if (e.key === 'Delete' && !mod) { const { start, end } = selOffsets(ed); if (start === end && end === ed.textContent.length) { e.preventDefault(); mergeWithNext(ed); } }
+  else if (e.key === 'ArrowUp' && !e.shiftKey) { e.preventDefault(); moveVertical(ed, -1); }
+  else if (e.key === 'ArrowDown' && !e.shiftKey) { e.preventDefault(); moveVertical(ed, 1); }
+  else if (mod && e.key.toLowerCase() === 'a') {             // Ctrl+A twice = whole note
+    const { start, end } = selOffsets(ed);
+    if (start === 0 && end === ed.textContent.length) { e.preventDefault(); copyAll(); }
+  }
+});
+ws.addEventListener('beforeinput', e => {
+  const ed = e.target; if (!ed.classList || !ed.classList.contains('line-editor')) return;
+  const t = e.inputType;
+  if (t === 'insertParagraph' || t === 'insertLineBreak') { e.preventDefault(); splitAtCaret(ed); }
+  else if (t === 'deleteContentBackward') { const { start, end } = selOffsets(ed); if (start === 0 && end === 0 && ed.parentNode.previousElementSibling) { e.preventDefault(); mergeWithPrev(ed); } }
+  else if (t === 'historyUndo') { e.preventDefault(); History.undo(); }
+  else if (t === 'historyRedo') { e.preventDefault(); History.redo(); }
+  else if (t === 'insertFromDrop') e.preventDefault();
+  else if (t === 'insertText' && settings.autoBrackets && !e.isComposing) {
+    const { start, end } = selOffsets(ed); const txt = ed.textContent;
+    if (e.data === '(' && start === end && txt[end] !== ')') { e.preventDefault(); setEdText(ed, txt.slice(0, start) + '()' + txt.slice(end)); setCaret(ed, start + 1); changed(); }
+    else if (e.data === ')' && start === end && txt[end] === ')') { e.preventDefault(); setCaret(ed, start + 1); }
+  }
+});
+ws.addEventListener('paste', e => {
+  const ed = e.target.closest && e.target.closest('.line-editor'); if (!ed) return;
+  e.preventDefault();
+  const text = (e.clipboardData || window.clipboardData).getData('text/plain') || '';
+  let lines = text.replace(/\r\n?/g, '\n').split('\n');
+  if (!settings.pasteSplit) lines = [lines.join(' ')];
+  const { start, end } = selOffsets(ed); const t = ed.textContent;
+  if (lines.length === 1) { setEdText(ed, t.slice(0, start) + lines[0] + t.slice(end)); setCaret(ed, start + lines[0].length); changed(); return; }
+  const after = t.slice(end); setEdText(ed, t.slice(0, start) + lines[0]);
+  let row = ed.parentNode;
+  for (let i = 1; i < lines.length; i++) row = insertRowAfter(row, lines[i] + (i === lines.length - 1 ? after : ''));
+  setCaret(edOf(row), lines[lines.length - 1].length); changed(true); paintAll(true);
+  toast(`Pasted ${lines.length} lines`);
+});
+/* copying a selection that spans several lines keeps line breaks */
+document.addEventListener('copy', e => {
+  const sel = window.getSelection(); if (!sel || sel.isCollapsed || !sel.rangeCount) return;
+  const r = sel.getRangeAt(0); if (!ws.contains(r.commonAncestorContainer) && r.commonAncestorContainer !== ws) return;
+  const rs = rows().filter(row => sel.containsNode(row, true));
+  if (rs.length < 2) return;
+  const parts = rs.map(row => {
+    const ed = edOf(row); const part = document.createRange(); part.selectNodeContents(ed);
+    if (ed.contains(r.startContainer)) part.setStart(r.startContainer, r.startOffset);
+    if (ed.contains(r.endContainer)) part.setEnd(r.endContainer, r.endOffset);
+    return part.toString();
+  });
+  e.clipboardData.setData('text/plain', parts.join('\n')); e.preventDefault();
+});
+ws.addEventListener('click', e => {
+  const res = e.target.closest('.line-result');
+  if (res && res.textContent && !state.selecting) {
+    if (!settings.tapCopy) return;
+    const i = rows().indexOf(res.parentNode); const line = state.calc && state.calc.lines[i];
+    const v = line && line.kind === 'num' ? rawNum(line.value) : res.textContent;
+    copyText(v).then(ok => toast(ok ? `Copied ${v}` : 'Copy failed')); return;
+  }
+  const num = e.target.closest('.line-num');
+  if (num) { if (state.selecting) toggleSelect(num.parentNode); else if (settings.lineMenu) rowMenu(num.parentNode); return; }
+  if (state.selecting) { const row = e.target.closest('.row'); if (row) { e.preventDefault(); toggleSelect(row); } return; }
+  if (e.target === ws) { const last = rows().pop(); if (last) setCaret(edOf(last), edOf(last).textContent.length); }
+});
+/* long-press a line number → select mode */
+let lpTimer = null;
+ws.addEventListener('pointerdown', e => { const num = e.target.closest('.line-num'); if (!num || state.selecting) return; lpTimer = setTimeout(() => { lpTimer = null; startSelect(num.parentNode); suppressClick = true; }, 480); });
+['pointerup', 'pointercancel', 'pointerleave'].forEach(t => ws.addEventListener(t, () => { clearTimeout(lpTimer); lpTimer = null; }));
+let suppressClick = false;
+ws.addEventListener('click', e => { if (suppressClick) { suppressClick = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+
+/* ---------------- Multi-line select mode ---------------- */
+function startSelect(row) {
+  if (state.selecting) return;
+  state.selecting = true; document.body.classList.add('selecting');
+  if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  $$('.line-editor').forEach(e => e.setAttribute('contenteditable', 'false'));
+  if (row) row.classList.add('selected');
+  updateSelCount();
+  Overlays.push('select', endSelectNow);
+}
+function endSelectNow() {
+  state.selecting = false; document.body.classList.remove('selecting');
+  $$('.row.selected').forEach(r => r.classList.remove('selected'));
+  $$('.line-editor').forEach(e => { try { e.contentEditable = 'plaintext-only'; } catch (x) { e.contentEditable = 'true'; } if (e.contentEditable !== 'plaintext-only') e.contentEditable = 'true'; });
+}
+const endSelect = () => Overlays.remove('select');
+function toggleSelect(row) { row.classList.toggle('selected'); updateSelCount(); }
+function updateSelCount() { $('#selCount').textContent = `${$$('.row.selected').length} selected`; }
+$('#selClose').addEventListener('click', endSelect);
+$('#selAll').addEventListener('click', () => { const all = rows(); const every = all.every(r => r.classList.contains('selected')); all.forEach(r => r.classList.toggle('selected', !every)); updateSelCount(); });
+$('#selCopy').addEventListener('click', async () => {
+  const idx = rows().map((r, i) => r.classList.contains('selected') ? i : -1).filter(i => i >= 0);
+  if (!idx.length) return toast('Select some lines first');
+  const ok = await copyText(formatLines(idx, settings.copyFormat));
+  toast(ok ? `Copied ${idx.length} line${idx.length === 1 ? '' : 's'}` : 'Copy failed'); endSelect();
+});
+$('#selDelete').addEventListener('click', () => {
+  const sel = $$('.row.selected'); if (!sel.length) return toast('Select some lines first');
+  History.commit();
+  sel.forEach(r => r.remove()); if (!rows().length) ws.append(makeRow(''));
+  renumber(); state.active = null; endSelect(); changed(true); toast(`Deleted ${sel.length} line${sel.length === 1 ? '' : 's'} · Undo available`);
+});
+
+async function rowMenu(row) {
+  const idx = rows().indexOf(row); if (idx < 0) return;
+  const line = state.calc && state.calc.lines[idx];
+  const key = await dialogMenu(`Line ${idx + 1}`, [
+    { key: 'above', icon: '⤒', label: 'Insert line above' }, { key: 'below', icon: '⤓', label: 'Insert line below' },
+    { key: 'dup', icon: '⧉', label: 'Duplicate line' }, { key: 'up', icon: '↑', label: 'Move up' }, { key: 'down', icon: '↓', label: 'Move down' },
+    { key: 'copy', icon: '📋', label: 'Copy line' },
+    line && line.kind === 'num' ? { key: 'copyres', icon: '🔢', label: 'Copy result' } : null,
+    { key: 'select', icon: '☑️', label: 'Select lines…' },
+    { key: 'del', icon: '🗑', label: 'Delete line', danger: true }
+  ]);
+  if (!key || !row.isConnected) return;
+  const ed = edOf(row);
+  if (key === 'above') { const r = makeRow(''); row.before(r); renumber(); setCaret(edOf(r), 0); changed(true); }
+  else if (key === 'below') { const r = insertRowAfter(row, ''); setCaret(edOf(r), 0); changed(true); }
+  else if (key === 'dup') { const r = insertRowAfter(row, getText(ed)); paintRow(r); changed(true); }
+  else if (key === 'up') { const p = row.previousElementSibling; if (p) { p.before(row); renumber(); changed(true); } }
+  else if (key === 'down') { const n = row.nextElementSibling; if (n) { n.after(row); renumber(); changed(true); } }
+  else if (key === 'copy') copyText(getText(ed)).then(ok => toast(ok ? 'Line copied' : 'Copy failed'));
+  else if (key === 'copyres') { const v = rawNum(line.value); copyText(v).then(ok => toast(ok ? `Copied ${v}` : 'Copy failed')); }
+  else if (key === 'select') startSelect(row);
+  else if (key === 'del') { if (rows().length === 1) setEdText(ed, ''); else { row.remove(); renumber(); } state.active = null; changed(true); toast('Line deleted · Undo available'); }
+}
+
+/* ---------------- Calculation / render ---------------- */
+function recalc(repaint) {
+  const res = Engine.run(getTexts(), engineOpts({ total: state.total }));
+  state.calc = res;
+  labelVarNames = new Set(res.lines.filter(l => l.kind === 'num' && l.label && res.vars.has(l.label)).map(l => l.label));
+  const rs = rows();
+  res.lines.forEach((l, i) => {
+    const btn = rs[i].children[2];
+    let text = '', cls = 'line-result';
+    if (l.kind === 'num') { text = fmtNum(l.value); if (l.agg) cls += ' agg'; else if (!l.countable) cls += ' muted'; }
+    else if (l.kind === 'other') { text = l.display; cls += ' muted'; }
+    if (btn.textContent !== text) btn.textContent = text;
+    if (btn.className !== cls) btn.className = cls;
+  });
+  $('#totalLabel').textContent = state.total.label + ':';
+  $('#totalValue').textContent = res.totalError ? 'Error' : (state.total.mode === 'count' ? String(res.total) : fmtNum(res.total));
+  const modeNames = { sum: '', avg: 'avg', min: 'min', max: 'max', count: '#', manual: 'fixed', formula: 'ƒ' };
+  $('#totalMode').textContent = settings.totalModeHint ? (modeNames[state.total.mode] || '') : '';
+  paintAll(repaint);
+}
+function changed(structural = false) { recalc(); scheduleSave(); if (!settings.undoEnabled) return; if (structural) History.commit(); else History.schedule(); }
+
+/* ---------------- Undo / Redo ---------------- */
+const History = {
+  stack: [], idx: -1, timer: null,
+  snap() {
+    const ed = activeEditor(false); const rs = rows();
+    return { texts: getTexts(), focus: ed ? rs.indexOf(ed.parentNode) : -1, caret: ed && document.activeElement === ed ? selOffsets(ed).start : (ed ? ed.textContent.length : 0) };
+  },
+  reset() { clearTimeout(this.timer); this.timer = null; this.stack = [this.snap()]; this.idx = 0; this.ui(); },
+  schedule() { clearTimeout(this.timer); this.timer = setTimeout(() => this.commit(), 450); this.ui(true); },
+  commit() {
+    clearTimeout(this.timer); this.timer = null;
+    const s = this.snap(); const cur = this.stack[this.idx];
+    if (cur && cur.texts.length === s.texts.length && cur.texts.every((t, i) => t === s.texts[i])) { cur.focus = s.focus; cur.caret = s.caret; this.ui(); return; }
+    this.stack = this.stack.slice(0, this.idx + 1); this.stack.push(s);
+    if (this.stack.length > 300) this.stack.shift();
+    this.idx = this.stack.length - 1; this.ui();
+  },
+  undo() { if (!settings.undoEnabled) return; this.commit(); if (this.idx <= 0) { toast('Nothing to undo'); return; } this.idx--; this.apply(this.stack[this.idx]); },
+  redo() { if (!settings.undoEnabled) return; if (this.timer) this.commit(); if (this.idx >= this.stack.length - 1) { toast('Nothing to redo'); return; } this.idx++; this.apply(this.stack[this.idx]); },
+  apply(s) {
+    const hadFocus = document.activeElement && document.activeElement.classList && document.activeElement.classList.contains('line-editor');
+    renderRows(s.texts);
+    const rs = rows(); const r = rs[Math.min(Math.max(s.focus, 0), rs.length - 1)];
+    recalc(true);
+    if (r) { state.active = edOf(r); if (hadFocus || document.body.classList.contains('kp-open')) setCaret(edOf(r), Math.min(s.caret, edOf(r).textContent.length)); }
+    scheduleSave(); this.ui();
+  },
+  ui(pending) {
+    const u = $('#tb-undo'), r = $('#tb-redo');
+    if (u) u.disabled = !(pending || this.idx > 0);
+    if (r) r.disabled = !(this.idx < this.stack.length - 1) || !!pending;
+  }
+};
+
+/* ---------------- Files ---------------- */
+const newId = () => 'file_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+function metaOf(f) { return { id: f.id, title: String(f.title || ''), createdAt: f.createdAt || new Date().toISOString(), updatedAt: f.updatedAt || f.createdAt || new Date().toISOString(), lines: f.lines || 0, totalText: f.totalText || '' }; }
+async function loadFileList() { const raw = await Store.get('filesList'); state.files = Array.isArray(raw) ? raw.filter(f => f && f.id).map(metaOf) : []; }
+async function saveFileList() { await Store.set('filesList', state.files); renderFileList(); }
+
+let saveTimer = null, saveChain = Promise.resolve();
+function scheduleSave() { if (state.loading) return; state.dirty = true; clearTimeout(saveTimer); saveTimer = setTimeout(() => saveNow(), 500); }
+function saveNow(showToast = false) {
+  clearTimeout(saveTimer); saveTimer = null;
+  if (!state.fileId) return saveChain;
+  const id = state.fileId, now = new Date().toISOString(), texts = getTexts();
+  const totalSnap = JSON.parse(JSON.stringify(state.total)), title = state.title;
+  const totalText = state.calc && !state.calc.totalError ? fmtNum(state.calc.total) : '';
+  state.dirty = false;
+  saveChain = saveChain.then(async () => {
+    const existing = (await Store.get(id)) || {};
+    const rec = { id, title, rows: texts.map((t, i) => ({ id: 'row_' + (i + 1), text: t })), totalSettings: totalSnap, createdAt: existing.createdAt || now, updatedAt: now };
+    await Store.set(id, rec);
+    const m = state.files.find(f => f.id === id);
+    if (m) { m.updatedAt = now; m.title = title; m.lines = texts.filter(t => t.trim()).length; m.totalText = totalText; }
+    await saveFileList();
+    if (showToast) toast('Saved ✓');
+  }).catch(err => { console.error(err); toast('Could not save – storage full or blocked'); });
+  return saveChain;
+}
+function flushSave() { if (state.dirty || saveTimer) return saveNow(); return saveChain; }
+function setTitle(t) { state.title = t; $('#headerTitle').textContent = displayTitle(); document.title = (t ? t + ' – ' : '') + APP.name; }
+
+async function openFile(id) {
+  await flushSave();
+  const rec = await Store.get(id);
+  if (!rec) { state.files = state.files.filter(f => f.id !== id); await saveFileList(); return false; }
+  if (state.selecting) endSelect();
+  state.loading = true; state.fileId = id;
+  setTitle(String(rec.title || '').replace(/^Untitled( note)?$/i, ''));
+  state.total = normTotal(rec.totalSettings);
+  const texts = Array.isArray(rec.rows) ? rec.rows.map(r => String((r && r.text) || '')) : [''];
+  if (!texts.length || texts[texts.length - 1].trim() !== '') texts.push('');
+  renderRows(texts); recalc(true);
+  state.loading = false; state.dirty = false;
+  History.reset(); Store.set('lastFileId', id); renderFileList(); ws.scrollTop = 0;
+  if (document.body.classList.contains('kp-open')) { const r = rows(); setCaret(edOf(r[r.length - 1]), 0); }
+  return true;
+}
+async function createFile(title = '', texts = [''], total) {
+  await flushSave();
+  const now = new Date().toISOString();
+  const rec = { id: newId(), title, rows: texts.map((t, i) => ({ id: 'row_' + (i + 1), text: t })), totalSettings: normTotal(total || defaultTotal()), createdAt: now, updatedAt: now };
+  await Store.set(rec.id, rec);
+  state.files.unshift(metaOf(rec)); await saveFileList(); await openFile(rec.id);
+  return rec.id;
+}
+async function newFileFlow() { closeSidebar(); await createFile(''); const r = rows(); setCaret(edOf(r[0]), 0); toast('New file'); }
+async function saveFlow() {
+  if (!state.title) {
+    const name = await dialogText({ title: 'Save file', label: 'File name', value: '', okText: 'Save' });
+    if (name === null) return; if (!name.trim()) return toast('Enter a file name');
+    setTitle(name.trim());
+  }
+  await saveNow(true);
+}
+async function renameFlow(id = state.fileId) {
+  const m = state.files.find(f => f.id === id); if (!m) return;
+  const name = await dialogText({ title: 'Rename file', label: 'File name', value: m.title, okText: 'Rename' });
+  if (name === null || !name.trim()) return;
+  const title = name.trim(); m.title = title;
+  if (id === state.fileId) { setTitle(title); await saveNow(); }
+  else { const rec = await Store.get(id); if (rec) { rec.title = title; await Store.set(id, rec); } await saveFileList(); }
+  toast('Renamed ✓');
+}
+async function duplicateFlow(id) {
+  await flushSave(); const rec = await Store.get(id); if (!rec) return;
+  closeSidebar(); await createFile((rec.title || 'Untitled') + ' (copy)', (rec.rows || []).map(r => r.text || ''), rec.totalSettings); toast('Duplicated ✓');
+}
+async function deleteFlow(id) {
+  const m = state.files.find(f => f.id === id); if (!m) return;
+  const ok = await dialogConfirm({ title: 'Delete file?', message: `"${m.title || 'Untitled'}" will be deleted permanently.`, okText: 'Delete', danger: true });
+  if (!ok) return;
+  if (id === state.fileId) { clearTimeout(saveTimer); saveTimer = null; state.dirty = false; await saveChain; }
+  state.files = state.files.filter(f => f.id !== id); await Store.remove(id); await saveFileList();
+  if (id === state.fileId) { state.fileId = null; if (state.files.length) await openFile(state.files[0].id); else await createFile(''); }
+  toast('File deleted');
+}
+async function fileMenu(id) {
+  const m = state.files.find(f => f.id === id); if (!m) return;
+  const key = await dialogMenu(m.title || 'Untitled', [
+    { key: 'open', icon: '📂', label: 'Open' }, { key: 'rename', icon: '✏️', label: 'Rename' },
+    { key: 'dup', icon: '⧉', label: 'Duplicate' }, { key: 'del', icon: '🗑', label: 'Delete', danger: true }
+  ]);
+  if (key === 'open') { closeSidebar(); openFile(id); }
+  else if (key === 'rename') renameFlow(id);
+  else if (key === 'dup') duplicateFlow(id);
+  else if (key === 'del') deleteFlow(id);
+}
+function relTime(iso) {
+  const d = new Date(iso); if (isNaN(d)) return '';
+  const diff = (Date.now() - d) / 1000;
+  if (diff < 60) return 'just now'; if (diff < 3600) return Math.floor(diff / 60) + ' min ago'; if (diff < 86400) return Math.floor(diff / 3600) + ' h ago';
+  return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: d.getFullYear() === new Date().getFullYear() ? undefined : 'numeric' });
+}
+function renderFileList() {
+  const q = $('#fileSearch').value.trim().toLowerCase(); const list = $('#fileList');
+  const sorted = [...state.files].sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
+  const shown = q ? sorted.filter(f => (f.title || 'untitled').toLowerCase().includes(q)) : sorted;
+  $('#fileCount').textContent = `Saved files (${state.files.length})`;
+  list.replaceChildren(...shown.map(f => {
+    const sub = [relTime(f.updatedAt), f.lines ? `${f.lines} line${f.lines === 1 ? '' : 's'}` : '', f.totalText ? `= ${f.totalText}` : ''].filter(Boolean).join(' · ');
+    return el('div', { class: 'file' + (f.id === state.fileId ? ' active' : ''), 'data-id': f.id, role: 'button' },
+      el('div', { class: 'file-info' }, el('div', { class: 'file-title', text: f.title || 'Untitled' }), el('div', { class: 'file-sub', text: sub })),
+      el('button', { class: 'file-more', 'aria-label': 'File options', html: svg('more', 22) }));
+  }));
+  if (!shown.length) list.append(el('div', { class: 'empty-note', text: q ? 'No files match your search' : 'No files yet' }));
+}
+$('#fileList').addEventListener('click', e => {
+  const item = e.target.closest('.file'); if (!item) return; const id = item.dataset.id;
+  if (e.target.closest('.file-more')) { fileMenu(id); return; }
+  closeSidebar(); if (id !== state.fileId) openFile(id);
+});
+$('#fileSearch').addEventListener('input', renderFileList);
+
+/* ---------------- Copy all / text mode ---------------- */
+function formatLines(indexes, fmt) {
+  const nl = noteLines(true);
+  const pick = indexes ? indexes.map(i => nl[i]).filter(Boolean) : trimTrailing(nl);
+  if (fmt === 'results') return pick.filter(l => l.result).map(l => l.raw).join('\n');
+  if (fmt === 'both') return pick.map(l => l.result ? `${l.text} = ${l.result}` : l.text).join('\n');
+  if (fmt === 'report') return buildText();
+  return pick.map(l => l.text).join('\n');
+}
+function trimTrailing(arr) { let n = arr.length; while (n > 0 && !arr[n - 1].text.trim()) n--; return arr.slice(0, n); }
+async function copyAll(fmt = settings.copyFormat) {
+  const text = formatLines(null, fmt);
+  if (!text.trim()) return toast('Nothing to copy');
+  const ok = await copyText(text);
+  toast(ok ? `Copied all ${trimTrailing(noteLines(true)).length} lines ✓` : 'Copy failed');
+}
+async function copyAllMenu() {
+  closeSidebar();
+  const key = await dialogMenu('Copy all', [
+    { key: 'lines', icon: '📄', label: 'Lines only', sub: 'Exactly what you typed' },
+    { key: 'both', icon: '🧾', label: 'Lines with results', sub: 'Milk 2 × 28 = 56' },
+    { key: 'results', icon: '🔢', label: 'Results only', sub: 'One number per line' },
+    { key: 'report', icon: '📋', label: 'Full report', sub: 'Title, lines, results and total' },
+    { key: 'text', icon: '✏️', label: 'Open as plain text…', sub: 'Select any part yourself' }
+  ]);
+  if (!key) return;
+  if (key === 'text') return editAsText();
+  if (key !== settings.copyFormat) setSetting('copyFormat', key);
+  copyAll(key);
+}
+function editAsText() {
+  closeSidebar();
+  const ta = el('textarea', { class: 'bulk', spellcheck: 'false', autocapitalize: 'off' });
+  ta.value = trimTrailing(noteLines(true)).map(l => l.text).join('\n');
+  const apply = () => { const lines = ta.value.replace(/\r\n?/g, '\n').split('\n'); if (lines[lines.length - 1].trim()) lines.push(''); History.commit(); renderRows(lines); Sheet.onClose = null; Sheet.close(); changed(true); paintAll(true); toast('Note updated ✓'); };
+  Sheet.show(el('div', {},
+    el('h3', { text: 'Edit as plain text' }),
+    el('p', { class: 'msg', text: 'Long-press → Select all → Copy works here. You can also paste a whole list.' }),
+    ta,
+    el('div', { class: 'sheet-actions' },
+      el('button', { class: 'btn cancel', text: 'Copy all', onclick: async () => { const ok = await copyText(ta.value); toast(ok ? 'Copied ✓' : 'Copy failed'); } }),
+      el('button', { class: 'btn ok', text: 'Apply', onclick: apply }))));
+}
+
+/* ---------------- Sidebar ---------------- */
+function openSidebar() { renderFileList(); renderSideActions(); $('#sidebar').classList.add('open'); $('#sidebarOverlay').classList.add('open'); Overlays.push('sidebar', () => { $('#sidebar').classList.remove('open'); $('#sidebarOverlay').classList.remove('open'); }); }
+function closeSidebar() { Overlays.remove('sidebar'); }
+
+/* ---------------- Actions registry (toolbar, sidebar, menus all use it) ---------------- */
+const ACTIONS = {
+  undo: { label: 'Undo', icon: 'undo', emoji: '↶', run: () => History.undo() },
+  redo: { label: 'Redo', icon: 'redo', emoji: '↷', run: () => History.redo() },
+  new: { label: 'New file', icon: 'add', emoji: '＋', run: () => newFileFlow() },
+  save: { label: 'Save', icon: 'save', emoji: '💾', run: () => saveFlow() },
+  settings: { label: 'Settings', icon: 'settings', emoji: '⚙️', run: () => openSettings() },
+  copy: { label: 'Copy all', icon: 'copy', emoji: '📋', run: () => copyAllMenu(), quick: () => copyAll() },
+  text: { label: 'Edit as plain text', icon: 'text', emoji: '✏️', run: () => editAsText() },
+  select: { label: 'Select lines', icon: 'select', emoji: '☑️', run: () => { closeSidebar(); startSelect(); } },
+  image: { label: 'Share as image', icon: 'image', emoji: '🖼️', run: () => shareImage() },
+  sharetext: { label: 'Share as text', icon: 'share', emoji: '📝', run: () => shareText() },
+  csv: { label: 'Export CSV', icon: 'file', emoji: '📊', run: () => exportCsv() },
+  newline: { label: 'Insert new line', icon: 'newline', emoji: '↵', run: () => { closeSidebar(); newLineAfterActive(); } },
+  keypad: { label: 'Keypad', icon: 'keyboard', emoji: '⌨️', run: () => toggleKeypad() },
+  theme: { label: 'Light / dark', icon: 'theme', emoji: '🌓', run: () => setSetting('theme', document.documentElement.dataset.theme === 'light' ? 'dark' : 'light') },
+  rename: { label: 'Rename file', icon: 'edit', emoji: '🏷️', run: () => { closeSidebar(); renameFlow(); } },
+  clear: { label: 'Clear all lines', icon: 'file', emoji: '🧹', run: () => { closeSidebar(); clearAll(); }, danger: true },
+  help: { label: 'Help & examples', icon: 'help', emoji: '❓', run: () => openHelp() },
+  more: { label: 'More…', icon: 'more', emoji: '⋮', run: () => moreMenu() }
+};
+function renderToolbar() {
+  const tb = $('#toolbar');
+  tb.replaceChildren(...settings.toolbar.filter(k => ACTIONS[k]).map(k => {
+    const a = ACTIONS[k];
+    const b = el('button', { class: 'icon-btn', id: 'tb-' + k, 'aria-label': a.label, title: a.label, html: svg(a.icon) });
+    b.addEventListener('mousedown', e => { if (k === 'undo' || k === 'redo' || k === 'copy') e.preventDefault(); });
+    b.addEventListener('click', () => (a.quick || a.run)());
+    return b;
+  }));
+  History.ui();
+}
+function renderSideActions() {
+  $('#sideActions').replaceChildren(...settings.sideActions.filter(k => ACTIONS[k]).map(k => {
+    const a = ACTIONS[k];
+    return el('button', { class: 'side-item', 'data-action': k, onclick: () => { if (k !== 'copy' && k !== 'text' && k !== 'select') closeSidebar(); a.run(); } }, el('span', { class: 'ic', text: a.emoji }), a.label);
+  }));
+}
+async function moreMenu() {
+  const keys = Object.keys(ACTIONS).filter(k => !settings.toolbar.includes(k) && k !== 'more');
+  const k = await dialogMenu('', keys.map(key => ({ key, icon: ACTIONS[key].emoji, label: ACTIONS[key].label, danger: ACTIONS[key].danger })));
+  if (k) ACTIONS[k].run();
+}
+
+/* ---------------- Apply settings to UI ---------------- */
+const ACCENTS = {
+  green: ['#66BB6A', '#2E7D32'], teal: ['#26A69A', '#00695C'], blue: ['#42A5F5', '#1565C0'], indigo: ['#5C6BC0', '#283593'],
+  purple: ['#AB47BC', '#6A1B9A'], pink: ['#EC407A', '#AD1457'], red: ['#EF5350', '#C62828'], orange: ['#FFA726', '#E65100'],
+  brown: ['#8D6E63', '#4E342E'], grey: ['#78909C', '#37474F'], black: ['#424242', '#212121']
+};
+const OPCOLORS = { orange: '#E69100', red: '#E53935', blue: '#1E88E5', purple: '#8E24AA', pink: '#D81B60', accent: 'var(--strong)', text: 'var(--text)' };
+const FONTS = {
+  system: "system-ui,'Segoe UI',Roboto,sans-serif", condensed: "'Roboto Condensed','Arial Narrow',sans-serif-condensed,sans-serif",
+  serif: "Georgia,'Noto Serif',serif", mono: "ui-monospace,'Roboto Mono',Menlo,Consolas,monospace", rounded: "'Nunito','Varela Round','Comic Sans MS',system-ui,sans-serif"
+};
+const darkMQ = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+function resolvedTheme() { return settings.theme === 'system' ? (darkMQ && darkMQ.matches ? 'dark' : 'light') : settings.theme; }
+function applySettings() {
+  const root = document.documentElement, b = document.body;
+  const theme = resolvedTheme(); root.dataset.theme = theme;
+  const [pri, strong] = ACCENTS[settings.accent] || ACCENTS.green;
+  root.style.setProperty('--primary', pri); root.style.setProperty('--strong', strong);
+  root.style.setProperty('--op', OPCOLORS[settings.opColor] || OPCOLORS.orange);
+  root.style.setProperty('--res', settings.resultColor === 'accent' ? (theme === 'light' ? strong : pri) : 'var(--text)');
+  root.style.setProperty('--res-weight', settings.resultBold ? '650' : '400');
+  root.style.setProperty('--font-size-editor', settings.fontSize + 'px');
+  root.style.setProperty('--editor-font', FONTS[settings.font] || FONTS.system);
+  root.style.setProperty('--editor-style', settings.italic ? 'italic' : 'normal');
+  root.style.setProperty('--result-width', settings.resultWidth + '%');
+  root.style.setProperty('--key-h', { compact: '42px', normal: '50px', large: '60px' }[settings.kpHeight] || '50px');
+  const meta = $('meta[name="theme-color"]'); if (meta) meta.content = theme === 'light' ? pri : '#141614';
+  Native.bars(true);
+  b.classList.toggle('no-linenums', !settings.lineNumbers);
+  b.classList.toggle('divider', settings.divider);
+  b.classList.toggle('separators', settings.separators);
+  b.classList.toggle('align-left', settings.resultAlign === 'left');
+  b.classList.toggle('fixed-col', settings.divider || settings.resultAlign === 'left');
+  b.classList.toggle('hl-line', settings.highlightLine);
+  b.classList.toggle('no-totalbar', !settings.showTotalBar);
+  b.classList.toggle('no-keypad', !settings.keypadEnabled);
+  if (!settings.keypadEnabled && b.classList.contains('kp-open')) closeKeypad();
+  $('.keypad-tab[data-tab="sci"]').hidden = !settings.sciTab;
+  $('.keypad-tab[data-tab="custom"]').hidden = !settings.customTab;
+  if ((state.keypadTab === 'sci' && !settings.sciTab) || (state.keypadTab === 'custom' && !settings.customTab)) state.keypadTab = 'basic';
+  $('#btnAngle').textContent = settings.angle.toUpperCase();
+  $('#userCss').textContent = settings.customCss || '';
+  renderToolbar(); renderKeypad(); applyWakeLock();
+  if (state.calc) { recalc(); paintAll(true); }
+}
+if (darkMQ) { const h = () => { if (settings.theme === 'system') applySettings(); }; darkMQ.addEventListener ? darkMQ.addEventListener('change', h) : darkMQ.addListener(h); }
+let wakeLock = null;
+async function applyWakeLock() {
+  try {
+    if (settings.keepAwake && 'wakeLock' in navigator && document.visibilityState === 'visible') { if (!wakeLock) { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; }); } }
+    else if (wakeLock) { await wakeLock.release(); wakeLock = null; }
+  } catch (e) { wakeLock = null; }
+}
+
+/* ---------------- Keypad ---------------- */
+const BASIC_789 = [
+  { l: 'C', a: 'clearRow', c: 'danger' }, { l: '(', c: 'op' }, { l: ')', c: 'op' }, { l: '÷', c: 'op' },
+  { l: '7' }, { l: '8' }, { l: '9' }, { l: '×', c: 'op' },
+  { l: '4' }, { l: '5' }, { l: '6' }, { l: '−', i: '-', c: 'op' },
+  { l: '1' }, { l: '2' }, { l: '3' }, { l: '+', c: 'op' },
+  { l: '0' }, { l: '.' }, { l: '%', c: 'op' }, { l: '⌫', a: 'back', c: 'op', rep: true },
+  { l: '◀', a: 'left', c: 'nav', rep: true }, { l: '▶', a: 'right', c: 'nav', rep: true }, { l: '=', c: 'op' }, { l: '⏎', a: 'enter', c: 'eq' }
+];
+const SCI = [
+  { l: 'sin', i: 'sin(', c: 'fn' }, { l: 'cos', i: 'cos(', c: 'fn' }, { l: 'tan', i: 'tan(', c: 'fn' }, { l: '√', i: 'sqrt(', c: 'fn' },
+  { l: 'sin⁻¹', i: 'asin(', c: 'fn' }, { l: 'cos⁻¹', i: 'acos(', c: 'fn' }, { l: 'tan⁻¹', i: 'atan(', c: 'fn' }, { l: 'xʸ', i: '^', c: 'fn' },
+  { l: 'log', i: 'log10(', c: 'fn' }, { l: 'ln', i: 'log(', c: 'fn' }, { l: 'x²', i: '^2', c: 'fn' }, { l: 'n!', i: '!', c: 'fn' },
+  { l: 'π', i: 'pi', c: 'fn' }, { l: 'e', i: 'e', c: 'fn' }, { l: '|x|', i: 'abs(', c: 'fn' }, { l: ',', i: ', ', c: 'fn' },
+  { l: 'round', i: 'round(', c: 'fn' }, { l: 'floor', i: 'floor(', c: 'fn' }, { l: 'ceil', i: 'ceil(', c: 'fn' }, { l: 'mod', i: ' mod ', c: 'fn' },
+  { l: 'ans', i: 'ans', c: 'fn' }, { l: 'sum', a: 'sumLine', c: 'fn' }, { l: '⌫', a: 'back', c: 'op', rep: true }, { l: 'AC', a: 'clearAll', c: 'danger' }
+];
+function keysFor(tab) {
+  if (tab === 'sci') return SCI;
+  if (tab === 'custom') return [...settings.customKeys.map(k => ({ l: k.l, i: k.i, c: 'cu' })), { l: '＋ Add key', a: 'addKey', c: 'add' }];
+  if (settings.kpOrder === '123') { const k = BASIC_789.slice(); const r = (a, b) => { for (let j = 0; j < 4; j++) { const t = k[a * 4 + j]; k[a * 4 + j] = k[b * 4 + j]; k[b * 4 + j] = t; } }; r(1, 3); return k; }
+  return BASIC_789;
+}
+function renderKeypad() {
+  const keys = keysFor(state.keypadTab);
+  $('#keypadGrid').replaceChildren(...keys.map((k, i) => el('button', { class: 'key ' + (k.c || ''), 'data-i': i, tabindex: '-1', text: k.l, 'aria-label': k.l })));
+  $$('.keypad-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === state.keypadTab));
+}
+function keyAction(k) {
+  keyFeedback();
+  switch (k.a) {
+    case 'clearRow': return clearRow();
+    case 'clearAll': return clearAll();
+    case 'back': return backspaceKey();
+    case 'left': return moveCaret(-1);
+    case 'right': return moveCaret(1);
+    case 'addKey': return editCustomKey(-1);
+    case 'enter': { const ed = activeEditor(); if (document.activeElement !== ed) setCaret(ed, ed.textContent.length); return splitAtCaret(ed); }
+    case 'sumLine': {
+      const ed = activeEditor();
+      if (ed.textContent.trim()) { const r = insertRowAfter(ed.parentNode, 'sum'); setCaret(edOf(r), 3); } else { setEdText(ed, 'sum'); setCaret(ed, 3); }
+      const r2 = insertRowAfter(activeEditor().parentNode, ''); setCaret(edOf(r2), 0); paintAll(true); return changed(true);
+    }
+    default: {
+      const s = k.i !== undefined ? k.i : k.l;
+      if (s === 'sum' || s === 'avg' || s === 'total') {                 // keyword keys get their own line
+        const ed = activeEditor();
+        if (ed.textContent.trim()) { const r = insertRowAfter(ed.parentNode, s); state.active = edOf(r); } else setEdText(ed, s);
+        const r2 = insertRowAfter(activeEditor().parentNode, ''); setCaret(edOf(r2), 0); changed(true); paintAll(true); return;
+      }
+      return insertText(s);
+    }
+  }
+}
+const kp = $('#keypad');
+kp.addEventListener('mousedown', e => { if (e.target.closest('button')) e.preventDefault(); });
+let repTimer = null, repInt = null, repFired = false, kpLong = null;
+function stopRepeat() { clearTimeout(repTimer); clearInterval(repInt); clearTimeout(kpLong); repTimer = repInt = kpLong = null; }
+$('#keypadGrid').addEventListener('pointerdown', e => {
+  const b = e.target.closest('.key'); if (!b) return;
+  const k = keysFor(state.keypadTab)[+b.dataset.i]; repFired = false;
+  if (k && k.rep) { stopRepeat(); repTimer = setTimeout(() => { repFired = true; keyAction(k); repInt = setInterval(() => keyAction(k), 70); }, 420); }
+  else if (state.keypadTab === 'custom' && k && k.c === 'cu') { kpLong = setTimeout(() => { repFired = true; editCustomKey(+b.dataset.i); }, 600); }
+});
+['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => $('#keypadGrid').addEventListener(ev, stopRepeat));
+$('#keypadGrid').addEventListener('click', e => {
+  const b = e.target.closest('.key'); if (!b) return;
+  if (repFired) { repFired = false; return; }
+  const k = keysFor(state.keypadTab)[+b.dataset.i]; if (k) keyAction(k);
+});
+$$('.keypad-tab').forEach(t => t.addEventListener('click', () => { state.keypadTab = t.dataset.tab; renderKeypad(); }));
+$('#btnAngle').addEventListener('click', () => { setSetting('angle', settings.angle === 'deg' ? 'rad' : 'deg'); toast(settings.angle === 'deg' ? 'Angles in degrees' : 'Angles in radians'); });
+$('#btnKpClose').addEventListener('click', () => closeKeypad());
+
+function setInputMode(mode) { $$('.line-editor').forEach(e => e.setAttribute('inputmode', mode)); }
+function openKeypad() {
+  if (!settings.keypadEnabled) return;
+  if (!document.body.classList.contains('kp-open')) {
+    document.body.classList.add('kp-open'); setInputMode('none');
+    Overlays.push('keypad', () => { document.body.classList.remove('kp-open'); setInputMode('text'); updateKbSwitch(); });
+  }
+  const ed = activeEditor();
+  if (document.activeElement === ed) { const pos = selOffsets(ed).start; ed.blur(); setCaret(ed, pos); } else setCaret(ed, ed.textContent.length);
+  updateKbSwitch(); requestAnimationFrame(() => keepVisible(ed.parentNode));
+}
+function closeKeypad() { Overlays.remove('keypad'); updateKbSwitch(); }
+function toggleKeypad() { document.body.classList.contains('kp-open') ? closeKeypad() : openKeypad(); }
+function useNativeKeyboard() { closeKeypad(); const ed = activeEditor(); ed.blur(); setCaret(ed, ed.textContent.length); }
+function updateKbSwitch() { const open = document.body.classList.contains('kp-open'); $('#btnKp123').classList.toggle('active', open); $('#btnKpABC').classList.toggle('active', !open); }
+$('#btnKp123').addEventListener('click', () => openKeypad());
+$('#btnKpABC').addEventListener('click', () => useNativeKeyboard());
+$('#btnKpToggle').addEventListener('click', () => toggleKeypad());
+$('.kb-switch').addEventListener('mousedown', e => e.preventDefault());
+
+async function editCustomKey(index) {
+  const isNew = index < 0 || index >= settings.customKeys.length; const cur = isNew ? { l: '', i: '' } : settings.customKeys[index];
+  return new Promise(resolve => {
+    const lab = el('input', { type: 'text', placeholder: 'e.g. GST', maxlength: '12' }); lab.value = cur.l;
+    const ins = el('input', { type: 'text', placeholder: 'e.g.  * 1.18   or   round({c}, 2)' }); ins.value = cur.i;
+    const done = () => { Sheet.onClose = null; Sheet.close(); resolve(); };
+    const save = () => {
+      const l = lab.value.trim(), i = ins.value.replace(/\\n/g, '\n');
+      if (!l || !i) return toast('Enter a label and the text to insert');
+      const keys = settings.customKeys.slice(); if (isNew) keys.push({ l, i }); else keys[index] = { l, i };
+      setSetting('customKeys', keys); toast(isNew ? 'Key added ✓' : 'Key saved ✓'); done(); refreshOpenPage();
+    };
+    Sheet.show(el('div', {},
+      el('h3', { text: isNew ? 'Add custom key' : 'Edit key' }),
+      el('label', { class: 'lbl', text: 'Key label' }), lab,
+      el('label', { class: 'lbl', text: 'Text to insert' }), ins,
+      el('p', { class: 'hint', text: 'Tip: {c} = where the cursor goes, \\n = new line. Words sum / avg / total add a total line.' }),
+      el('div', { class: 'sheet-actions text' },
+        !isNew ? el('button', { class: 'btn danger', text: 'Delete', onclick: () => { const keys = settings.customKeys.slice(); keys.splice(index, 1); setSetting('customKeys', keys); toast('Key deleted'); done(); refreshOpenPage(); } }) : null,
+        el('button', { class: 'btn cancel', text: 'Cancel', onclick: done }),
+        el('button', { class: 'btn ok', text: 'Save', onclick: save }))), resolve);
+    setTimeout(() => lab.focus(), 60);
+  });
+}
+
+/* ---------------- Total editor ---------------- */
+function openTotalEditor() {
+  const t = JSON.parse(JSON.stringify(state.total));
+  const MODES = [['sum', 'Sum'], ['avg', 'Average'], ['min', 'Min'], ['max', 'Max'], ['count', 'Count'], ['manual', 'Manual'], ['formula', 'Formula']];
+  const labelIn = el('input', { type: 'text', placeholder: 'Total', maxlength: '40' }); labelIn.value = t.label;
+  const manualIn = el('input', { type: 'text', inputmode: 'decimal', placeholder: 'Enter value' }); manualIn.value = t.manualValue ? String(t.manualValue) : '';
+  const formulaIn = el('input', { type: 'text', placeholder: 'e.g. total * 1.18  or  line1 + line3', autocapitalize: 'off', autocomplete: 'off' }); formulaIn.value = t.formula;
+  const preview = el('div', { class: 'preview' });
+  const manualWrap = el('div', {}, el('label', { class: 'lbl', text: 'Manual value' }), manualIn);
+  const formulaWrap = el('div', {}, el('label', { class: 'lbl', text: 'Formula' }), formulaIn, el('div', { class: 'hint', text: 'Use total, avg, count, line1, line2 … or your variables.' }), preview);
+  const grid = el('div', { class: 'mode-grid' }, ...MODES.map(([k, n]) => el('button', { class: 'chip', 'data-v': k, text: n })));
+  const upd = () => {
+    grid.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c.dataset.v === t.mode));
+    manualWrap.style.display = t.mode === 'manual' ? '' : 'none'; formulaWrap.style.display = t.mode === 'formula' ? '' : 'none';
+    if (t.mode === 'formula') {
+      const r = Engine.run(getTexts(), engineOpts({ total: { mode: 'formula', formula: formulaIn.value } }));
+      preview.className = 'preview' + (r.totalError ? ' err' : '');
+      preview.textContent = !formulaIn.value.trim() ? '' : r.totalError ? 'Formula has an error' : '= ' + fmtNum(r.total);
+    }
+  };
+  grid.addEventListener('click', e => { const c = e.target.closest('.chip'); if (c) { t.mode = c.dataset.v; upd(); } });
+  formulaIn.addEventListener('input', upd);
+  const save = () => {
+    const mv = parseFloat(String(manualIn.value).replace(/,/g, ''));
+    if (t.mode === 'manual' && !Number.isFinite(mv)) { toast('Enter a valid number'); manualIn.focus(); return; }
+    state.total = normTotal({ label: labelIn.value.trim() || 'Total', mode: t.mode, manualValue: Number.isFinite(mv) ? mv : 0, formula: formulaIn.value.trim() });
+    Sheet.close(); recalc(); saveNow(); toast('Total updated ✓');
+  };
+  Sheet.show(el('div', {},
+    el('h3', { text: 'Customise total' }), el('label', { class: 'lbl', text: 'Label' }), labelIn,
+    el('label', { class: 'lbl', text: 'Calculation' }), grid, manualWrap, formulaWrap,
+    el('div', { class: 'sheet-actions' }, el('button', { class: 'btn cancel', text: 'Cancel', onclick: () => Sheet.close() }), el('button', { class: 'btn ok', text: 'Save', onclick: save }))));
+  upd();
+}
+
+/* ---------------- Export: text / CSV / image ---------------- */
+function noteLines(all) {
+  const texts = getTexts(); const calc = state.calc || Engine.run(texts, engineOpts({ total: state.total }));
+  const out = texts.map((t, i) => {
+    const l = calc.lines[i] || {};
+    const result = l.kind === 'num' ? fmtNum(l.value) : l.kind === 'other' ? l.display : '';
+    return { text: t, result, raw: l.kind === 'num' ? rawNum(l.value) : result };
+  });
+  return all ? out : trimTrailing(out);
+}
+const totalString = () => $('#totalValue').textContent;
+function buildText() {
+  const title = displayTitle();
+  const out = [title, '─'.repeat(Math.min(28, Math.max(8, title.length)))];
+  noteLines().forEach(l => out.push(l.result ? `${l.text} = ${l.result}` : l.text));
+  out.push('─'.repeat(14), `${state.total.label}: ${totalString()}`);
+  return out.join('\n');
+}
+async function shareText() {
+  closeSidebar(); const text = buildText();
+  if (Native.on) { try { if (await Native.shareText(displayTitle(), text)) return; } catch (e) { if (/cancel/i.test(String(e && e.message))) return; } }
+  else if (navigator.share) { try { await navigator.share({ title: displayTitle(), text }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
+  const ok = await copyText(text); toast(ok ? 'Copied note as text ✓' : 'Could not copy');
+}
+async function saveBlob(blob, name, { share = false } = {}) {
+  if (Native.on) {
+    try {
+      if (share) { await Native.shareFile(name, blob, name); return; }
+      const where = await Native.saveFile(name, blob); if (where) toast('Saved to ' + where, 3200); return;
+    } catch (e) { if (!/cancel/i.test(String(e && e.message))) toast('Could not save file'); return; }
+  }
+  const url = URL.createObjectURL(blob);
+  const a = el('a', { href: url, download: name, style: 'display:none' }); document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+const safeName = s => (String(s).replace(/[\\/:*?"<>|]+/g, '').trim() || 'CalcNote').slice(0, 60);
+async function exportCsv() {
+  closeSidebar();
+  const q = v => /[",\n]/.test(v) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v);
+  const lines = [['Line', 'Text', 'Result'].join(',')];
+  noteLines().forEach((l, i) => lines.push([i + 1, q(l.text), q(l.raw)].join(',')));
+  lines.push(['', q(state.total.label), q(state.calc && !state.calc.totalError ? rawNum(state.calc.total) : '')].join(','));
+  await saveBlob(new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }), safeName(displayTitle()) + '.csv');
+  if (!Native.on) toast('CSV exported ✓');
+}
+let imageBlob = null, imageUrl = null;
+function drawNoteImage() {
+  const W = 1080, P = 56, NUMW = 64, GAP = 28, LH = 46;
+  const FONT = 'system-ui, "Segoe UI", Roboto, "Noto Sans Devanagari", Arial, sans-serif';
+  const [pri, strong] = ACCENTS[settings.accent] || ACCENTS.green;
+  const lines = noteLines();
+  const m = document.createElement('canvas').getContext('2d');
+  const wrap = (text, maxW, font) => {
+    m.font = font; const out = []; let cur = '';
+    for (const word of String(text).split(/(\s+)/)) {
+      const test = cur + word;
+      if (m.measureText(test).width <= maxW || !cur) {
+        if (m.measureText(test).width > maxW) { let chunk = ''; for (const ch of test) { if (m.measureText(chunk + ch).width > maxW && chunk) { out.push(chunk); chunk = ch; } else chunk += ch; } cur = chunk; }
+        else cur = test;
+      } else { out.push(cur.trimEnd()); cur = word.trimStart(); }
+    }
+    out.push(cur); return out.length ? out : [''];
+  };
+  const bodyFont = `400 32px ${FONT}`, resFont = `700 32px ${FONT}`;
+  const layout = lines.map(l => {
+    m.font = resFont; const rw = l.result ? Math.min(m.measureText(l.result).width, 430) : 0;
+    const wrapped = wrap(l.text || ' ', W - 2 * P - NUMW - (rw ? rw + GAP : 0), bodyFont);
+    const resWrapped = l.result ? wrap(l.result, 430, resFont) : [];
+    return { l, wrapped, resWrapped, h: Math.max(wrapped.length, resWrapped.length) * LH + 18 };
+  });
+  const headH = 150, totalH = 130, footH = 70;
+  const H = headH + layout.reduce((a, b) => a + b.h, 0) + totalH + footH;
+  const s = Math.min(1, Math.sqrt(15800000 / (W * H)));
+  const c = document.createElement('canvas'); c.width = Math.floor(W * s); c.height = Math.floor(H * s);
+  const ctx = c.getContext('2d'); ctx.scale(s, s);
+  ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = pri; ctx.fillRect(0, 0, W, 12);
+  ctx.fillStyle = '#1E2320'; ctx.font = `700 46px ${FONT}`; ctx.textAlign = 'left';
+  ctx.fillText(wrap(displayTitle(), W - 2 * P, `700 46px ${FONT}`)[0], P, 84);
+  ctx.fillStyle = '#7A847C'; ctx.font = `400 24px ${FONT}`;
+  ctx.fillText(new Date().toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }), P, 122);
+  ctx.strokeStyle = pri; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(P, headH - 10); ctx.lineTo(W - P, headH - 10); ctx.stroke();
+  let y = headH;
+  layout.forEach((row, i) => {
+    const base = y + 14 + 32;
+    ctx.fillStyle = '#A3ACA5'; ctx.font = `400 24px ${FONT}`; ctx.textAlign = 'right'; ctx.fillText(String(i + 1), P + NUMW - 18, base);
+    ctx.fillStyle = '#1E2320'; ctx.font = bodyFont; ctx.textAlign = 'left'; row.wrapped.forEach((t, k) => ctx.fillText(t, P + NUMW, base + k * LH));
+    if (row.l.result) { ctx.fillStyle = strong; ctx.font = resFont; ctx.textAlign = 'right'; row.resWrapped.forEach((t, k) => ctx.fillText(t, W - P, base + k * LH)); }
+    y += row.h; ctx.strokeStyle = '#EEF1EE'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(P, y); ctx.lineTo(W - P, y); ctx.stroke();
+  });
+  ctx.fillStyle = '#EEF6EE'; ctx.fillRect(P - 16, y + 24, W - 2 * P + 32, 84);
+  ctx.fillStyle = strong; ctx.font = `600 32px ${FONT}`; ctx.textAlign = 'left'; ctx.fillText(state.total.label, P + 8, y + 78);
+  ctx.font = `800 42px ${FONT}`; ctx.textAlign = 'right'; ctx.fillText(totalString(), W - P - 8, y + 80);
+  ctx.fillStyle = '#A3ACA5'; ctx.font = `400 22px ${FONT}`; ctx.textAlign = 'center'; ctx.fillText('Made with ' + APP.name, W / 2, H - 28);
+  return c;
+}
+async function shareImage() {
+  closeSidebar();
+  try {
+    const c = drawNoteImage();
+    imageBlob = await new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error('toBlob failed')), 'image/png'));
+    if (imageUrl) URL.revokeObjectURL(imageUrl);
+    imageUrl = URL.createObjectURL(imageBlob); $('#sharePreview').src = imageUrl;
+    $('#shareModal').classList.add('open'); Overlays.push('share', () => $('#shareModal').classList.remove('open'));
+  } catch (e) { console.error(e); toast('Could not create image'); }
+}
+async function doShareImage() {
+  if (!imageBlob) return;
+  const name = safeName(displayTitle()) + '.png';
+  if (Native.on) { await saveBlob(imageBlob, name, { share: true }); return; }
+  const file = new File([imageBlob], name, { type: 'image/png' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: displayTitle() }); Overlays.remove('share'); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  downloadImage();
+}
+async function downloadImage() { if (!imageBlob) return; await saveBlob(imageBlob, safeName(displayTitle()) + '.png'); if (!Native.on) toast('Image saved ✓'); Overlays.remove('share'); }
+
+/* ---------------- Backup ---------------- */
+async function exportBackup() {
+  await flushSave();
+  const files = []; for (const m of state.files) { const r = await Store.get(m.id); if (r) files.push(r); }
+  const data = { app: 'CalcNote', edition: 'Freedom', version: 3, exportedAt: new Date().toISOString(), files };
+  await saveBlob(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }), `CalcNoteFreedom_Backup_${new Date().toISOString().slice(0, 10)}.json`);
+  if (!Native.on) toast(`Backup exported (${files.length} file${files.length === 1 ? '' : 's'}) ✓`);
+}
+function extractFiles(data) {
+  const found = new Map();
+  const consider = f => {
+    if (!f || typeof f !== 'object' || !Array.isArray(f.rows)) return;
+    const id = typeof f.id === 'string' && f.id ? f.id : newId(); const prev = found.get(id);
+    if (!prev || String(f.updatedAt || '') > String(prev.updatedAt || '')) found.set(id, Object.assign({}, f, { id }));
+  };
+  if (Array.isArray(data)) data.forEach(consider);
+  else if (data && typeof data === 'object') { if (Array.isArray(data.files)) data.files.forEach(consider); Object.values(data).forEach(v => { if (Array.isArray(v)) v.forEach(consider); else consider(v); }); }
+  return [...found.values()];
+}
+async function importBackupText(text) {
+  let data; try { data = JSON.parse(text); } catch (e) { toast('That file is not a valid backup'); return 0; }
+  const incoming = extractFiles(data);
+  if (!incoming.length) { toast('No files found in this backup'); return 0; }
+  const ok = await dialogConfirm({ title: 'Restore backup?', message: `${incoming.length} file${incoming.length === 1 ? '' : 's'} found. They will be added (nothing is overwritten).`, okText: 'Restore' });
+  if (!ok) return 0;
+  await flushSave(); let added = 0, skipped = 0;
+  for (const f of incoming) {
+    const rowsData = f.rows.map((r, i) => ({ id: 'row_' + (i + 1), text: String((r && (r.text ?? r)) || '').slice(0, 5000) }));
+    const existing = state.files.find(m => m.id === f.id);
+    if (existing) { const cur = await Store.get(f.id); if (cur && JSON.stringify((cur.rows || []).map(r => r.text)) === JSON.stringify(rowsData.map(r => r.text))) { skipped++; continue; } }
+    const rec = { id: existing ? newId() : f.id, title: String(f.title || '').slice(0, 120) + (existing ? ' (restored)' : ''), rows: rowsData, totalSettings: normTotal(f.totalSettings), createdAt: f.createdAt || new Date().toISOString(), updatedAt: f.updatedAt || new Date().toISOString() };
+    const calc = Engine.run(rowsData.map(r => r.text), engineOpts({ total: rec.totalSettings }));
+    await Store.set(rec.id, rec);
+    state.files.push(Object.assign(metaOf(rec), { lines: rowsData.filter(r => r.text.trim()).length, totalText: calc.totalError ? '' : fmtNum(calc.total) }));
+    added++;
+  }
+  await saveFileList();
+  toast(`Restored ${added} file${added === 1 ? '' : 's'}${skipped ? ` · ${skipped} already present` : ''} ✓`, 2800);
+  return added;
+}
+$('#importInput').addEventListener('change', async e => {
+  const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;
+  if (f.size > 20 * 1024 * 1024) { toast('File is too large'); return; }
+  importBackupText(await f.text());
+});
+function exportSettings() {
+  const s = Object.assign({}, settings); delete s.pinHash; delete s.pinSalt; delete s.lock;
+  saveBlob(new Blob([JSON.stringify({ app: 'CalcNote', edition: 'Freedom', type: 'settings', version: 3, settings: s }, null, 2)], { type: 'application/json' }), 'CalcNoteFreedom_Settings.json');
+  if (!Native.on) toast('Settings exported ✓');
+}
+$('#importSettingsInput').addEventListener('change', async e => {
+  const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;
+  try {
+    const data = JSON.parse(await f.text()); const s = data && data.settings;
+    if (!s || typeof s !== 'object') throw new Error();
+    for (const k of Object.keys(DEFAULTS)) if (k in s && !['pinHash', 'pinSalt', 'lock'].includes(k) && typeof s[k] === typeof DEFAULTS[k]) settings[k] = s[k];
+    persistSettings(); fmtCache.clear(); applySettings(); recalc(true); refreshOpenPage(); toast('Settings imported ✓');
+  } catch (err) { toast('That is not a settings file'); }
+});
+
+/* ---------------- App lock ---------------- */
+async function hashPin(pin, salt) {
+  const data = new TextEncoder().encode(salt + ':' + pin);
+  try { if (crypto && crypto.subtle) { const h = await crypto.subtle.digest('SHA-256', data); return Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2, '0')).join(''); } } catch (e) {}
+  let h = 2166136261; for (const b of data) { h ^= b; h = Math.imul(h, 16777619); } return 'f' + (h >>> 0).toString(16);
+}
+const Lock = {
+  entry: '', resolve: null, hiddenAt: 0,
+  build() {
+    const pad = $('#lockPad'); if (pad.childElementCount) return;
+    ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫'].forEach(k => pad.append(el('button', { class: k === '⌫' ? 'txt' : '', text: k, style: k ? '' : 'visibility:hidden', onclick: () => this.key(k) })));
+    $('#lockForgot').addEventListener('click', () => this.forgot());
+  },
+  dots(n = 4) { $('#lockDots').replaceChildren(...Array.from({ length: Math.max(n, this.entry.length) }, (_, i) => el('span', { class: i < this.entry.length ? 'on' : '' }))); },
+  ask(msg, { allowForgot = true } = {}) {
+    this.build(); this.entry = ''; $('#lockMsg').textContent = msg; $('#lockForgot').style.display = allowForgot ? '' : 'none'; this.dots(); $('#lock').classList.add('open');
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    return new Promise(r => { this.resolve = r; });
+  },
+  key(k) {
+    keyFeedback();
+    if (k === '⌫') this.entry = this.entry.slice(0, -1); else if (this.entry.length < 8) this.entry += k;
+    this.dots();
+    if (this.entry.length >= 4 && this.resolve) { const r = this.resolve; const v = this.entry; clearTimeout(this.t); this.t = setTimeout(() => { if (this.entry === v) r(v); }, this.entry.length >= 6 ? 0 : 450); }
+  },
+  fail(msg) { this.entry = ''; this.dots(); $('#lockMsg').textContent = msg; const d = $('#lockDots'); d.classList.remove('shake'); void d.offsetWidth; d.classList.add('shake'); },
+  close() { $('#lock').classList.remove('open'); this.resolve = null; },
+  async unlock() {
+    if (!settings.lock || !settings.pinHash) return;
+    let msg = 'Enter PIN';
+    for (;;) {
+      const pin = await this.ask(msg);
+      if ((await hashPin(pin, settings.pinSalt)) === settings.pinHash) { this.close(); return; }
+      msg = 'Wrong PIN – try again'; this.fail(msg);
+      await new Promise(r => setTimeout(r, 350));
+    }
+  },
+  async setup() {
+    const a = await this.ask('Choose a PIN (4–8 digits)', { allowForgot: false });
+    this.entry = ''; this.dots();
+    const b = await this.ask('Enter the same PIN again', { allowForgot: false });
+    this.close();
+    if (a !== b) { toast('PINs did not match – lock not enabled'); return false; }
+    const salt = Math.random().toString(36).slice(2);
+    settings.pinSalt = salt; settings.pinHash = await hashPin(a, salt); settings.lock = true; persistSettings();
+    toast('App lock enabled 🔒'); return true;
+  },
+  async forgot() {
+    const ok = await dialogConfirm({ title: 'Forgot PIN?', message: 'The PIN cannot be recovered. You can erase ALL files and settings to use the app again. Export a backup regularly to avoid this.', okText: 'Erase everything', danger: true });
+    if (!ok) return;
+    const typed = await dialogText({ title: 'Type DELETE to confirm', value: '', okText: 'Erase' });
+    if (typed !== 'DELETE') return toast('Cancelled');
+    await Store.clear(); LS.del(SKEY); location.reload();
+  }
+};
+$('#lock').addEventListener('click', e => e.stopPropagation());
+
+/* ---------------- Help / docs ---------------- */
+const EXAMPLES = [
+  ['Groceries:', '', 'Heading (ends with :)'], ['Milk 2 × 28', '56', 'Words before numbers are labels'],
+  ['gopi 12+7', '19', 'Name + calculation'], ['Bread: ₹45', '45', '₹, $, Rs and 1,00,000 commas are OK'],
+  ['rent = 15000', '15,000', 'Variable (not added to total)'], ['rent * 12', '1,80,000', 'Use the variable later'],
+  ['2500 + 18%', '2,950', 'Add a percentage (GST)'], ['18% of 2500', '450', 'Percentage of a number'],
+  ['sum', '', 'Sum of lines above (up to a blank line)'], ['line2 + line3', '', 'Refer to other lines'],
+  ['ans / 2', '', 'Previous result'], ['sqrt(144)', '12', 'Functions: sqrt, round, log, ln…'],
+  ['5 km to mile', '3.107 mile', 'Unit conversion'], ['// note', '', 'Comment – ignored']
+];
+function openHelp() {
+  closeSidebar();
+  const table = el('table', { class: 'help-table' }, el('tbody', {}, ...EXAMPLES.map(([a, b, c]) => el('tr', {}, el('td', { text: a }), el('td', { text: b }), el('td', { text: c })))));
+  Sheet.show(el('div', {},
+    el('h3', { text: 'How to use ' + APP.name }),
+    el('p', { class: 'msg', text: 'One calculation per line – answer on the right, total at the bottom.\n• Tap an answer to copy it\n• Tap a line number for line options, long-press to select many lines\n• Copy all: toolbar / menu → Copy all\n• Everything can be switched on/off in Settings → Features' }),
+    table,
+    el('div', { class: 'sheet-actions' },
+      el('button', { class: 'btn cancel', text: 'Close', onclick: () => Sheet.close() }),
+      el('button', { class: 'btn ok', text: 'Open example', onclick: async () => { Sheet.close(); closeAllPages(); await createFile('Example', ['Groceries:', 'Milk 2 × 28', 'Bread: ₹45', 'Eggs 12 x 6.5', 'sum', '', 'gopi 12+7', 'suri 34+40+7', '', 'rent = 15000', 'Rent per year: rent * 12', 'GST price: 2500 + 18%', '// tap any answer to copy it', '']); } }))));
+}
+function docSheet(title, text) { Sheet.show(el('div', {}, el('h3', { text: title }), el('div', { class: 'doc', text }), el('div', { class: 'sheet-actions' }, el('button', { class: 'btn ok', text: 'Close', onclick: () => Sheet.close() })))); }
+const PRIVACY = `${APP.name} does not collect, send or sell any data.\n\n• All files and settings are stored only on this device.\n• The app works fully offline and makes no network requests.\n• Backups and exports are created only when you ask for them, and you choose where they go.\n• Uninstalling the app (or clearing its data) deletes everything, so keep a backup.`;
+const LICENSES = `math.js 11.8.0 – Apache License 2.0\nCopyright (C) 2013-2023 Jos de Jong\nhttps://mathjs.org\n\nCapacitor – MIT License\nCopyright (c) 2017-present Ionic\nhttps://capacitorjs.com\n\n${APP.name} – MIT License\n${APP.repo}`;
+
+/* ---------------- Settings pages (schema driven) ---------------- */
+const opt = (v, l) => [v, l];
+const SETTINGS_PAGES = {
+  root: { title: 'Settings', items: [
+    { t: 'section', label: 'Application Settings' },
+    { t: 'nav', page: 'ui', icon: 'phone', label: 'UI Settings', sub: 'Toolbar, result column, line numbers' },
+    { t: 'nav', page: 'calc', icon: 'calc', label: 'Calculation Settings', sub: 'Angles, number format, decimals, total' },
+    { t: 'nav', page: 'editor', icon: 'edit', label: 'Editor Settings', sub: 'Font, size, colours, typing helpers' },
+    { t: 'nav', page: 'keypad', icon: 'keyboard', label: 'Keypad Settings', sub: 'Layout, height, sound, my keys' },
+    { t: 'nav', page: 'appearance', icon: 'palette', label: 'Appearance Settings', sub: 'Theme and colours' },
+    { t: 'nav', page: 'features', icon: 'toggles', label: 'Features on / off', sub: 'Turn any feature on or off' },
+    { t: 'nav', page: 'extensions', icon: 'puzzle', label: 'User extensions', sub: 'Your own functions, constants and CSS' },
+    { t: 'nav', page: 'security', icon: 'shield', label: 'Security', sub: 'App lock with PIN' },
+    { t: 'sep' }, { t: 'section', label: 'Backup/Restore Settings' },
+    { t: 'nav', page: 'impexp', icon: 'import', label: 'Import/Export Settings', sub: 'Copy your setup to another phone' },
+    { t: 'nav', page: 'backup', icon: 'file', label: 'File backup/restore', sub: 'Save or restore all files' },
+    { t: 'sep' }, { t: 'section', label: 'Others' },
+    { t: 'action', icon: 'share', label: `Share ${APP.name} with friends`, run: () => shareApp() },
+    { t: 'action', icon: 'send', label: 'Send feedback', sub: 'Report a problem or ask for a feature', run: () => openLink(APP.repo + '/issues') },
+    { t: 'action', icon: 'help', label: 'Help & examples', run: () => openHelp() },
+    { t: 'action', icon: 'lock', label: 'Privacy policy', run: () => docSheet('Privacy policy', PRIVACY) },
+    { t: 'action', icon: 'award', label: 'Open source licenses', run: () => docSheet('Open source licenses', LICENSES) },
+    { t: 'info', icon: 'wrench', label: 'Build version', sub: () => `${APP.version} Freedom${Native.on ? ' · Android' : ' · Web'}` }
+  ] },
+  ui: { title: 'UI Settings', items: [
+    { t: 'section', label: 'Toolbar' },
+    { t: 'toolbar' },
+    { t: 'section', label: 'Lines' },
+    { t: 'switch', key: 'lineNumbers', icon: '#', label: 'Show line numbers' },
+    { t: 'switch', key: 'separators', icon: '☰', label: 'Line separators' },
+    { t: 'switch', key: 'highlightLine', icon: '▭', label: 'Highlight current line' },
+    { t: 'section', label: 'Result column' },
+    { t: 'switch', key: 'divider', icon: '┃', label: 'Column divider lines' },
+    { t: 'chips', key: 'resultAlign', icon: '⇔', label: 'Result alignment', options: [opt('left', 'Left'), opt('right', 'Right')] },
+    { t: 'range', key: 'resultWidth', icon: '↔', label: 'Result column width', min: 22, max: 55, unit: '%', sub: 'Used when divider or left alignment is on' },
+    { t: 'section', label: 'Total bar' },
+    { t: 'switch', key: 'showTotalBar', icon: 'Σ', label: 'Show total bar' },
+    { t: 'switch', key: 'totalModeHint', icon: 'ƒ', label: 'Show total mode (avg, min…)' },
+    { t: 'chips', key: 'defaultTotal', icon: '＋', label: 'Total for new files', options: [opt('sum', 'Sum'), opt('avg', 'Average'), opt('min', 'Min'), opt('max', 'Max'), opt('count', 'Count')] },
+    { t: 'section', label: 'Sidebar' },
+    { t: 'sideactions' },
+    { t: 'section', label: 'Screen' },
+    { t: 'switch', key: 'keepAwake', icon: '☀', label: 'Keep screen on', sub: 'While the app is open (if supported)', when: () => 'wakeLock' in navigator }
+  ] },
+  calc: { title: 'Calculation Settings', items: [
+    { t: 'chips', key: 'angle', icon: '📐', label: 'Angle unit', options: [opt('deg', 'Degree'), opt('rad', 'Radian')] },
+    { t: 'chips', key: 'numFormat', icon: '🔢', label: 'Number format', options: [opt('in', '1,00,000.5'), opt('intl', '100,000.5'), opt('eu', '100.000,5'), opt('plain', '100000.5')] },
+    { t: 'chips', key: 'decimals', icon: '🎯', label: 'Decimal places', options: [opt('auto', 'Auto'), opt('0', '0'), opt('1', '1'), opt('2', '2'), opt('3', '3'), opt('4', '4'), opt('6', '6')] },
+    { t: 'section', label: 'Smart parsing' },
+    { t: 'switch', key: 'labelVars', icon: '🏷', label: 'Labels become variables', sub: '"rent 700" → use rent later' },
+    { t: 'switch', key: 'excludeAssign', icon: '≠', label: 'Keep variables out of total', sub: 'Lines like x = 5 are not added' },
+    { t: 'switch', key: 'sumKeyword', icon: 'Σ', label: 'sum / avg / count keywords' },
+    { t: 'switch', key: 'units', icon: '📏', label: 'Unit conversion', sub: '5 km to mile' },
+    { t: 'switch', key: 'xMultiply', icon: '×', label: 'Letter x means multiply', sub: '12 x 6.5' },
+    { t: 'switch', key: 'currency', icon: '₹', label: 'Ignore currency signs & Rs' }
+  ] },
+  editor: { title: 'Editor Settings', items: [
+    { t: 'range', key: 'fontSize', icon: '🔠', label: 'Font size', min: 14, max: 32, unit: 'px' },
+    { t: 'chips', key: 'font', icon: 'Aa', label: 'Font', options: [opt('system', 'Default'), opt('condensed', 'Condensed'), opt('serif', 'Serif'), opt('mono', 'Mono'), opt('rounded', 'Rounded')] },
+    { t: 'switch', key: 'italic', icon: '𝘐', label: 'Italic text' },
+    { t: 'switch', key: 'resultBold', icon: '𝐁', label: 'Bold results' },
+    { t: 'section', label: 'Colours' },
+    { t: 'switch', key: 'syntax', icon: '🎨', label: 'Syntax colours', sub: 'Labels, numbers and operators in different colours' },
+    { t: 'swatch', key: 'opColor', icon: '±', label: 'Operator colour', options: Object.entries(OPCOLORS).map(([k, v]) => [k, v]) },
+    { t: 'chips', key: 'resultColor', icon: '=', label: 'Result colour', options: [opt('text', 'Text colour'), opt('accent', 'Accent colour')] },
+    { t: 'section', label: 'Typing' },
+    { t: 'switch', key: 'autoBrackets', icon: '()', label: 'Auto-close brackets' },
+    { t: 'switch', key: 'pasteSplit', icon: '📋', label: 'Paste many lines as rows' },
+    { t: 'chips', key: 'copyFormat', icon: '⧉', label: 'Copy all format', options: [opt('lines', 'Lines'), opt('both', 'Lines = results'), opt('results', 'Results'), opt('report', 'Report')] }
+  ] },
+  keypad: { title: 'Keypad Settings', items: [
+    { t: 'switch', key: 'keypadEnabled', icon: '⌨', label: 'Calculator keypad', sub: 'Turn off to use only the phone keyboard' },
+    { t: 'switch', key: 'kpStart', icon: '▶', label: 'Open keypad on start' },
+    { t: 'chips', key: 'kpOrder', icon: '🔢', label: 'Number order', options: [opt('789', '7 8 9 on top'), opt('123', '1 2 3 on top')] },
+    { t: 'chips', key: 'kpHeight', icon: '↕', label: 'Key height', options: [opt('compact', 'Compact'), opt('normal', 'Normal'), opt('large', 'Large')] },
+    { t: 'switch', key: 'vibrate', icon: '📳', label: 'Vibrate on key press' },
+    { t: 'switch', key: 'keySound', icon: '🔊', label: 'Click sound' },
+    { t: 'switch', key: 'sciTab', icon: 'ƒ', label: 'Scientific tab' },
+    { t: 'switch', key: 'customTab', icon: '★', label: '"My keys" tab' },
+    { t: 'section', label: 'My keys' },
+    { t: 'customkeys' }
+  ] },
+  appearance: { title: 'Appearance Settings', items: [
+    { t: 'chips', key: 'theme', icon: '🌓', label: 'Theme', options: [opt('light', '☀️ Light'), opt('dark', '🌙 Dark'), opt('black', '⚫ Black'), opt('system', '📱 System')] },
+    { t: 'swatch', key: 'accent', icon: '🎨', label: 'Accent colour', options: Object.entries(ACCENTS).map(([k, v]) => [k, v[0]]) }
+  ] },
+  features: { title: 'Features on / off', items: [
+    { t: 'note', text: 'Switch off anything you do not use – the app stays simple. Switch it back on any time.' },
+    { t: 'section', label: 'Editing' },
+    { t: 'switch', key: 'undoEnabled', icon: '↶', label: 'Undo / redo' },
+    { t: 'switch', key: 'tapCopy', icon: '📋', label: 'Tap an answer to copy it' },
+    { t: 'switch', key: 'lineMenu', icon: '#', label: 'Line menu (tap line number)' },
+    { t: 'switch', key: 'autoBrackets', icon: '()', label: 'Auto-close brackets' },
+    { t: 'switch', key: 'pasteSplit', icon: '⎘', label: 'Paste many lines as rows' },
+    { t: 'switch', key: 'syntax', icon: '🎨', label: 'Syntax colours' },
+    { t: 'section', label: 'Calculation' },
+    { t: 'switch', key: 'labelVars', icon: '🏷', label: 'Labels become variables' },
+    { t: 'switch', key: 'sumKeyword', icon: 'Σ', label: 'sum / avg / count keywords' },
+    { t: 'switch', key: 'units', icon: '📏', label: 'Unit conversion' },
+    { t: 'switch', key: 'xMultiply', icon: '×', label: 'Letter x means multiply' },
+    { t: 'switch', key: 'currency', icon: '₹', label: 'Ignore currency signs' },
+    { t: 'section', label: 'Screen' },
+    { t: 'switch', key: 'keypadEnabled', icon: '⌨', label: 'Calculator keypad' },
+    { t: 'switch', key: 'sciTab', icon: 'ƒ', label: 'Scientific keypad tab' },
+    { t: 'switch', key: 'customTab', icon: '★', label: '"My keys" keypad tab' },
+    { t: 'switch', key: 'showTotalBar', icon: 'Σ', label: 'Total bar' },
+    { t: 'switch', key: 'lineNumbers', icon: '#', label: 'Line numbers' },
+    { t: 'switch', key: 'swipe', icon: '👉', label: 'Swipe from edge to open files' },
+    { t: 'switch', key: 'vibrate', icon: '📳', label: 'Key vibration' },
+    { t: 'switch', key: 'keySound', icon: '🔊', label: 'Key sound' },
+    { t: 'section', label: 'Reset' },
+    { t: 'action', icon: 'wrench', label: 'Reset all settings to default', sub: 'Your files are not touched', run: () => resetSettings() }
+  ] },
+  extensions: { title: 'User extensions', items: [
+    { t: 'note', text: 'Define your own functions and constants, one per line. They work in every file.\nExamples:\n  gst(x) = x * 1.18\n  usd = 83.5\n  profit(buy, sell) = sell - buy' },
+    { t: 'textarea', key: 'extensions', rows: 9, check: true },
+    { t: 'section', label: 'Custom CSS (advanced)' },
+    { t: 'note', text: 'Change any part of the look. Example:  .line-editor { letter-spacing: .5px }' },
+    { t: 'textarea', key: 'customCss', rows: 6 }
+  ] },
+  security: { title: 'Security', items: [
+    { t: 'lock' },
+    { t: 'chips', key: 'lockDelay', icon: '⏱', label: 'Lock again after leaving the app', options: [opt(0, 'Immediately'), opt(60, '1 min'), opt(300, '5 min'), opt(-1, 'Only on start')], when: () => settings.lock },
+    { t: 'note', text: 'If you forget the PIN, the only way back in is erasing all data. Keep a backup.' }
+  ] },
+  impexp: { title: 'Import/Export Settings', items: [
+    { t: 'action', icon: 'send', label: 'Export settings', sub: 'Save theme, keypad, toolbar, extensions… to a file', run: () => exportSettings() },
+    { t: 'action', icon: 'import', label: 'Import settings', sub: 'Load settings from a file', run: () => $('#importSettingsInput').click() }
+  ] },
+  backup: { title: 'File backup/restore', items: [
+    { t: 'action', icon: 'send', label: 'Backup all files', sub: 'Creates a .json file with every note', run: () => exportBackup() },
+    { t: 'action', icon: 'import', label: 'Restore from backup', sub: 'Also reads backups from older CalcNote versions', run: () => $('#importInput').click() },
+    { t: 'info', icon: 'file', label: 'Storage', sub: () => `${state.files.length} files · stored on this device only` }
+  ] }
+};
+const pageStack = [];
+function openSettings(page = 'root') { closeSidebar(); openPage(page); }
+function openPage(name) {
+  const def = SETTINGS_PAGES[name]; if (!def) return;
+  const pg = el('section', { class: 'page', 'data-page': name, 'aria-label': def.title },
+    el('div', { class: 'page-header' },
+      el('button', { class: 'icon-btn', 'aria-label': 'Back', html: svg('back'), onclick: () => Overlays.remove('page:' + name) }),
+      el('div', { class: 'page-title', text: def.title })),
+    el('div', { class: 'page-body' }));
+  $('#pages').append(pg); renderPage(pg, name);
+  requestAnimationFrame(() => requestAnimationFrame(() => pg.classList.add('open')));
+  pageStack.push(name);
+  Overlays.push('page:' + name, () => { pg.classList.remove('open'); pageStack.splice(pageStack.lastIndexOf(name), 1); setTimeout(() => pg.remove(), 260); });
+}
+function closeAllPages() { [...pageStack].reverse().forEach(n => Overlays.remove('page:' + n)); }
+function refreshOpenPage() { $$('#pages .page').forEach(pg => renderPage(pg, pg.dataset.page, true)); }
+function pIcon(icon) { return ICON[icon] ? el('span', { class: 'p-ic', html: svg(icon) }) : el('span', { class: 'p-ic', text: icon || '' }); }
+function renderPage(pg, name, keepScroll) {
+  const body = pg.querySelector('.page-body'); const scroll = body.scrollTop;
+  body.replaceChildren(...SETTINGS_PAGES[name].items.filter(it => !it.when || it.when()).map(renderItem).filter(Boolean));
+  if (keepScroll) body.scrollTop = scroll;
+}
+function renderItem(it) {
+  const sub = typeof it.sub === 'function' ? it.sub() : it.sub;
+  const txt = () => el('span', { class: 'p-txt' }, it.label, sub ? el('span', { class: 'p-sub', text: sub }) : null);
+  switch (it.t) {
+    case 'section': return el('div', { class: 'p-section', text: it.label });
+    case 'sep': return el('div', { class: 'p-sep' });
+    case 'note': return el('div', { class: 'p-note', text: it.text });
+    case 'nav': return el('button', { class: 'p-item', 'data-nav': it.page, onclick: () => openPage(it.page) }, pIcon(it.icon), txt());
+    case 'action': return el('button', { class: 'p-item', onclick: it.run }, pIcon(it.icon), txt());
+    case 'info': return el('div', { class: 'p-item' }, pIcon(it.icon), txt());
+    case 'switch': {
+      const input = el('input', { type: 'checkbox', 'data-key': it.key }); input.checked = !!settings[it.key];
+      input.addEventListener('change', () => { setSetting(it.key, input.checked); if (it.key === 'keepAwake' || it.key === 'keypadEnabled') refreshOpenPage(); });
+      return el('label', { class: 'p-item' }, pIcon(it.icon), txt(), el('span', { class: 'switch' }, input, el('span', { class: 'slider' })));
+    }
+    case 'chips': return el('div', { class: 'p-item col' }, el('div', { class: 'p-row' }, pIcon(it.icon), txt()),
+      el('div', { class: 'p-chips p-ctrl' }, ...it.options.map(([v, l]) => el('button', { class: 'p-chip' + (String(settings[it.key]) === String(v) ? ' active' : ''), 'data-key': it.key, 'data-v': v, text: l, onclick: e => { setSetting(it.key, v); e.currentTarget.parentNode.querySelectorAll('.p-chip').forEach(c => c.classList.toggle('active', c === e.currentTarget)); if (it.key === 'theme') refreshOpenPage(); } }))));
+    case 'swatch': return el('div', { class: 'p-item col' }, el('div', { class: 'p-row' }, pIcon(it.icon), txt()),
+      el('div', { class: 'p-sw p-ctrl' }, ...it.options.map(([v, c]) => el('button', { class: 'swatch' + (settings[it.key] === v ? ' active' : ''), title: v, 'aria-label': v, 'data-v': v, style: `background:${c.startsWith('var') ? (v === 'accent' ? (ACCENTS[settings.accent] || ACCENTS.green)[1] : '#ECECEC') : c}`, onclick: e => { setSetting(it.key, v); e.currentTarget.parentNode.querySelectorAll('.swatch').forEach(s => s.classList.toggle('active', s === e.currentTarget)); } }))));
+    case 'range': {
+      const val = el('b', { text: settings[it.key] + (it.unit || '') });
+      const input = el('input', { type: 'range', min: it.min, max: it.max, step: 1, 'data-key': it.key }); input.value = settings[it.key];
+      input.addEventListener('input', () => { val.textContent = input.value + (it.unit || ''); setSetting(it.key, parseInt(input.value, 10)); });
+      return el('div', { class: 'p-item col' }, el('div', { class: 'p-row' }, pIcon(it.icon), txt()), el('div', { class: 'p-range p-ctrl' }, input, val));
+    }
+    case 'textarea': {
+      const ta = el('textarea', { class: 'p-text', rows: it.rows || 6, spellcheck: 'false', autocapitalize: 'off', 'data-key': it.key }); ta.value = settings[it.key];
+      const status = el('div', {});
+      const check = () => {
+        if (!it.check) return;
+        const r = Engine.run([], engineOpts({ extensions: ta.value })).extStatus;
+        status.replaceChildren(...(r.length ? r.map(s => el('div', { class: 'p-note ' + (s.ok ? 'ok' : 'err'), text: `Line ${s.line}: ${s.ok ? '✓ ' + s.name : '✗ ' + s.msg}` })) : [el('div', { class: 'p-note', text: 'No extensions defined yet.' })]));
+      };
+      let t; ta.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => { setSetting(it.key, ta.value); check(); }, 400); });
+      check();
+      return el('div', { class: 'p-item col', style: 'cursor:default' }, ta, status);
+    }
+    case 'toolbar': return listEditor({
+      all: Object.keys(ACTIONS), key: 'toolbar', max: 6,
+      label: k => ACTIONS[k].label, sub: k => settings.toolbar.includes(k) ? 'Shown in the top bar' : 'Hidden', icon: k => ACTIONS[k].emoji
+    });
+    case 'sideactions': return listEditor({
+      all: Object.keys(ACTIONS).filter(k => k !== 'more'), key: 'sideActions', max: 20,
+      label: k => ACTIONS[k].label, sub: k => settings.sideActions.includes(k) ? 'Shown in the sidebar' : 'Hidden', icon: k => ACTIONS[k].emoji
+    });
+    case 'customkeys': {
+      const wrap = el('div', { class: 'list-ed' });
+      settings.customKeys.forEach((k, i) => {
+        const up = el('button', { class: 'mini', text: '↑', disabled: i === 0, onclick: () => { const a = settings.customKeys.slice(); [a[i - 1], a[i]] = [a[i], a[i - 1]]; setSetting('customKeys', a); refreshOpenPage(); } });
+        wrap.append(el('div', { class: 'list-row' }, el('div', { class: 'lr-main' }, el('div', { text: k.l }), el('div', { class: 'lr-sub', text: 'inserts: ' + k.i.replace(/\n/g, '\\n') })), up,
+          el('button', { class: 'mini', text: '✎', onclick: () => editCustomKey(i) })));
+      });
+      wrap.append(el('div', { style: 'display:flex;gap:8px;margin-top:6px' },
+        el('button', { class: 'p-btn', text: '＋ Add key', onclick: () => editCustomKey(-1) }),
+        el('button', { class: 'p-btn ghost', text: 'Restore default keys', onclick: () => { setSetting('customKeys', DEFAULT_KEYS); refreshOpenPage(); toast('Default keys restored'); } })));
+      return el('div', { class: 'p-item col', style: 'cursor:default' }, wrap);
+    }
+    case 'lock': {
+      const input = el('input', { type: 'checkbox' }); input.checked = !!settings.lock;
+      input.addEventListener('change', async () => {
+        if (input.checked) { const ok = await Lock.setup(); input.checked = ok; }
+        else {
+          const pin = await Lock.ask('Enter current PIN', { allowForgot: false });
+          if ((await hashPin(pin, settings.pinSalt)) === settings.pinHash) { Lock.close(); settings.lock = false; settings.pinHash = ''; persistSettings(); toast('App lock turned off'); }
+          else { Lock.close(); input.checked = true; toast('Wrong PIN'); }
+        }
+        refreshOpenPage();
+      });
+      return el('label', { class: 'p-item' }, pIcon('lock'), el('span', { class: 'p-txt' }, 'App lock', el('span', { class: 'p-sub', text: settings.lock ? 'On – PIN needed to open the app' : 'Ask for a PIN when the app opens' })), el('span', { class: 'switch' }, input, el('span', { class: 'slider' })));
+    }
+  }
+  return null;
+}
+function listEditor({ all, key, max, label, sub, icon }) {
+  const on = settings[key].filter(k => all.includes(k)); const off = all.filter(k => !on.includes(k));
+  const wrap = el('div', { class: 'list-ed', 'data-list': key });
+  [...on, ...off].forEach(k => {
+    const enabled = on.includes(k); const i = on.indexOf(k);
+    const cb = el('input', { type: 'checkbox', 'data-item': k }); cb.checked = enabled;
+    cb.addEventListener('change', () => {
+      let a = settings[key].slice();
+      if (cb.checked) { if (a.length >= max) { cb.checked = false; return toast(`Maximum ${max} items`); } a.push(k); } else a = a.filter(x => x !== k);
+      setSetting(key, a); refreshOpenPage();
+    });
+    wrap.append(el('div', { class: 'list-row' + (enabled ? '' : ' off') },
+      el('span', { style: 'width:26px;text-align:center', text: icon(k) }),
+      el('div', { class: 'lr-main' }, el('div', { text: label(k) }), el('div', { class: 'lr-sub', text: sub(k) })),
+      enabled ? el('button', { class: 'mini', text: '↑', disabled: i === 0, onclick: () => { const a = settings[key].slice(); [a[i - 1], a[i]] = [a[i], a[i - 1]]; setSetting(key, a); refreshOpenPage(); } }) : null,
+      el('label', { class: 'switch' }, cb, el('span', { class: 'slider' }))));
+  });
+  return el('div', { class: 'p-item col', style: 'cursor:default' }, wrap);
+}
+async function resetSettings() {
+  const ok = await dialogConfirm({ title: 'Reset all settings?', message: 'Theme, keypad, toolbar, extensions etc. go back to default. Files and app lock are kept.', okText: 'Reset', danger: true });
+  if (!ok) return;
+  const keep = { lock: settings.lock, pinHash: settings.pinHash, pinSalt: settings.pinSalt };
+  Object.keys(settings).forEach(k => delete settings[k]); Object.assign(settings, JSON.parse(JSON.stringify(DEFAULTS)), keep);
+  persistSettings(); fmtCache.clear(); applySettings(); recalc(true); refreshOpenPage(); toast('Settings reset ✓');
+}
+async function shareApp() {
+  const text = `${APP.name} – a free notepad calculator for Android. Download: ${APP.repo}/releases/latest`;
+  if (Native.on) { try { await Native.shareText(APP.name, text); return; } catch (e) { return; } }
+  if (navigator.share) { try { await navigator.share({ title: APP.name, text }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
+  const ok = await copyText(text); toast(ok ? 'Link copied ✓' : 'Could not copy');
+}
+function openLink(url) { const a = el('a', { href: url, target: '_blank', rel: 'noopener' }); document.body.append(a); a.click(); a.remove(); }
+
+/* ---------------- Wire up UI ---------------- */
+$('#btnMenu').addEventListener('click', openSidebar);
+$('#sidebarOverlay').addEventListener('click', closeSidebar);
+$('#sheetOverlay').addEventListener('click', () => Sheet.close());
+$('#headerTitle').addEventListener('click', () => state.title ? renameFlow() : saveFlow());
+$('#totalBtn').addEventListener('click', openTotalEditor);
+$('#sideNew').addEventListener('click', newFileFlow);
+$('#btnDoShare').addEventListener('click', doShareImage);
+$('#btnDownload').addEventListener('click', downloadImage);
+$('#btnShareClose').addEventListener('click', () => Overlays.remove('share'));
+
+document.addEventListener('keydown', e => {
+  const mod = e.ctrlKey || e.metaKey;
+  if (e.key === 'Escape' && Overlays.stack.length) { e.preventDefault(); Overlays.closeTop(); return; }
+  if (mod && !e.altKey) {
+    const k = e.key.toLowerCase(); const inField = e.target.closest && e.target.closest('.sheet, .search, .page');
+    if (k === 's') { e.preventDefault(); saveFlow(); }
+    else if (k === 'z' && !inField) { e.preventDefault(); e.shiftKey ? History.redo() : History.undo(); }
+    else if (k === 'y' && !inField) { e.preventDefault(); History.redo(); }
+    else if (k === 'c' && e.shiftKey && !inField) { e.preventDefault(); copyAll(); }
+  }
+});
+let tX = 0, tY = 0;
+document.addEventListener('touchstart', e => { tX = e.touches[0].clientX; tY = e.touches[0].clientY; }, { passive: true });
+document.addEventListener('touchend', e => {
+  if (!settings.swipe) return;
+  const dx = e.changedTouches[0].clientX - tX, dy = e.changedTouches[0].clientY - tY; const open = Overlays.has('sidebar');
+  if (!open && Overlays.stack.every(o => o.name === 'keypad') && tX < 24 && dx > 70 && Math.abs(dy) < 50) openSidebar();
+  else if (open && dx < -70 && Math.abs(dy) < 50) closeSidebar();
+}, { passive: true });
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') { flushSave(); Lock.hiddenAt = Date.now(); }
+  else {
+    applyWakeLock();
+    if (settings.lock && settings.lockDelay >= 0 && Lock.hiddenAt && (Date.now() - Lock.hiddenAt) / 1000 >= settings.lockDelay && !$('#lock').classList.contains('open')) Lock.unlock();
+  }
+});
+window.addEventListener('pagehide', () => flushSave());
+if (window.visualViewport) { const vv = window.visualViewport; vv.addEventListener('resize', () => { document.body.style.height = vv.height + 'px'; }); }
+
+/* Android hardware back button */
+function nativeBack() {
+  if ($('#lock').classList.contains('open')) { const app = Native.p('App'); if (app) app.minimizeApp ? app.minimizeApp() : app.exitApp(); return; }
+  if (Overlays.closeTop()) return;
+  const app = Native.p('App'); if (app) { if (app.minimizeApp) app.minimizeApp().catch(() => app.exitApp()); else app.exitApp(); }
+}
+
+/* ---------------- Start ---------------- */
+async function init() {
+  applySettings(); updateKbSwitch();
+  if (settings.lock && settings.pinHash) await Lock.unlock();
+  await loadFileList();
+  const last = await Store.get('lastFileId'); let opened = false;
+  if (last && state.files.some(f => f.id === last)) opened = await openFile(last);
+  while (!opened && state.files.length) opened = await openFile(state.files[0].id);
+  if (!opened) await createFile('');
+  if (settings.kpStart && settings.keypadEnabled) openKeypad();
+  const app = Native.p('App'); if (app) app.addListener('backButton', nativeBack);
+  if (!Native.on && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+  window.__cnfReady = true;
+}
+init().catch(err => { console.error(err); toast('Something went wrong while starting'); });
+</script>
+</body>
+</html>
