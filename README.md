@@ -13,6 +13,8 @@ Every push to `main` builds a new APK automatically (see the **Actions** tab).
 
 ## ✨ Features
 
+- **Sheet tabs like Excel** – many tabs inside one file at the bottom; slide the tab bar, swipe the note left/right to change tab, long-press a tab to drag it, tap the active tab for rename / colour / duplicate / delete (with undo), ▦ shows all tabs with search and the grand total.
+
 | | |
 |---|---|
 | **Smart lines** | `name 13+27`, `Milk 2 × 28`, `Rent: ₹5,000`, `2500 + 18%`, `18% of 2500`, `rent = 15000` → `rent * 12`, `line2 + line3`, `ans / 2`, `sum`, `avg`, `// comment`, `5 km to mile`, scientific functions |

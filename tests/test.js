@@ -36,6 +36,7 @@ async function tapKeys(p, labels) { for (const l of labels) await p.click(`#keyp
 async function openSettingsPage(p, nav) { await p.evaluate(() => openSettings()); await p.waitForTimeout(80); if (nav) { await p.click(`.page[data-page="root"] [data-nav="${nav}"]`); await p.waitForTimeout(80); } }
 async function closePages(p) { await p.evaluate(() => closeAllPages()); await p.waitForTimeout(350); }
 async function newFile(p, lines) { await p.evaluate(t => createFile('', t), lines); await p.waitForTimeout(60); }
+const fmtNumNode = n => n.toLocaleString('en-IN');
 const aligned = p => p.evaluate(() => { const m = [...document.querySelectorAll('.ml')].map(e => Math.round(e.getBoundingClientRect().top)); const r = [...document.querySelectorAll('.r')].map(e => Math.round(e.getBoundingClientRect().top)); const g = [...document.querySelectorAll('.g')].map(e => Math.round(e.getBoundingClientRect().top)); return JSON.stringify(m) === JSON.stringify(r) && JSON.stringify(m) === JSON.stringify(g); });
 
 (async () => {
@@ -233,6 +234,144 @@ const aligned = p => p.evaluate(() => { const m = [...document.querySelectorAll(
   await q.screenshot({ path: path.join(OUT, 'selection.png') });
   await q.click('#btnKp123'); await q.waitForTimeout(150); await q.screenshot({ path: path.join(OUT, 'keypad.png') });
   await q.click('#btnKpClose'); await q.click('#btnMenu'); await q.waitForTimeout(350); await q.screenshot({ path: path.join(OUT, 'sidebar.png') });
+
+  // 14. Sheet tabs (like Excel): 30 tabs, slider, tap / swipe / keyboard, per-tab undo, persistence
+  const tc = await mk(); const t = await tc.newPage(); const errs3 = [];
+  t.on('pageerror', e => errs3.push(e.message)); t.on('console', m => { if (m.type() === 'error' && !/fetching the script/.test(m.text())) errs3.push(m.text()); });
+  await t.goto('https://app.local/'); await ready(t);
+  const cdp = await tc.newCDPSession(t);
+  const swipe = async (x1, x2, y = 400, steps = 8, ms = 12) => {
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: x1, y }] });
+    for (let k = 1; k <= steps; k++) { await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x1 + (x2 - x1) * k / steps, y: y + k }] }); await t.waitForTimeout(ms); }
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] }); await t.waitForTimeout(450);
+  };
+  const tabState = () => t.evaluate(() => ({ n: state.sheets.length, i: state.sheetIdx, names: state.sheets.map(s => s.name), dom: document.querySelectorAll('#tabs .tab').length, active: document.querySelector('#tabs .tab.active')?.dataset.i }));
+  await newFile(t, ['a 10', 'b 20', '']);
+  let ts = await tabState();
+  ok(ts.n === 1 && ts.dom === 1 && ts.names[0] === 'Sheet 1' && await t.isVisible('#tabbar'), 'One tab in a new file, tab bar visible', ts);
+  ok(await t.textContent('#tabs .tab.active .tt') === '30', 'Tab shows its total', await t.textContent('#tabs .tab.active .tt'));
+  await t.click('#tabAdd'); await t.waitForTimeout(400);
+  ts = await tabState();
+  ok(ts.n === 2 && ts.i === 1 && ts.active === '1', 'Plus button adds and opens a new tab', ts);
+  ok((await texts(t))[0] === today() && await total(t) === '0', 'New tab starts with today\'s date', await texts(t));
+  await t.click('#ed'); await t.keyboard.press('Control+End'); await typeLines(t, ['x 5', 'y 7']); await t.waitForTimeout(150);
+  ok(await total(t) === '12' && await t.textContent('#tabs .tab.active .tt') === '12', 'Active tab total updates live');
+  // per-tab undo memory
+  await t.click('#tabs .tab[data-i="0"]'); await t.waitForTimeout(400);
+  ok((await texts(t)).join('|').startsWith('a 10|b 20') && await total(t) === '30', 'Tap a tab switches content', await texts(t));
+  await t.click('#tabs .tab[data-i="1"]'); await t.waitForTimeout(400);
+  await t.keyboard.press('Control+z'); await t.waitForTimeout(150);
+  ok(!(await texts(t)).includes('y 7') && (await texts(t)).includes('x 5') || !(await texts(t)).includes('y 7'), 'Undo works per tab after switching', await texts(t));
+  await t.keyboard.press('Control+y'); await t.waitForTimeout(150);
+  ok((await texts(t)).includes('y 7'), 'Redo per tab', await texts(t));
+  // 30 tabs + slider
+  const t0 = Date.now();
+  await t.evaluate(async () => { for (let k = 0; k < 28; k++) await addSheet({ text: `item${k} ${k + 1}\n` }); });
+  ts = await tabState();
+  ok(ts.n === 30 && ts.dom === 30 && ts.i === 29, '30 tabs created', ts);
+  const bar = await t.evaluate(() => { const T = document.getElementById('tabs'); const a = T.querySelector('.tab.active').getBoundingClientRect(), r = T.getBoundingClientRect(); return { sw: T.scrollWidth, cw: T.clientWidth, vis: a.left >= r.left - 1 && a.right <= r.right + 1, h: document.body.scrollWidth <= innerWidth }; });
+  ok(bar.sw > bar.cw * 3 && bar.vis && bar.h, 'Tab bar slides; active tab kept in view; page does not scroll sideways', bar);
+  const sw0 = await t.evaluate(() => document.getElementById('tabs').scrollLeft);
+  await t.evaluate(() => { document.getElementById('tabs').scrollLeft = 0; }); await t.waitForTimeout(100);
+  ok(await t.evaluate(() => document.getElementById('tabs').scrollLeft) === 0 && sw0 > 0, 'Tab bar scrolls like a slider', sw0);
+  // speed
+  const speed = await t.evaluate(async () => { const s = performance.now(); for (let k = 0; k < 30; k++) await switchSheet((k * 7) % 30, { animate: false }); return (performance.now() - s) / 30; });
+  ok(speed < 40, 'Switching tabs is fast (<40ms each)', speed.toFixed(1) + 'ms');
+  console.log(`   tab switch ${speed.toFixed(1)}ms avg, 28 tabs added in ${Date.now() - t0}ms`);
+  await t.evaluate(() => switchSheet(5, { animate: false })); await t.waitForTimeout(100);
+  // swipe on the note
+  await swipe(320, 80); ts = await tabState();
+  ok(ts.i === 6 && ts.active === '6', 'Swipe left → next tab', ts);
+  ok((await texts(t))[0] === 'item4 5', 'Swiped tab shows its own content', await texts(t));
+  await swipe(80, 330); ts = await tabState();
+  ok(ts.i === 5, 'Swipe right → previous tab', ts);
+  await swipe(200, 170, 400, 4, 60); ts = await tabState();
+  ok(ts.i === 5, 'Small slow swipe does not change tab', ts);
+  await swipe(200, 205, 400, 6); await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: 200, y: 300 }] }); for (let k = 1; k <= 6; k++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: 200 + k, y: 300 + k * 40 }] }); await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] }); await t.waitForTimeout(300);
+  ok((await tabState()).i === 5, 'Vertical scroll does not change tab');
+  await t.evaluate(() => switchSheet(29, { animate: false })); await swipe(320, 60);
+  ok((await tabState()).i === 29 && await t.evaluate(() => getComputedStyle(document.getElementById('note')).transform === 'none' || getComputedStyle(document.getElementById('note')).transform === 'matrix(1, 0, 0, 1, 0, 0)'), 'Swipe past the last tab bounces back');
+  await t.click('#ed'); await t.keyboard.press('Control+PageUp'); await t.waitForTimeout(400);
+  ok((await tabState()).i === 28, 'Ctrl+PageUp → previous tab');
+  await t.keyboard.press('Control+PageDown'); await t.waitForTimeout(400);
+  ok((await tabState()).i === 29, 'Ctrl+PageDown → next tab');
+  // rename via tapping the active tab → menu
+  await t.evaluate(() => switchSheet(1, { animate: false })); await t.waitForTimeout(150);
+  await t.click('#tabs .tab.active'); await t.waitForSelector('.sheet.open .menu-item[data-key="rename"]');
+  await t.waitForTimeout(400); await t.screenshot({ path: path.join(OUT, 'tab-menu.png') });
+  await t.click('.menu-item[data-key="rename"]'); await t.waitForSelector('.sheet.open input'); await t.fill('.sheet.open input', 'Ramesh'); await t.click('.sheet .btn.ok'); await t.waitForTimeout(300);
+  ok((await tabState()).names[1] === 'Ramesh' && await t.textContent('#tabs .tab.active .tn') === 'Ramesh', 'Rename tab', (await tabState()).names[1]);
+  // colour
+  await t.evaluate(() => { tabMenu(1); }); await t.waitForSelector('.menu-item[data-key="color"]'); await t.click('.menu-item[data-key="color"]'); await t.waitForTimeout(300); await t.click('.menu-item[data-key="green"]'); await t.waitForTimeout(250);
+  ok(await t.evaluate(() => state.sheets[1].color === 'green' && document.querySelector('#tabs .tab[data-i="1"]').dataset.c === 'green'), 'Tab colour');
+  // move & long-press drag reorder
+  await t.evaluate(() => switchSheet(0, { animate: false })); await t.evaluate(() => { document.getElementById('tabs').scrollLeft = 0; }); await t.waitForTimeout(200);
+  const r0 = await t.evaluate(() => { const b = document.querySelectorAll('#tabs .tab'); return [0, 2].map(k => { const r = b[k].getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }); });
+  await t.mouse.move(...r0[0]); await t.mouse.down(); await t.waitForTimeout(560);
+  for (let k = 1; k <= 10; k++) { await t.mouse.move(r0[0][0] + (r0[1][0] + 20 - r0[0][0]) * k / 10, r0[0][1]); await t.waitForTimeout(20); }
+  await t.mouse.up(); await t.waitForTimeout(250);
+  ts = await tabState();
+  ok(ts.names[2] === 'Sheet 1' && ts.names[0] === 'Ramesh' && ts.i === 2, 'Long-press + drag reorders tabs (current tab follows)', ts.names.slice(0, 4));
+  ok((await texts(t))[0] === 'a 10', 'Content stays with its tab after reorder', await texts(t));
+  // delete + undo
+  const before = (await tabState()).names.join();
+  await t.evaluate(() => { deleteSheet(state.sheetIdx); }); await t.waitForSelector('.sheet.open .btn.danger'); await t.click('.sheet .btn.danger'); await t.waitForTimeout(300);
+  ts = await tabState();
+  ok(ts.n === 29 && !ts.names.includes('Sheet 1'), 'Delete tab', ts.n);
+  await t.click('#toast .tact'); await t.waitForTimeout(350);
+  ts = await tabState();
+  ok(ts.n === 30 && ts.names.join() === before && (await texts(t))[0] === 'a 10', 'Undo delete restores the tab in place', ts.names.slice(0, 4));
+  // picker with search + grand total
+  const grand = await t.evaluate(() => grandTotal());
+  ok(grand === 30 + 12 + Array.from({ length: 28 }, (_, k) => k + 1).reduce((a, b) => a + b, 0), 'Grand total of all tabs', grand);
+  await t.click('#tabAll'); await t.waitForSelector('.sheet.open .tab-list');
+  ok(await t.$$eval('.tab-list .ti', x => x.length) === 30, 'All-tabs list shows 30 tabs');
+  await t.waitForTimeout(400); await t.screenshot({ path: path.join(OUT, 'tab-picker.png') });
+  await t.fill('.sheet.open input', 'item17'); await t.waitForTimeout(100);
+  ok(await t.$$eval('.tab-list .ti', x => x.length) === 1, 'Search inside tabs');
+  await t.click('.tab-list .ti'); await t.waitForTimeout(500);
+  ok((await texts(t))[0] === 'item17 18', 'Picker opens the tab', await texts(t));
+  // all-tabs total mode
+  await t.evaluate(() => { state.total.mode = 'alltabs'; render(); }); await t.waitForTimeout(80);
+  ok(await total(t) === fmtNumNode(grand), 'Total mode "All tabs"', await total(t));
+  await t.evaluate(() => { state.total.mode = 'sum'; render(); scheduleSave(); });
+  // share image with tab name
+  ok(await t.evaluate(async () => { const c = await drawNoteImage(); return c && c.width > 100; }), 'Share image for a tab');
+  // persistence
+  await t.evaluate(() => switchSheet(3, { animate: false })); await t.evaluate(() => flushSave()); await t.waitForTimeout(200);
+  const snapNames = (await tabState()).names.join();
+  await t.reload(); await ready(t); await t.waitForTimeout(300);
+  ts = await tabState();
+  ok(ts.n === 30 && ts.names.join() === snapNames && ts.i === 3 && ts.active === '3', 'Tabs, order and open tab survive restart', ts);
+  ok(await t.evaluate(() => state.sheets[0].color === 'green'), 'Tab colour saved');
+  await t.click('#btnMenu'); await t.waitForTimeout(350);
+  ok((await t.textContent('#fileList')).includes('30 tabs'), 'File list shows tab count');
+  await t.evaluate(() => closeSidebar()); await t.waitForTimeout(300);
+  // backup → restore keeps tabs
+  const bk = await t.evaluate(async () => { await flushSave(); const files = []; for (const m of state.files) files.push(await Store.get(m.id)); return JSON.stringify({ app: 'CalcNote', folders: state.folders, files }); });
+  const t2c = await mk(); const t2 = await t2c.newPage(); await t2.goto('https://app.local/'); await ready(t2);
+  t2.evaluate(txt => importBackupText(txt), bk); await t2.waitForSelector('.sheet.open .btn.ok'); await t2.click('.sheet .btn.ok'); await t2.waitForTimeout(800);
+  const rid = await t2.evaluate(() => state.files.find(f => f.tabs === 30)?.id);
+  ok(!!rid, 'Backup restore keeps all tabs');
+  if (rid) { await t2.evaluate(id => openFile(id), rid); await t2.waitForTimeout(300); ok((await t2.evaluate(() => state.sheets.map(s => s.name).join())) === snapNames, 'Restored tab names', ''); }
+  await t2c.close();
+  // duplicate file keeps tabs
+  await t.evaluate(() => duplicateFlow(state.fileId)); await t.waitForTimeout(500);
+  ok(await t.evaluate(() => state.sheets.length === 30 && state.title.includes('(copy)')), 'Duplicate file keeps tabs');
+  // settings toggles
+  await t.evaluate(() => { settings.tabsEnabled = false; applySettings(); }); await t.waitForTimeout(80);
+  ok(!(await t.isVisible('#tabbar')), 'Tabs can be turned off');
+  await t.evaluate(() => { settings.tabsEnabled = true; settings.tabTotals = false; applySettings(); }); await t.waitForTimeout(80);
+  ok(await t.isVisible('#tabbar') && !(await t.isVisible('#tabs .tab .tt')), 'Tab totals can be hidden');
+  await t.evaluate(() => { settings.tabTotals = true; applySettings(); });
+  // single-tab file: swipe does nothing, old files have one tab
+  await newFile(t, ['q 1', '']); await swipe(320, 60);
+  ok((await tabState()).n === 1 && (await texts(t))[0] === 'q 1', 'Swipe in a one-tab file is harmless');
+  await t.evaluate(() => switchSheet(0)); await t.screenshot({ path: path.join(OUT, 'tabs.png') });
+  await t.evaluate(() => openFile(state.files.find(f => f.tabs === 30 && !f.title.includes('copy')).id)); await t.waitForTimeout(2600);
+  await t.screenshot({ path: path.join(OUT, 'tabs30.png') });
+  ok(errs3.length === 0, 'No JS errors (tabs)', errs3);
+  await tc.close();
 
   await browser.close();
   console.log(`\nPASS ${pass}  FAIL ${fail}`); fails.forEach(f => console.log('  ✗ ' + f));

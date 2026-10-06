@@ -121,6 +121,38 @@ body.hl-line.focused .ml.cur,body.hl-line.focused .g.cur,body.hl-line.focused .r
 html[data-theme="dark"] .t-lbl,html[data-theme="black"] .t-lbl{color:var(--item-dark,color-mix(in srgb,var(--primary) 75%,#fff))}
 .t-op{color:var(--op)} .t-fn{color:var(--fn)} .t-com{color:var(--com);font-style:italic}
 
+/* SHEET TABS (like Excel) */
+.tabbar{display:flex;align-items:stretch;height:44px;flex-shrink:0;background:var(--surface-2);border-top:1px solid var(--row-border);position:relative;z-index:2}
+body.no-tabs .tabbar,body.kbd-open.hide-tabs-typing .tabbar{display:none}
+.tabs{flex:1;min-width:0;display:flex;gap:3px;overflow-x:auto;overflow-y:hidden;padding:0 10px;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 12px,#000 calc(100% - 12px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 12px,#000 calc(100% - 12px),transparent 100%)}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;max-width:46vw;min-width:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:0 14px;margin-top:5px;border:none;border-radius:10px 10px 0 0;background:transparent;color:var(--text-2);cursor:pointer;position:relative;line-height:1.15;-webkit-user-select:none;user-select:none;touch-action:pan-x;transition:background .15s,color .15s,transform .12s}
+.tab .tn{font-size:14px;font-weight:650;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tab .tt{font-size:11px;font-weight:600;opacity:.8;font-variant-numeric:tabular-nums;white-space:nowrap}
+body.no-tab-totals .tab .tt{display:none}
+.tab:active{background:color-mix(in srgb,var(--primary) 10%,transparent)}
+.tab.active{background:var(--bg);color:var(--strong);box-shadow:0 -1px 3px rgba(0,0,0,.08)}
+.tab.active::after{content:'';position:absolute;left:10px;right:10px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--tabc,var(--primary))}
+.tab[data-c]::before{content:'';position:absolute;left:6px;right:6px;top:0;height:4px;border-radius:0 0 4px 4px;background:var(--tabc)}
+.tab.dragging{z-index:5;transform:scale(1.08) translateY(-2px);background:var(--surface);box-shadow:0 6px 16px rgba(0,0,0,.25);color:var(--strong)}
+.tabbar .tbb{flex:0 0 auto;width:44px;border:none;background:none;color:var(--strong);font-size:20px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.tabbar .tbb:active{background:color-mix(in srgb,var(--primary) 15%,transparent)}
+.tabbar .tbb svg{width:22px;height:22px}
+.tab-count{position:absolute;top:4px;right:4px;font-size:9px;font-weight:800;background:var(--primary);color:#fff;border-radius:8px;padding:0 4px;min-width:14px;text-align:center}
+.note.swiping{will-change:transform}
+.tab-list .ti{display:flex;align-items:center;gap:12px;width:100%;border:none;background:none;color:var(--text);padding:11px 8px;border-radius:10px;cursor:pointer;text-align:left;font-size:15.5px}
+.tab-list .ti:active{background:var(--surface-2)}
+.tab-list .ti.on{background:color-mix(in srgb,var(--primary) 14%,transparent);font-weight:700}
+.tab-list .ti .dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;background:var(--tabc,var(--border))}
+.tab-list .ti .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tab-list .ti .sm{font-size:12px;color:var(--text-2);white-space:nowrap}
+.tab-list .ti .vl{font-weight:700;color:var(--res);font-variant-numeric:tabular-nums;white-space:nowrap}
+.grand{display:flex;justify-content:space-between;align-items:baseline;padding:10px 12px;margin:4px 0 8px;border-radius:12px;background:var(--total-bg);color:var(--total-text);font-weight:700}
+.grand b{font-size:20px}
+.toast.act{pointer-events:auto;display:flex;align-items:center;gap:14px}
+.toast .tact{background:none;border:none;color:#A5D6A7;font-weight:800;font-size:14px;text-transform:uppercase;cursor:pointer;padding:2px 0}
+
 /* NAME SUGGESTIONS */
 .suggest{display:none;flex-shrink:0;gap:6px;padding:6px 8px;overflow-x:auto;background:var(--surface);border-top:1px solid var(--row-border);scrollbar-width:none}
 .suggest::-webkit-scrollbar{display:none}
@@ -370,6 +402,11 @@ var capacitorExports=function(e){"use strict";var t;e.ExceptionCode=void 0,(t=e.
   </div>
 </main>
 
+<div class="tabbar" id="tabbar" role="tablist" aria-label="Sheet tabs">
+  <button class="tbb" id="tabAll" aria-label="All tabs" title="All tabs"><svg class="i" viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg></button>
+  <div class="tabs" id="tabs"></div>
+  <button class="tbb" id="tabAdd" aria-label="New tab" title="New tab">＋</button>
+</div>
 <div class="suggest" id="suggest" aria-label="Name suggestions"></div>
 
 <div class="total-bar" id="totalBar">
@@ -450,7 +487,7 @@ var capacitorExports=function(e){"use strict";var t;e.ExceptionCode=void 0,(t=e.
 /* =====================================================================
    CalcNote Freedom – notepad calculator
    ===================================================================== */
-const APP = { name: 'CalcNote Freedom', version: '3.3.1', build: 0, repo: 'https://github.com/mahi85180/calcnote-freedom', api: 'https://api.github.com/repos/mahi85180/calcnote-freedom/releases/latest' };
+const APP = { name: 'CalcNote Freedom', version: '3.4.0', build: 0, repo: 'https://github.com/mahi85180/calcnote-freedom', api: 'https://api.github.com/repos/mahi85180/calcnote-freedom/releases/latest' };
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 const el = (tag, props = {}, ...kids) => {
@@ -594,7 +631,7 @@ const DEFAULTS = {
   keypadEnabled: true, kpStart: false, vibrate: true, keySound: false, kpHeight: 'normal', kpOrder: '789',
   sciTab: true, customTab: true, customKeys: DEFAULT_KEYS,
   sideActions: ['serial', 'date', 'image', 'sharetext', 'copy', 'csv', 'redo', 'clear', 'update', 'settings', 'help'],
-  sortBy: 'updated',
+  sortBy: 'updated', tabsEnabled: true, tabTotals: true, swipeTabs: true, hideTabsTyping: true, newTabName: 'date',
   imgCols: 'auto', imgSize: 'L', imgSno: true, imgSkipBlank: true, imgDate: true, textStyle: 'table',
   autoUpdate: true,
   lock: false, lockDelay: 0, pinHash: '', pinSalt: '',
@@ -792,7 +829,7 @@ const Engine = (() => {
       case 'count': total = values.length; break;
       case 'manual': total = parseFloat(t.manualValue) || 0; break;
       case 'formula': {
-        const fs = Object.assign({}, scope, { total: sum, sum, avg: values.length ? sum / values.length : 0, count: values.length });
+        const fs = Object.assign({}, scope, { total: sum, sum, avg: values.length ? sum / values.length : 0, count: values.length, alltabs: typeof o.allTabs === 'number' ? o.allTabs : sum });
         const f = preprocess(String(t.formula || ''), o); const r = f ? tryEval(f, fs, o) : null;
         if (r && r.kind === 'num') total = r.value; else { total = 0; totalError = !!f; } break;
       }
@@ -849,11 +886,11 @@ function highlightHTML(text, vars, labelVars) {
 }
 
 /* ---------------- App state ---------------- */
-const state = { fileId: null, title: '', folder: '', files: [], folders: [], trash: [], total: defaultTotal(), keypadTab: 'basic', calc: null, dirty: false, loading: false, curLine: -1, pendingDate: null, labelIndex: {} };
+const state = { sheets: [], sheetIdx: 0, fileId: null, title: '', folder: '', files: [], folders: [], trash: [], total: defaultTotal(), keypadTab: 'basic', calc: null, dirty: false, loading: false, curLine: -1, pendingDate: null, labelIndex: {} };
 function defaultTotal() { return { label: 'Total', mode: settings.defaultTotal || 'sum', manualValue: 0, formula: '' }; }
 function normTotal(t) {
   t = Object.assign({ label: 'Total', mode: 'sum', manualValue: 0, formula: '' }, t || {});
-  if (t.mode === 'auto' || !['sum', 'avg', 'min', 'max', 'count', 'manual', 'formula'].includes(t.mode)) t.mode = 'sum';
+  if (t.mode === 'auto' || !['sum', 'avg', 'min', 'max', 'count', 'manual', 'formula', 'alltabs'].includes(t.mode)) t.mode = 'sum';
   t.label = String(t.label || 'Total'); t.formula = String(t.formula || ''); return t;
 }
 const displayTitle = () => state.title || APP.name;
@@ -861,7 +898,11 @@ const ws = $('#workspace'), ED = $('#ed'), MIR = $('#mirror'), GUT = $('#gutter'
 
 /* ---------------- Toast / clipboard / feedback ---------------- */
 let toastTimer = null;
-function toast(msg, ms = 2000) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), ms); }
+function toast(msg, ms = 2000, action) {
+  const t = $('#toast'); t.replaceChildren(document.createTextNode(msg)); t.classList.toggle('act', !!action);
+  if (action) t.append(el('button', { class: 'tact', text: action.label, onclick: () => { t.classList.remove('show', 'act'); action.run(); } }));
+  t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show', 'act'), action ? Math.max(ms, 4500) : ms);
+}
 async function copyText(text) {
   try { if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(text); return true; } } catch (e) {}
   try { const had = document.activeElement === ED; const ta = el('textarea', { style: 'position:fixed;top:-1000px;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); const ok = document.execCommand('copy'); ta.remove(); if (had) ED.focus({ preventScroll: true }); return ok; } catch (e) { return false; }
@@ -1011,7 +1052,7 @@ function render(forcePaint) {
   }
   const digits = String(texts.length).length;
   document.documentElement.style.setProperty('--num-w', `calc(${Math.max(2, digits)} * 0.56em + ${settings.lineNumbers ? 14 : 0}px)`);
-  renderTotal();
+  renderTotal(); updateActiveTabTotal();
   ED.placeholder = texts.length === 1 && !texts[0] ? 'Type here…  e.g.  Milk 2 × 28' : '';
 }
 function queueRender() { if (!renderQueued) { renderQueued = true; requestAnimationFrame(() => { if (renderQueued) render(); }); } }
@@ -1021,8 +1062,8 @@ function renderTotal() {
   if (sel) { bar.classList.add('sel'); $('#totalLabel').textContent = `Selected (${sel.count}):`; $('#totalValue').textContent = fmtNum(sel.sum); $('#totalMode').textContent = ''; return; }
   bar.classList.remove('sel');
   $('#totalLabel').textContent = state.total.label + ':';
-  $('#totalValue').textContent = res.totalError ? 'Error' : (state.total.mode === 'count' ? String(res.total) : fmtNum(res.total));
-  const modeNames = { sum: '', avg: 'avg', min: 'min', max: 'max', count: '#', manual: 'fixed', formula: 'ƒ' };
+  $('#totalValue').textContent = totalString();
+  const modeNames = { sum: '', avg: 'avg', min: 'min', max: 'max', count: '#', manual: 'fixed', formula: 'ƒ', alltabs: 'all tabs' };
   $('#totalMode').textContent = settings.totalModeHint ? (modeNames[state.total.mode] || '') : '';
 }
 function selectionInfo() {
@@ -1233,7 +1274,7 @@ const History = {
 
 /* ---------------- Files, folders, recycle bin ---------------- */
 const newId = p => (p || 'file_') + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-function metaOf(f) { return { id: f.id, title: String(f.title || ''), folder: f.folder || '', pinned: !!f.pinned, createdAt: f.createdAt || new Date().toISOString(), updatedAt: f.updatedAt || f.createdAt || new Date().toISOString(), lines: f.lines || 0, totalText: f.totalText || '', deletedAt: f.deletedAt }; }
+function metaOf(f) { return { id: f.id, title: String(f.title || ''), folder: f.folder || '', pinned: !!f.pinned, createdAt: f.createdAt || new Date().toISOString(), updatedAt: f.updatedAt || f.createdAt || new Date().toISOString(), lines: f.lines || 0, totalText: f.totalText || '', tabs: f.tabs || 1, deletedAt: f.deletedAt }; }
 async function loadLists() {
   const raw = await Store.get('filesList'); state.files = Array.isArray(raw) ? raw.filter(f => f && f.id).map(metaOf) : [];
   const fo = await Store.get('folders'); state.folders = Array.isArray(fo) ? fo.filter(f => f && f.id) : [];
@@ -1252,17 +1293,21 @@ function scheduleSave() { if (state.loading) return; state.dirty = true; clearTi
 function saveNow(showToast = false) {
   clearTimeout(saveTimer); saveTimer = null;
   if (!state.fileId) return saveChain;
-  const id = state.fileId, now = new Date().toISOString(), texts = getTexts();
-  const totalSnap = JSON.parse(JSON.stringify(state.total)), title = state.title, folder = state.folder;
-  const totalText = state.calc && !state.calc.totalError ? fmtNum(state.calc.total) : '';
-  const labels = [...new Set(currentLabels())].slice(0, 400);
+  const id = state.fileId, now = new Date().toISOString();
+  const cur = state.sheets[state.sheetIdx]; if (cur) { cur.text = ED.value; cur.total = state.total; }
+  const sheetsSnap = state.sheets.map(sh => ({ id: sh.id, name: sh.name, color: sh.color || '', rows: sh.text.split('\n').map((t, i) => ({ id: 'row_' + (i + 1), text: t })), totalSettings: JSON.parse(JSON.stringify(sh.total)) }));
+  const activeSheet = state.sheetIdx, title = state.title, folder = state.folder;
+  const multi = state.sheets.length > 1;
+  const totalText = multi ? fmtNum(grandTotal()) : (state.calc && !state.calc.totalError ? totalString() : '');
+  const lineCount = state.sheets.reduce((a, sh) => a + sh.text.split('\n').filter(t => t.trim()).length, 0);
+  const labels = [...new Set([...currentLabels(), ...(state.labelIndex[id] || [])])].slice(0, 400);
   state.dirty = false;
   saveChain = saveChain.then(async () => {
     const existing = (await Store.get(id)) || {};
     const m = state.files.find(f => f.id === id);
-    const rec = { id, title, folder, pinned: m ? m.pinned : false, rows: texts.map((t, i) => ({ id: 'row_' + (i + 1), text: t })), totalSettings: totalSnap, createdAt: existing.createdAt || now, updatedAt: now };
+    const rec = { id, title, folder, pinned: m ? m.pinned : false, rows: sheetsSnap[0].rows, totalSettings: sheetsSnap[0].totalSettings, sheets: sheetsSnap, activeSheet, createdAt: existing.createdAt || now, updatedAt: now };
     await Store.set(id, rec);
-    if (m) { m.updatedAt = now; m.title = title; m.folder = folder; m.lines = texts.filter(t => t.trim()).length; m.totalText = totalText; }
+    if (m) { m.updatedAt = now; m.title = title; m.folder = folder; m.lines = lineCount; m.totalText = totalText; m.tabs = sheetsSnap.length; }
     state.labelIndex[id] = labels; Store.set('labelIndex', state.labelIndex);
     await saveFileList();
     if (showToast) toast('Saved ✓');
@@ -1278,26 +1323,20 @@ async function openFile(id) {
   if (!rec) { state.files = state.files.filter(f => f.id !== id); await saveFileList(); return false; }
   state.loading = true; state.fileId = id; state.folder = rec.folder || (state.files.find(f => f.id === id) || {}).folder || '';
   setTitle(String(rec.title || '').replace(/^Untitled( note)?$/i, ''));
-  state.total = normTotal(rec.totalSettings);
-  const texts = Array.isArray(rec.rows) ? rec.rows.map(r => String((r && r.text) || '')) : [''];
-  if (settings.dateOnNew && !texts.some(t => t.trim())) { texts.length = 0; texts.push(fmtDate(), ''); }
-  if (texts.length && texts[texts.length - 1].trim() !== '') texts.push('');
+  state.sheets = sheetsFromRecord(rec);
   if (document.activeElement === ED) ED.blur();
-  state.curLine = -1;
-  for (let i = 0; i < htmlCache.length; i++) htmlCache[i] = null;
-  const v = texts.join('\n'); ED.value = v; ED.setSelectionRange(v.length, v.length);
-  render(true); state.loading = false; state.dirty = false;
-  History.reset(); Store.set('lastFileId', id); renderFileList();
-  ws.scrollTop = 0;
-  if (settings.openAtEnd) { const m = cells.m[cells.m.length - 1]; if (m) { const a = ws.getBoundingClientRect(), b = m.getBoundingClientRect(); if (b.bottom > a.bottom) ws.scrollTop = b.bottom - a.bottom + 40; } }
+  showSheet(Math.min(Math.max(0, rec.activeSheet | 0), state.sheets.length - 1));
+  state.loading = false; state.dirty = false;
+  Store.set('lastFileId', id); renderFileList();
   if (document.body.classList.contains('kp-open')) ED.focus({ preventScroll: true });
   return true;
 }
-async function createFile(title = '', texts = null, total, folder = state.folder) {
+async function createFile(title = '', texts = null, total, folder = state.folder, sheets = null) {
   await flushSave();
   if (!texts) texts = settings.dateOnNew ? [fmtDate(), ''] : [''];
   const now = new Date().toISOString();
   const rec = { id: newId(), title, folder: folder || '', rows: texts.map((t, i) => ({ id: 'row_' + (i + 1), text: t })), totalSettings: normTotal(total || defaultTotal()), createdAt: now, updatedAt: now };
+  if (sheets && sheets.length) { rec.sheets = JSON.parse(JSON.stringify(sheets)); rec.rows = rec.sheets[0].rows; rec.totalSettings = rec.sheets[0].totalSettings; }
   await Store.set(rec.id, rec); state.files.unshift(metaOf(rec)); await saveFileList(); await openFile(rec.id);
   return rec.id;
 }
@@ -1334,7 +1373,7 @@ async function moveFlow(id) {
   if (id === state.fileId) { state.folder = target; setTitle(state.title); await saveNow(); } else { const rec = await Store.get(id); if (rec) { rec.folder = target; await Store.set(id, rec); } await saveFileList(); }
   toast(target ? `Moved to ${folderName(target)}` : 'Moved out of folder');
 }
-async function duplicateFlow(id) { await flushSave(); const rec = await Store.get(id); if (!rec) return; closeSidebar(); await createFile((rec.title || 'Untitled') + ' (copy)', (rec.rows || []).map(r => r.text || ''), rec.totalSettings, rec.folder); toast('Duplicated ✓'); }
+async function duplicateFlow(id) { await flushSave(); const rec = await Store.get(id); if (!rec) return; closeSidebar(); await createFile((rec.title || 'Untitled') + ' (copy)', (rec.rows || []).map(r => r.text || ''), rec.totalSettings, rec.folder, Array.isArray(rec.sheets) ? rec.sheets.map(sh => Object.assign({}, sh, { id: newId('sh_') })) : null); toast('Duplicated ✓'); }
 async function pinFlow(id) { const m = state.files.find(f => f.id === id); if (!m) return; m.pinned = !m.pinned; const rec = await Store.get(id); if (rec) { rec.pinned = m.pinned; await Store.set(id, rec); } await saveFileList(); toast(m.pinned ? 'Pinned 📌' : 'Unpinned'); }
 async function deleteFlow(id, { ask = true } = {}) {
   const m = state.files.find(f => f.id === id); if (!m) return;
@@ -1406,7 +1445,7 @@ function sortedFiles(arr = state.files) {
 }
 const openFolders = new Set((LS.get('cnf_open_folders', '') || '').split(',').filter(Boolean));
 function fileRow(f, inFolder) {
-  const sub = [relTime(f.updatedAt), f.lines ? `${f.lines} line${f.lines === 1 ? '' : 's'}` : '', f.totalText ? `= ${f.totalText}` : ''].filter(Boolean).join(' · ');
+  const sub = [relTime(f.updatedAt), f.tabs > 1 ? `${f.tabs} tabs` : '', f.lines ? `${f.lines} line${f.lines === 1 ? '' : 's'}` : '', f.totalText ? `= ${f.totalText}` : ''].filter(Boolean).join(' · ');
   return el('div', { class: 'file' + (inFolder ? ' in' : '') + (f.id === state.fileId ? ' active' : ''), 'data-id': f.id, role: 'button' },
     el('div', { class: 'file-info' }, el('div', { class: 'file-title', text: (f.pinned ? '📌 ' : '') + (f.title || 'Untitled') }), el('div', { class: 'file-sub', text: sub })),
     el('button', { class: 'file-more', 'aria-label': 'File options', html: svg('more', 22) }));
@@ -1442,6 +1481,262 @@ $('#fileList').addEventListener('click', e => {
 });
 $('#fileSearch').addEventListener('input', renderFileList);
 $('#sortChips').addEventListener('click', e => { const c = e.target.closest('.chip'); if (c) { settings.sortBy = c.dataset.v; persistSettings(); renderFileList(); } });
+
+/* =====================================================================
+   SHEET TABS – several sheets inside one file (like Excel), swipe to switch
+   ===================================================================== */
+const TAB_COLORS = { '': 'None', red: '#E53935', orange: '#FB8C00', yellow: '#FDD835', green: '#43A047', teal: '#00897B', blue: '#1E88E5', purple: '#8E24AA', pink: '#D81B60', grey: '#757575' };
+const sheetCache = new Map();
+function sheetsFromRecord(rec) {
+  const mk = (sh, i) => ({ id: String(sh.id || newId('sh_')), name: String(sh.name || 'Sheet ' + (i + 1)), color: sh.color || '', text: (Array.isArray(sh.rows) ? sh.rows : []).map(r => String((r && r.text) || '')).join('\n'), total: normTotal(sh.totalSettings) });
+  if (Array.isArray(rec.sheets) && rec.sheets.length) return rec.sheets.map(mk);
+  return [mk({ id: 'sh_1', name: 'Sheet 1', rows: rec.rows || [], totalSettings: rec.totalSettings }, 0)];
+}
+function sheetValue(sh) {                     // total of a sheet that is not on screen (cached)
+  const t = sh.total.mode === 'alltabs' ? Object.assign({}, sh.total, { mode: 'sum' }) : sh.total;
+  const key = sh.text + '\u0000' + JSON.stringify(t) + '\u0000' + settings.angle + settings.extensions + settings.labelVars + settings.excludeAssign + settings.sumKeyword + settings.units + settings.xMultiply + settings.currency;
+  let v = sheetCache.get(key);
+  if (v === undefined) { const r = Engine.run(sh.text.split('\n'), engineOpts({ total: t })); v = r.totalError ? 0 : r.total; if (sheetCache.size > 400) sheetCache.clear(); sheetCache.set(key, v); }
+  return v;
+}
+function currentSheetValue() { const r = state.calc; if (!r) return 0; return state.total.mode === 'alltabs' ? r.sum : (r.totalError ? 0 : r.total); }
+function grandTotal() { return state.sheets.reduce((a, sh, i) => a + (i === state.sheetIdx ? currentSheetValue() : sheetValue(sh)), 0); }
+function tabValueText(i) {
+  const sh = state.sheets[i]; if (!sh) return '';
+  if (i === state.sheetIdx) return state.total.mode === 'alltabs' ? fmtNum(currentSheetValue()) : totalString();
+  return sh.total.mode === 'count' ? String(sheetValue(sh)) : fmtNum(sheetValue(sh));
+}
+function stashSheet(keepHistory = true) {
+  const sh = state.sheets[state.sheetIdx]; if (!sh) return;
+  if (keepHistory) History.before();
+  sh.text = ED.value; sh.total = state.total; sh.scroll = ws.scrollTop; sh.sel = [ED.selectionStart, ED.selectionEnd];
+  if (keepHistory) sh.hist = { stack: History.stack, idx: History.idx };
+}
+function showSheet(i) {
+  const sh = state.sheets[i]; if (!sh) return;
+  state.sheetIdx = i; state.total = sh.total; state.pendingDate = null; state.curLine = -1;
+  let texts = sh.text.split('\n');
+  if (settings.dateOnNew && !texts.some(t => t.trim())) texts = [fmtDate(), ''];
+  if (texts.length && texts[texts.length - 1].trim() !== '') texts.push('');
+  for (let k = 0; k < htmlCache.length; k++) htmlCache[k] = null;
+  const v = texts.join('\n'); ED.value = v;
+  const sel = sh.sel && sh.sel[1] <= v.length ? sh.sel : [v.length, v.length]; ED.setSelectionRange(sel[0], sel[1]);
+  const wasLoading = state.loading; state.loading = true; render(true); state.loading = wasLoading;
+  if (sh.hist) { History.stack = sh.hist.stack; History.idx = sh.hist.idx; clearTimeout(History.timer); History.timer = null; History.ui(); } else History.reset();
+  if (sh.scroll != null) ws.scrollTop = sh.scroll;
+  else { ws.scrollTop = 0; if (settings.openAtEnd) { const m = cells.m[cells.m.length - 1]; if (m) { const a = ws.getBoundingClientRect(), b = m.getBoundingClientRect(); if (b.bottom > a.bottom) ws.scrollTop = b.bottom - a.bottom + 40; } } }
+  renderTabs(true); updateCurLine();
+}
+let switching = false;
+async function switchSheet(i, { animate = true, from } = {}) {
+  if (switching || i === state.sheetIdx || i < 0 || i >= state.sheets.length) {
+    if (i < 0 || i >= state.sheets.length) bounce(i < 0 ? 1 : -1);
+    return;
+  }
+  switching = true;
+  const focused = document.activeElement === ED;
+  removeEmptyPendingDate(); stashSheet();
+  const dir = i > state.sheetIdx ? -1 : 1;                       // new tab comes from the right when going forward
+  const note = $('#note'); const W = ws.clientWidth || 360;
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (animate && !reduce && note.animate) {
+    const start = from || 0;
+    await note.animate([{ transform: `translateX(${start}px)`, opacity: 1 }, { transform: `translateX(${dir * W * .45}px)`, opacity: 0 }], { duration: 110, easing: 'ease-in' }).finished.catch(() => {});
+    note.style.transform = ''; showSheet(i);
+    note.animate([{ transform: `translateX(${-dir * W * .35}px)`, opacity: 0 }, { transform: 'translateX(0)', opacity: 1 }], { duration: 170, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  } else { note.style.transform = ''; showSheet(i); }
+  if (focused) ED.focus({ preventScroll: true });
+  scheduleSave(); keyFeedback();
+  switching = false;
+}
+function bounce(dir) { const note = $('#note'); if (note.animate) note.animate([{ transform: 'translateX(0)' }, { transform: `translateX(${dir * 28}px)` }, { transform: 'translateX(0)' }], { duration: 260, easing: 'ease-out' }); }
+function newSheetName() {
+  const names = new Set(state.sheets.map(s => s.name.toLowerCase()));
+  let base = settings.newTabName === 'date' ? (() => { const d = new Date(); return `${d.getDate()} ${MONTHS[d.getMonth()]}`; })() : 'Sheet ' + (state.sheets.length + 1);
+  if (settings.newTabName !== 'date') { let n = state.sheets.length + 1; while (names.has(('Sheet ' + n).toLowerCase())) n++; return 'Sheet ' + n; }
+  let name = base, k = 2; while (names.has(name.toLowerCase())) name = `${base} (${k++})`; return name;
+}
+async function addSheet({ name, text, total, after = state.sheetIdx, color = '' } = {}) {
+  if (!state.fileId) return;
+  if (state.sheets.length >= 200) return toast('Maximum 200 tabs per file');
+  stashSheet(); trackCurrent();
+  const sh = { id: newId('sh_'), name: name || newSheetName(), color, text: text != null ? text : (settings.dateOnNew ? fmtDate() + '\n' : ''), total: normTotal(total || defaultTotal()) };
+  state.sheets.splice(after + 1, 0, sh);
+  state.sheetIdx = state.sheets.indexOf(curSheetObj());
+  renderTabs(false);
+  await switchSheet(state.sheets.indexOf(sh));
+  scheduleSave(); toast(`Tab "${sh.name}" added`);
+  return sh;
+}
+let _curObj = null;
+function curSheetObj() { return _curObj; }
+function trackCurrent() { _curObj = state.sheets[state.sheetIdx] || null; }
+async function renameSheet(i = state.sheetIdx) {
+  const sh = state.sheets[i]; if (!sh) return;
+  const name = await dialogText({ title: 'Rename tab', label: 'Tab name', value: sh.name, okText: 'Rename' });
+  if (name === null || !name.trim()) return;
+  sh.name = name.trim().slice(0, 40); renderTabs(); scheduleSave(); toast('Tab renamed ✓');
+}
+async function deleteSheet(i = state.sheetIdx) {
+  const sh = state.sheets[i]; if (!sh) return;
+  if (state.sheets.length === 1) return toast('A file needs at least one tab');
+  stashSheet();
+  const empty = !sh.text.split('\n').some(t => t.trim() && !DATE_RE.test(t.trim()));      // empty tabs go without asking
+  if (!empty) { const ok = await dialogConfirm({ title: `Delete tab "${sh.name}"?`, message: 'You can undo this right after.', okText: 'Delete', danger: true }); if (!ok) return; }
+  trackCurrent(); const wasCurrent = i === state.sheetIdx;
+  state.sheets.splice(i, 1);
+  if (wasCurrent) { state.sheetIdx = Math.min(i, state.sheets.length - 1); showSheet(state.sheetIdx); }
+  else { state.sheetIdx = state.sheets.indexOf(curSheetObj()); renderTabs(true); }
+  scheduleSave();
+  toast(`Tab "${sh.name}" deleted`, 4500, { label: 'Undo', run: () => { stashSheet(); trackCurrent(); state.sheets.splice(Math.min(i, state.sheets.length), 0, sh); state.sheetIdx = state.sheets.indexOf(curSheetObj()); switchSheet(state.sheets.indexOf(sh), { animate: false }); scheduleSave(); } });
+}
+function moveSheet(from, to, scroll) {
+  if (to < 0 || to >= state.sheets.length || from === to) return false;
+  trackCurrent(); const [sh] = state.sheets.splice(from, 1); state.sheets.splice(to, 0, sh);
+  state.sheetIdx = state.sheets.indexOf(curSheetObj()); renderTabs(scroll); scheduleSave(); return true;
+}
+async function duplicateSheet(i = state.sheetIdx) {
+  stashSheet(); const sh = state.sheets[i];
+  trackCurrent();
+  const copy = { id: newId('sh_'), name: (sh.name + ' (copy)').slice(0, 40), color: sh.color, text: sh.text, total: JSON.parse(JSON.stringify(sh.total)) };
+  state.sheets.splice(i + 1, 0, copy); state.sheetIdx = state.sheets.indexOf(curSheetObj());
+  await switchSheet(i + 1); scheduleSave(); toast('Tab duplicated ✓');
+}
+async function tabMenu(i = state.sheetIdx) {
+  const sh = state.sheets[i]; if (!sh) return;
+  const n = state.sheets.length;
+  const key = await dialogMenu('📑 ' + sh.name, [
+    { key: 'rename', icon: '✏️', label: 'Rename tab' },
+    { key: 'color', icon: '🎨', label: 'Tab colour' },
+    { key: 'dup', icon: '⧉', label: 'Duplicate tab' },
+    { key: 'new', icon: '＋', label: 'New tab after this' },
+    i > 0 ? { key: 'left', icon: '←', label: 'Move left' } : null,
+    i < n - 1 ? { key: 'right', icon: '→', label: 'Move right' } : null,
+    { key: 'image', icon: '🖼️', label: 'Share this tab as image' },
+    { key: 'all', icon: '▦', label: 'All tabs & grand total', sub: `${n} tab${n === 1 ? '' : 's'} · ${fmtNum(grandTotal())}` },
+    n > 1 ? { key: 'del', icon: '🗑', label: 'Delete tab', danger: true } : null
+  ]);
+  if (!key) return;
+  if (key === 'rename') renameSheet(i);
+  else if (key === 'color') {
+    const c = await dialogMenu('Tab colour', Object.entries(TAB_COLORS).map(([k, v]) => ({ key: k || '_none', icon: k ? '●' : '○', label: k ? k[0].toUpperCase() + k.slice(1) : 'No colour', on: (sh.color || '') === k })));
+    if (c !== null) { sh.color = c === '_none' ? '' : c; renderTabs(); scheduleSave(); }
+  }
+  else if (key === 'dup') duplicateSheet(i);
+  else if (key === 'new') { if (i !== state.sheetIdx) await switchSheet(i, { animate: false }); addSheet({ after: i }); }
+  else if (key === 'left') moveSheet(i, i - 1);
+  else if (key === 'right') moveSheet(i, i + 1);
+  else if (key === 'image') { if (i !== state.sheetIdx) await switchSheet(i, { animate: false }); shareImage(); }
+  else if (key === 'all') openTabPicker();
+  else if (key === 'del') deleteSheet(i);
+}
+function openTabPicker() {
+  stashSheet(false);
+  const search = el('input', { type: 'text', placeholder: 'Search tabs…', autocomplete: 'off' });
+  const list = el('div', { class: 'tab-list' });
+  const grand = el('div', { class: 'grand' }, el('span', { text: `All ${state.sheets.length} tabs` }), el('b', { text: fmtNum(grandTotal()) }));
+  const draw = () => {
+    const q = search.value.trim().toLowerCase();
+    list.replaceChildren(...state.sheets.map((sh, i) => [sh, i]).filter(([sh]) => !q || sh.name.toLowerCase().includes(q) || sh.text.toLowerCase().includes(q)).map(([sh, i]) => {
+      const lines = sh.text.split('\n').filter(t => t.trim()).length;
+      return el('button', { class: 'ti' + (i === state.sheetIdx ? ' on' : ''), 'data-i': i, style: sh.color ? `--tabc:${TAB_COLORS[sh.color]}` : null, onclick: () => { Sheet.close(); setTimeout(() => switchSheet(i), 60); } },
+        el('span', { class: 'dot' }), el('span', { class: 'nm', text: sh.name }), el('span', { class: 'sm', text: `${lines} line${lines === 1 ? '' : 's'}` }), el('span', { class: 'vl', text: tabValueText(i) }));
+    }));
+    if (!list.childElementCount) list.append(el('p', { class: 'msg', text: 'No tab matches.' }));
+  };
+  search.addEventListener('input', draw); draw();
+  Sheet.show(el('div', {}, el('h3', { text: '▦ All tabs' }), grand, search, list,
+    el('div', { class: 'sheet-actions' }, el('button', { class: 'btn cancel', text: 'Close', onclick: () => Sheet.close() }), el('button', { class: 'btn ok', text: '＋ New tab', onclick: () => { Sheet.close(); setTimeout(() => addSheet(), 60); } }))));
+  requestAnimationFrame(() => { const on = list.querySelector('.ti.on'); if (on) on.scrollIntoView({ block: 'nearest' }); });
+}
+
+/* ---- tab bar rendering ---- */
+const TABS = $('#tabs');
+function renderTabs(scrollToActive) {
+  const n = state.sheets.length;
+  TABS.replaceChildren(...state.sheets.map((sh, i) => {
+    const b = el('button', { class: 'tab' + (i === state.sheetIdx ? ' active' : ''), role: 'tab', 'aria-selected': String(i === state.sheetIdx), 'data-i': i, 'data-id': sh.id, 'data-c': sh.color || null, style: sh.color ? `--tabc:${TAB_COLORS[sh.color]}` : null, title: sh.name },
+      el('span', { class: 'tn', text: sh.name }), el('span', { class: 'tt', text: tabValueText(i) }));
+    return b;
+  }));
+  $('#tabAll').title = `All tabs (${n})`;
+  if (scrollToActive !== false) scrollActiveTab(scrollToActive === true ? 'auto' : 'smooth');
+}
+function scrollActiveTab(behavior = 'smooth') {
+  const a = TABS.children[state.sheetIdx]; if (!a) return;
+  const left = a.offsetLeft - (TABS.clientWidth - a.offsetWidth) / 2;
+  try { TABS.scrollTo({ left, behavior }); } catch (e) { TABS.scrollLeft = left; }
+}
+function updateActiveTabTotal() { const a = TABS.children[state.sheetIdx]; if (a && a.lastChild) { const t = tabValueText(state.sheetIdx); if (a.lastChild.textContent !== t) a.lastChild.textContent = t; } }
+
+/* ---- tab bar gestures: tap = open, tap active = menu, long-press + drag = reorder ---- */
+(() => {
+  let press = null;
+  const tabAt = (x, id) => { let n = 0; for (const k of TABS.children) { if (k.dataset.id === id) continue; const r = k.getBoundingClientRect(); if (r.left + r.width / 2 < x) n++; } return n; };
+  TABS.addEventListener('contextmenu', e => e.preventDefault());
+  TABS.addEventListener('pointerdown', e => {
+    const t = e.target.closest('.tab'); if (!t) return;
+    press = { i: +t.dataset.i, id: t.dataset.id, x: e.clientX, y: e.clientY, drag: false, moved: false, startScroll: TABS.scrollLeft };
+    press.timer = setTimeout(() => { if (!press) return; press.drag = true; keyFeedback(); const el2 = TABS.querySelector(`.tab[data-id="${press.id}"]`); if (el2) el2.classList.add('dragging'); }, 430);
+  });
+  TABS.addEventListener('pointermove', e => {
+    if (!press) return;
+    if (!press.drag) { if (Math.abs(e.clientX - press.x) > 8 || Math.abs(e.clientY - press.y) > 8) { clearTimeout(press.timer); press.moved = true; } return; }
+    e.preventDefault();
+    const r = TABS.getBoundingClientRect();                       // auto-scroll near the edges
+    if (e.clientX < r.left + 30) TABS.scrollLeft -= 12; else if (e.clientX > r.right - 30) TABS.scrollLeft += 12;
+    const from = state.sheets.findIndex(s => s.id === press.id); const to = tabAt(e.clientX, press.id);
+    if (to !== from && moveSheet(from, to, false)) { press.reordered = true; const el2 = TABS.querySelector(`.tab[data-id="${press.id}"]`); if (el2) el2.classList.add('dragging'); }
+  });
+  TABS.addEventListener('touchmove', e => { if (press && press.drag) e.preventDefault(); }, { passive: false });
+  const end = e => {
+    if (!press) return; clearTimeout(press.timer); const p = press; press = null;
+    $$('.tab.dragging').forEach(x => x.classList.remove('dragging'));
+    if (e.type === 'pointercancel') return;
+    if (p.drag) { if (p.reordered) toast('Tab moved'); else tabMenu(state.sheets.findIndex(s => s.id === p.id)); return; }
+    if (p.moved || Math.abs(TABS.scrollLeft - p.startScroll) > 6) return;
+    const i = state.sheets.findIndex(s => s.id === p.id);
+    if (i === state.sheetIdx) tabMenu(i); else switchSheet(i);
+  };
+  TABS.addEventListener('pointerup', end); TABS.addEventListener('pointercancel', end);
+  $('#tabAdd').addEventListener('click', () => addSheet());
+  $('#tabAll').addEventListener('click', () => openTabPicker());
+  ['#tabAdd', '#tabAll'].forEach(sel => $(sel).addEventListener('mousedown', e => e.preventDefault()));
+  TABS.addEventListener('mousedown', e => e.preventDefault());
+})();
+
+/* ---- swipe the note left / right to change tab (follows the finger) ---- */
+(() => {
+  let sw = null; const note = $('#note');
+  ws.addEventListener('touchstart', e => {
+    if (!settings.tabsEnabled || !settings.swipeTabs || state.sheets.length < 2 || e.touches.length !== 1) return;
+    if (Overlays.stack.some(o => o.name !== 'keypad')) return;
+    const t = e.touches[0]; if (t.clientX < 24) return;            // edge swipe belongs to the files menu
+    sw = { x: t.clientX, y: t.clientY, t: Date.now(), mode: null, dx: 0 };
+  }, { passive: true });
+  ws.addEventListener('touchmove', e => {
+    if (!sw) return; const t = e.touches[0]; const dx = t.clientX - sw.x, dy = t.clientY - sw.y;
+    if (!sw.mode) {
+      if (Math.abs(dx) < 12 && Math.abs(dy) < 12) return;
+      const selecting = document.activeElement === ED && ED.selectionStart !== ED.selectionEnd;
+      sw.mode = Math.abs(dx) > Math.abs(dy) * 1.6 && !selecting && Date.now() - sw.t < 500 ? 'h' : 'v';
+      if (sw.mode === 'v') { sw = null; return; }
+    }
+    e.preventDefault();
+    const atEdge = (dx > 0 && state.sheetIdx === 0) || (dx < 0 && state.sheetIdx === state.sheets.length - 1);
+    sw.dx = atEdge ? dx * .25 : dx;                                // rubber band at the first / last tab
+    note.classList.add('swiping'); note.style.transform = `translateX(${sw.dx}px)`; note.style.opacity = String(1 - Math.min(.35, Math.abs(sw.dx) / (ws.clientWidth * 2)));
+  }, { passive: false });
+  const done = () => {
+    if (!sw) return; const s = sw; sw = null; if (s.mode !== 'h') return;
+    note.classList.remove('swiping'); note.style.opacity = '';
+    const v = Math.abs(s.dx) / Math.max(1, Date.now() - s.t); const far = Math.abs(s.dx) > ws.clientWidth * .22 || v > .55;
+    const target = state.sheetIdx + (s.dx < 0 ? 1 : -1);
+    if (far && target >= 0 && target < state.sheets.length) switchSheet(target, { from: s.dx });
+    else { const from = s.dx; note.style.transform = ''; if (note.animate) note.animate([{ transform: `translateX(${from}px)` }, { transform: 'translateX(0)' }], { duration: 180, easing: 'cubic-bezier(.2,.8,.2,1)' }); }
+  };
+  ws.addEventListener('touchend', done); ws.addEventListener('touchcancel', done);
+})();
 
 /* ---------------- Copy all ---------------- */
 function noteLines(all) {
@@ -1495,6 +1790,8 @@ const ACTIONS = {
   rename: { label: 'Rename file', icon: 'edit', emoji: '🏷️', run: () => { closeSidebar(); renameFlow(); } },
   move: { label: 'Move to folder', icon: 'folder', emoji: '📁', run: () => { closeSidebar(); moveFlow(state.fileId); } },
   clear: { label: 'Clear all lines', icon: 'file', emoji: '🧹', run: () => { closeSidebar(); clearAll(); }, danger: true },
+  newtab: { label: 'New tab', icon: 'add', emoji: '📑', run: () => { closeSidebar(); addSheet(); } },
+  tabs: { label: 'All tabs', icon: 'toggles', emoji: '▦', run: () => { closeSidebar(); openTabPicker(); } },
   update: { label: 'Check for update', icon: 'update', emoji: '⬆️', run: () => { closeSidebar(); Updater.check(false); } },
   help: { label: 'Help & examples', icon: 'help', emoji: '❓', run: () => openHelp() },
   more: { label: 'More…', icon: 'more', emoji: '⋮', run: () => moreMenu() }
@@ -1536,7 +1833,8 @@ function applySettings() {
   Native.bars();
   b.classList.toggle('no-linenums', !settings.lineNumbers); b.classList.toggle('divider', settings.divider); b.classList.toggle('separators', settings.separators);
   b.classList.toggle('align-left', settings.resultAlign === 'left'); b.classList.toggle('fixed-col', settings.divider || settings.resultAlign === 'left');
-  b.classList.toggle('hl-line', settings.highlightLine); b.classList.toggle('no-totalbar', !settings.showTotalBar); b.classList.toggle('no-keypad', !settings.keypadEnabled);
+  b.classList.toggle('hl-line', settings.highlightLine);
+  b.classList.toggle('no-tabs', !settings.tabsEnabled); b.classList.toggle('no-tab-totals', !settings.tabTotals); b.classList.toggle('hide-tabs-typing', settings.hideTabsTyping); b.classList.toggle('no-totalbar', !settings.showTotalBar); b.classList.toggle('no-keypad', !settings.keypadEnabled);
   if (!settings.keypadEnabled && b.classList.contains('kp-open')) closeKeypad();
   $('.keypad-tab[data-tab="sci"]').hidden = !settings.sciTab; $('.keypad-tab[data-tab="custom"]').hidden = !settings.customTab;
   if ((state.keypadTab === 'sci' && !settings.sciTab) || (state.keypadTab === 'custom' && !settings.customTab)) state.keypadTab = 'basic';
@@ -1647,7 +1945,7 @@ async function editCustomKey(index) {
 function openTotalEditor() {
   if ($('#totalBar').classList.contains('sel')) { const s = selectionInfo(); if (s) { copyText(rawNum(s.sum)).then(ok => toast(ok ? `Copied ${rawNum(s.sum)}` : 'Copy failed')); return; } }
   const t = JSON.parse(JSON.stringify(state.total));
-  const MODES = [['sum', 'Sum'], ['avg', 'Average'], ['min', 'Min'], ['max', 'Max'], ['count', 'Count'], ['manual', 'Manual'], ['formula', 'Formula']];
+  const MODES = [['sum', 'Sum'], ['avg', 'Average'], ['min', 'Min'], ['max', 'Max'], ['count', 'Count'], ['manual', 'Manual'], ['formula', 'Formula'], ['alltabs', 'All tabs']];
   const labelIn = el('input', { type: 'text', placeholder: 'Total', maxlength: '40' }); labelIn.value = t.label;
   const manualIn = el('input', { type: 'text', inputmode: 'decimal', placeholder: 'Enter value' }); manualIn.value = t.manualValue ? String(t.manualValue) : '';
   const formulaIn = el('input', { type: 'text', placeholder: 'e.g. total * 1.18  or  line1 + line3', autocapitalize: 'off', autocomplete: 'off' }); formulaIn.value = t.formula;
@@ -1674,9 +1972,9 @@ function openTotalEditor() {
 }
 
 /* ---------------- Share: text (table) / CSV ---------------- */
-const totalString = () => { const r = state.calc; return !r ? '0' : r.totalError ? 'Error' : (state.total.mode === 'count' ? String(r.total) : fmtNum(r.total)); };
+const totalString = () => { const r = state.calc; if (!r) return '0'; if (state.total.mode === 'alltabs') return fmtNum(grandTotal()); return r.totalError ? 'Error' : (state.total.mode === 'count' ? String(r.total) : fmtNum(r.total)); };
 function buildText(style = settings.textStyle) {
-  const title = displayTitle(); const lines = noteLines();
+  const title = displayTitle() + (state.sheets.length > 1 ? ' · ' + state.sheets[state.sheetIdx].name : ''); const lines = noteLines();
   if (style !== 'table') {
     const out = [title, '─'.repeat(Math.min(28, Math.max(8, title.length)))];
     lines.forEach(l => out.push(l.result ? `${l.text} = ${l.result}` : l.text));
@@ -1792,7 +2090,7 @@ function drawNoteImage(opt = {}) {
   const bodyH = Math.max(...colRows.map(c => c.reduce((a, r) => a + r.h, 0))) + headerH;
   const titleH = Math.round(size * 3.3), totH = Math.round(size * 2.3), footH = Math.round(size * 1.6);
   const subFont = `700 ${Math.round(size * .72)}px ${FONT}`;
-  const subText = [state.folder ? '📁 ' + folderName(state.folder) : '', showDate ? new Date().toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '', `${items.filter(r => r.type === 'item').length} entries`].filter(Boolean).join('   •   ');
+  const subText = [state.folder ? '📁 ' + folderName(state.folder) : '', state.sheets.length > 1 ? '📑 ' + state.sheets[state.sheetIdx].name : '', showDate ? new Date().toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '', `${items.filter(r => r.type === 'item').length} entries`].filter(Boolean).join('   •   ');
   const Wimg = Math.ceil(Math.max(OUT * 2 + colRows.length * colW + (colRows.length - 1) * GAP, Math.round(size * 18), W(subText, subFont) + OUT * 2, W(totalString(), `900 ${Math.round(size * 1.45)}px ${FONT}`) + W(state.total.label, `800 ${Math.round(size * 1.05)}px ${FONT}`) + OUT * 2 + PADX * 6));
   colW = Math.floor((Wimg - OUT * 2 - (colRows.length - 1) * GAP) / colRows.length);   // tables fill the full width
   const H = OUT + titleH + bodyH + Math.round(size * .6) + totH + footH;
@@ -1925,11 +2223,15 @@ async function importBackupText(text) {
   for (const f of incoming) {
     const rowsData = f.rows.map((r, i) => ({ id: 'row_' + (i + 1), text: String((r && (r.text ?? r)) || '').slice(0, 5000) }));
     const existing = state.files.find(m => m.id === f.id);
-    if (existing) { const cur = await Store.get(f.id); if (cur && JSON.stringify((cur.rows || []).map(r => r.text)) === JSON.stringify(rowsData.map(r => r.text))) { skipped++; continue; } }
+    if (existing) { const cur = await Store.get(f.id); const sig = x => JSON.stringify([(x.rows || []).map(r => r.text), (x.sheets || []).map(sh => (sh.rows || []).map(r => r && (r.text ?? r)))]); if (cur && sig(cur) === sig(f)) { skipped++; continue; } }
     const rec = { id: existing ? newId() : f.id, title: String(f.title || '').slice(0, 120) + (existing ? ' (restored)' : ''), folder: folderMap[f.folder] || '', pinned: !!f.pinned, rows: rowsData, totalSettings: normTotal(f.totalSettings), createdAt: f.createdAt || new Date().toISOString(), updatedAt: f.updatedAt || new Date().toISOString() };
+    if (Array.isArray(f.sheets) && f.sheets.length) {
+      rec.sheets = f.sheets.filter(sh => sh && Array.isArray(sh.rows)).slice(0, 200).map((sh, i) => ({ id: String(sh.id || newId('sh_')), name: String(sh.name || 'Sheet ' + (i + 1)).slice(0, 40), color: String(sh.color || ''), rows: sh.rows.map((r, j) => ({ id: 'row_' + (j + 1), text: String((r && (r.text ?? r)) || '').slice(0, 5000) })), totalSettings: normTotal(sh.totalSettings) }));
+      rec.activeSheet = Math.min(f.activeSheet | 0, rec.sheets.length - 1);
+    }
     const calc = Engine.run(rowsData.map(r => r.text), engineOpts({ total: rec.totalSettings }));
     await Store.set(rec.id, rec);
-    state.files.push(Object.assign(metaOf(rec), { lines: rowsData.filter(r => r.text.trim()).length, totalText: calc.totalError ? '' : fmtNum(calc.total) }));
+    state.files.push(Object.assign(metaOf(rec), { lines: rowsData.filter(r => r.text.trim()).length, totalText: calc.totalError ? '' : fmtNum(calc.total), tabs: rec.sheets ? rec.sheets.length : 1 }));
     added++;
   }
   await saveFileList();
@@ -2099,6 +2401,12 @@ const SETTINGS_PAGES = {
     { t: 'switch', key: 'selectionSum', icon: '⧉', label: 'Sum of selected lines', sub: 'Select lines → bar shows their total' },
     { t: 'switch', key: 'totalModeHint', icon: 'ƒ', label: 'Show total mode (avg, min…)' },
     { t: 'chips', key: 'defaultTotal', icon: '＋', label: 'Total for new files', options: [opt('sum', 'Sum'), opt('avg', 'Average'), opt('min', 'Min'), opt('max', 'Max'), opt('count', 'Count')] },
+    { t: 'section', label: 'Sheet tabs (like Excel)' },
+    { t: 'switch', key: 'tabsEnabled', icon: '📑', label: 'Sheet tabs at the bottom', sub: 'Many sheets inside one file' },
+    { t: 'switch', key: 'tabTotals', icon: 'Σ', label: 'Show total on each tab' },
+    { t: 'switch', key: 'swipeTabs', icon: '👆', label: 'Swipe left / right to change tab' },
+    { t: 'switch', key: 'hideTabsTyping', icon: '⌨', label: 'Hide tabs while the phone keyboard is open', sub: 'More room for typing – swiping still works' },
+    { t: 'chips', key: 'newTabName', icon: '🏷', label: 'Name for new tabs', options: [opt('date', "Today's date"), opt('number', 'Sheet 1, 2, 3…')] },
     { t: 'section', label: 'Sidebar' }, { t: 'sideactions' },
     { t: 'section', label: 'Screen' },
     { t: 'switch', key: 'keepAwake', icon: '☀', label: 'Keep screen on', sub: 'While the app is open (if supported)', when: () => 'wakeLock' in navigator }
@@ -2191,6 +2499,8 @@ const SETTINGS_PAGES = {
     { t: 'switch', key: 'sciTab', icon: 'ƒ', label: 'Scientific keypad tab' },
     { t: 'switch', key: 'customTab', icon: '★', label: '"Keys" keypad tab' },
     { t: 'switch', key: 'showTotalBar', icon: 'Σ', label: 'Total bar' },
+    { t: 'switch', key: 'tabsEnabled', icon: '📑', label: 'Sheet tabs' },
+    { t: 'switch', key: 'swipeTabs', icon: '👆', label: 'Swipe to change tab' },
     { t: 'switch', key: 'selectionSum', icon: '⧉', label: 'Sum of selected lines' },
     { t: 'switch', key: 'runningTotal', icon: 'Σ', label: 'Running total' },
     { t: 'switch', key: 'swipe', icon: '👉', label: 'Swipe from edge to open files' },
@@ -2334,6 +2644,7 @@ ws.addEventListener('click', e => { if (e.target === ws || e.target.id === 'note
 document.addEventListener('keydown', e => {
   const mod = e.ctrlKey || e.metaKey;
   if (e.key === 'Escape' && Overlays.stack.length) { e.preventDefault(); Overlays.closeTop(); return; }
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'PageDown' || e.key === 'PageUp') && settings.tabsEnabled) { e.preventDefault(); switchSheet(state.sheetIdx + (e.key === 'PageDown' ? 1 : -1)); return; }
   if (!mod || e.altKey) return;
   const k = e.key.toLowerCase();
   if (k === 's') { e.preventDefault(); saveFlow(); return; }
@@ -2354,7 +2665,7 @@ document.addEventListener('visibilitychange', () => {
   else { applyWakeLock(); if (settings.lock && settings.lockDelay >= 0 && Lock.hiddenAt && (Date.now() - Lock.hiddenAt) / 1000 >= settings.lockDelay && !$('#lock').classList.contains('open')) Lock.unlock(); }
 });
 window.addEventListener('pagehide', () => flushSave());
-if (window.visualViewport) { const vv = window.visualViewport; vv.addEventListener('resize', () => { document.body.style.height = vv.height + 'px'; if (document.activeElement === ED) requestAnimationFrame(caretVisible); }); }
+if (window.visualViewport) { const vv = window.visualViewport; vv.addEventListener('resize', () => { document.body.style.height = vv.height + 'px'; document.body.classList.toggle('kbd-open', vv.height < window.innerHeight - 140 && document.activeElement === ED); if (document.activeElement === ED) requestAnimationFrame(caretVisible); }); }
 function nativeBack() {
   const app = Native.p('App');
   if ($('#lock').classList.contains('open')) { if (app) app.minimizeApp().catch(() => app.exitApp()); return; }
