@@ -14,6 +14,7 @@ Every push to `main` builds a new APK automatically (see the **Actions** tab).
 ## ✨ Features
 
 - **Khata book** – names in your notes (`gopi 12+7`) go into each person's khata. New names show ⚠ with one-tap "create khata". Nothing is posted until you press **📤 Publish**; then only the changes go in and an SMS (straight from your SIM) or WhatsApp message goes to each person. Every tab has its own reason (Udhaar, Jama, Nagad, Cash sale, Kharcha or your own) and formula (`x*120`, `x/2`, `x+10`…); `#jama` at the end of a line changes one line's reason. Khatabook-style screens: balances, entries with running balance, reports with picture / text share, reminders.
+- **One-tap publish for everybody** – "Sabko: SMS / WhatsApp", all new names get a khata in one go, undo the last publish, notes with unpublished entries are listed in the khata book, remind everybody who owes money, UPI ID in messages, daily automatic backup on the phone (last 7 days).
 
 - **Sheet tabs like Excel** – many tabs inside one file at the bottom; slide the tab bar, swipe the note left/right to change tab, long-press a tab to drag it, tap the active tab for rename / colour / duplicate / delete (with undo), ▦ shows all tabs with search and the grand total.
 

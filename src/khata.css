@@ -169,3 +169,26 @@ html[data-theme="dark"],html[data-theme="black"]{--kk-get:#FF8A80;--kk-get-soft:
 .p-input{width:100%;padding:11px 12px;border-radius:10px;border:1.5px solid #4A4A4A;background:#232323;color:#F1F1F1;font-size:16px;font-family:inherit;outline:none}
 .p-input:focus{border-color:#80CBC4}
 .kp-dup{color:#E65100;font-weight:800;margin-left:auto;white-space:nowrap}
+.kp-bulk{display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:var(--surface-2);border-radius:12px;padding:8px 10px;margin:8px 0}
+.kp-bulk>span{font-weight:800;font-size:13.5px;margin-right:2px}
+.kp-bulk .chip{padding:7px 10px;font-size:13px}
+.kp-nophone{font-size:13px;color:var(--text-2);margin:6px 4px}
+.kp-sum{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;font-size:14px;margin:8px 4px}
+.kp-sum b{font-size:15.5px}
+.kq-prog{font-size:13px;font-weight:800;color:var(--strong);margin:2px 4px}
+.kp-actions .btn.cancel{flex:0 0 30%}
+.kp-actions #khPublishGo{flex:1;font-size:15px;line-height:1.25}
+.kp-bulk .chip{padding:6px 9px;font-size:12.5px}
+.kk-sum-btns{display:flex}
+.kk-sum-btns .kk-sum-rep+.kk-sum-rep{border-left:1px solid var(--kk-line)}
+.kk-today{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;font-size:13.5px;color:var(--kk-soft);font-weight:700;margin:-4px 4px 12px}
+.kk-pend-h{font-size:12.5px;font-weight:800;color:#B26A00;margin:0 4px 6px}
+.kk-pend-list .kk-pend{margin-bottom:8px}
+.kb-rlist{display:flex;flex-direction:column;max-height:42vh;overflow:auto;border:1px solid var(--border);border-radius:12px;margin-top:4px}
+.kb-rrow{display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--row-border);cursor:pointer}
+.kb-rrow:last-child{border-bottom:none}
+.kb-rrow input{width:20px;height:20px;accent-color:var(--primary)}
+.kb-rrow .kk-av{width:34px;height:34px;font-size:12px}
+.kb-rrow .nm{flex:1;font-weight:700}
+.kb-prev{white-space:pre-wrap;font:14px/1.45 inherit;background:var(--surface-2);border-radius:10px;padding:10px;margin:8px 0}
+.sg.kh{background:color-mix(in srgb,var(--primary) 16%,var(--surface));font-weight:700}

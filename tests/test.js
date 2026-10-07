@@ -201,7 +201,7 @@ const aligned = p => p.evaluate(() => { const m = [...document.querySelectorAll(
   // 11. In-app update check (GitHub release mocked)
   await p.evaluate(() => Updater.check(false)); await p.waitForTimeout(300);
   ok(await p.evaluate(() => Sheet.isOpen && document.querySelector('.sheet h3').textContent.includes('Update available')), 'Update available sheet');
-  await p.evaluate(() => Sheet.close()); await p.waitForTimeout(300);
+  await p.evaluate(() => Sheet.close()); await p.waitForTimeout(700);
   fakeRelease = Object.assign({}, fakeRelease, { tag_name: 'v3.1.0-build0' });
   await p.evaluate(() => Updater.check(false)); await p.waitForTimeout(300);
   ok((await p.textContent('#toast')).includes('latest version'), 'Latest version message', await p.textContent('#toast'));
@@ -260,9 +260,9 @@ const aligned = p => p.evaluate(() => { const m = [...document.querySelectorAll(
   await t.click('#tabs .tab[data-i="0"]'); await t.waitForTimeout(400);
   ok((await texts(t)).join('|').startsWith('a 10|b 20') && await total(t) === '30', 'Tap a tab switches content', await texts(t));
   await t.click('#tabs .tab[data-i="1"]'); await t.waitForTimeout(400);
-  await t.keyboard.press('Control+z'); await t.waitForTimeout(150);
+  await t.evaluate(() => History.undo()); await t.waitForTimeout(150);
   ok(!(await texts(t)).includes('y 7') && (await texts(t)).includes('x 5') || !(await texts(t)).includes('y 7'), 'Undo works per tab after switching', await texts(t));
-  await t.keyboard.press('Control+y'); await t.waitForTimeout(150);
+  await t.evaluate(() => History.redo()); await t.waitForTimeout(150);
   ok((await texts(t)).includes('y 7'), 'Redo per tab', await texts(t));
   // 30 tabs + slider
   const t0 = Date.now();
@@ -406,6 +406,13 @@ const aligned = p => p.evaluate(() => { const m = [...document.querySelectorAll(
   // publish
   ok(await k.textContent('#tb-publish .tb-count') === '3', 'Toolbar shows 3 changes to publish', await k.textContent('#tb-publish .tb-count').catch(() => ''));
   await k.click('#tb-publish'); await k.waitForSelector('#khPublishGo'); await k.waitForTimeout(350);
+  ok((await k.textContent('#khPublishGo')) === '✓ Sab jodein + 1 SMS + 1 WhatsApp', 'One button: add everything + send messages', await k.textContent('#khPublishGo'));
+  await k.click('.kp-bulk .chip[data-all="sms"]'); await k.waitForTimeout(100);
+  ok((await k.textContent('#khPublishGo')) === '✓ Sab jodein + 2 SMS' && (await k.$$('.kp-card .chip.active[data-ch="sms"]')).length === 2, '“Sabko: SMS” sets SMS for everybody', await k.textContent('#khPublishGo'));
+  await k.click('.kp-bulk .chip[data-all="none"]'); await k.waitForTimeout(100);
+  ok((await k.textContent('#khPublishGo')) === '✓ Sab khate mein jodein (3)', 'No messages → button only adds', await k.textContent('#khPublishGo'));
+  await k.click('.kp-card >> nth=0 >> .chip[data-ch="wa"]'); await k.click('.kp-card >> nth=1 >> .chip[data-ch="sms"]'); await k.waitForTimeout(100);
+  ok((await k.textContent('.kp-sum')).includes('Diye ₹100') && (await k.textContent('.kp-sum')).includes('Mile ₹500'), 'Money summary on the publish screen', await k.textContent('.kp-sum'));
   await k.screenshot({ path: path.join(OUT, 'khata-publish.png') });
   ok((await k.textContent('.sheet.open')).includes('07 Oct · Udhaar: ₹19') && (await k.textContent('.sheet.open')).includes('07 Oct · Jama: ₹500'), 'Publish screen lists the entries');
   ok(await k.$eval('.kp-card[data-pid] .chip.active[data-ch]', b => b.dataset.ch) === 'wa' && await k.evaluate(() => document.querySelectorAll('.kp-card')[1].querySelector('.chip.active').dataset.ch) === 'sms', 'Channel per khata: default WhatsApp, Suri Lal SMS');
@@ -417,9 +424,12 @@ const aligned = p => p.evaluate(() => { const m = [...document.querySelectorAll(
   ok((await marks()).filter(Boolean).every(m => m === 'ok'), 'All lines show ✓ after publish', await marks());
   ok(await k.isVisible('.kq-list') && (await k.$$('.kq-row')).length === 2, 'Message list opens after publish');
   await k.screenshot({ path: path.join(OUT, 'khata-send.png') });
-  await k.click('.kq-row >> nth=0 >> .kq-btn'); await k.waitForTimeout(250); await k.click('.kq-row >> nth=1 >> .kq-btn'); await k.waitForTimeout(250);
+  await k.waitForTimeout(400);
+  ok((await k.evaluate(() => window.__links.length)) === 1 && (await k.evaluate(() => window.__links[0])).startsWith('sms:9811122233?body='), 'One click: first message opens by itself (SMS first)', await k.evaluate(() => window.__links));
+  await k.click('.kq-row >> nth=1 >> .kq-btn'); await k.waitForTimeout(250);
   const links = await k.evaluate(() => window.__links);
-  ok(links[0].startsWith('https://wa.me/919876543210?text=Namaste%20Gopi%20ji') && links[1].startsWith('sms:9811122233?body='), 'WhatsApp opens the party chat (91 added), SMS link on web', links);
+  ok(links[1].startsWith('https://wa.me/919876543210?text=Namaste%20Gopi%20ji'), 'WhatsApp opens the party chat (91 added)', links);
+  ok((await k.textContent('.kq-prog')).includes('SMS 1/1') && (await k.textContent('.kq-prog')).includes('WhatsApp 1/1'), 'Progress line in the message list', await k.textContent('.kq-prog'));
   ok(await k.evaluate(() => KH.data.entries.every(e => e.msgs && e.msgs.length === 1 && e.msgs[0].ok)), 'Sent messages are logged on the entries');
   await closeSheet();
   // edit after publish → ✎, publish sends only the change
@@ -619,6 +629,64 @@ const aligned = p => p.evaluate(() => { const m = [...document.querySelectorAll(
   await a.evaluate(async () => { await switchSheet(0, { animate: false }); setValue(ED.value + 'gopi 1234567.5\n'); }); await a.waitForTimeout(300);
   const fit = await a.evaluate(() => { const r = [...document.querySelectorAll('#rescol .r.has-kb')].pop(); const b = r.querySelector('.kb-b').getBoundingClientRect(); const range = document.createRange(); range.selectNodeContents(r.lastChild); const t = range.getBoundingClientRect(); const clipped = r.scrollWidth > r.clientWidth + 1; setSetting('khataMarks', false); const r2 = [...document.querySelectorAll('#rescol .r')].filter(x => x.textContent).pop(); const clip0 = r2.scrollWidth > r2.clientWidth + 1; setSetting('khataMarks', true); return { overlap: b.right > t.left + 0.5, clipped, clip0 }; });
   ok(!fit.overlap && fit.clipped === fit.clip0, 'Mark sits left of the amount and never hides digits', fit);
+  await a.evaluate(() => setValue(ED.value + 'mohan 5\nsohan 6\n')); await a.waitForTimeout(300);
+  await a.evaluate(() => khPublishFlow()); await a.waitForSelector('#khMakeAll'); await a.click('#khMakeAll'); await a.waitForSelector('.sheet.open .btn.ok'); await a.click('.sheet.open .btn.ok'); await a.waitForTimeout(900);
+  ok(await a.evaluate(() => ['Mohan', 'Sohan'].every(n => KH.data.parties.some(p => p.name === n))) && await a.isVisible('#khPublishGo') && (await a.textContent('.kp-nophone')).includes('mobile number nahi'), 'All new names get a khata in one click; no-phone note', await a.evaluate(() => KH.data.parties.map(p => p.name)));
+  await a.evaluate(() => Sheet.close()); await a.waitForTimeout(300);
+  // UPI in messages, undo publish, pending notes, bulk reminders, suggestions, auto backup
+  await a.evaluate(() => { setSetting('khataUpi', 'mahi@okaxis'); setSetting('khataShop', 'Mahi Store'); });
+  const up = await a.evaluate(() => { const p = KH.data.parties.find(x => x.name === 'Gopi Kumar'); const b = khBalance(p.id); return { b, r: khReminder(p) }; });
+  ok(up.b > 0 ? up.r.includes('UPI: mahi@okaxis') : !up.r.includes('UPI'), 'UPI ID added to the message only when money is due', up);
+  await a.evaluate(() => setSetting('khataUpi', ''));
+  ok(!(await a.evaluate(() => khReminder(KH.data.parties[0]))).includes('UPI') && (await a.evaluate(() => khReminder(KH.data.parties[0]))).includes('– Mahi Store'), 'No empty UPI line when not set');
+  await a.evaluate(async () => { await khApplyPlan(khPlan()); render(true); }); await a.waitForTimeout(300);
+  const before0 = await a.evaluate(() => KH.data.entries.filter(e => !e.deleted).length);
+  await a.evaluate(() => setValue(ED.value.replace('ram 20', 'ram 35') + 'gopi 7\n')); await a.waitForTimeout(300);
+  await a.evaluate(() => khPublishFlow()); await a.waitForSelector('#khPublishGo'); await a.click('#khPublishGo'); await a.waitForTimeout(600);
+  ok(await a.isVisible('#toast .tact') && (await a.textContent('#toast .tact')) === 'Wapas lo', 'After publish: "Wapas lo" (undo) in the message');
+  await a.evaluate(() => Sheet.close()); await a.waitForTimeout(300);
+  const mid = await a.evaluate(() => ({ n: KH.data.entries.filter(e => !e.deleted).length, ram: KH.data.entries.find(e => !e.deleted && khParty(e.partyId).name === 'Ram').amount }));
+  await a.evaluate(() => { khUndoPublish(); }); await a.waitForSelector('.sheet.open .btn.danger'); await a.click('.sheet.open .btn.danger'); await a.waitForTimeout(600);
+  const aft = await a.evaluate(() => ({ n: KH.data.entries.filter(e => !e.deleted).length, ram: KH.data.entries.find(e => !e.deleted && khParty(e.partyId).name === 'Ram').amount, plan: khPlan().count, last: KH.data.lastPub }));
+  ok(mid.n === before0 + 1 && mid.ram === 35 && aft.n === before0 && aft.ram === 20 && aft.plan === 2 && aft.last === null, 'Undo publish puts the khata back and the lines show ↑ again', { before0, mid, aft });
+  // pending in another note
+  const fA = await a.evaluate(() => state.fileId);
+  await a.evaluate(async () => { await createFile('Kal ka hisaab', ['6 Oct 2026, Tue', 'mohan 40', 'sohan 15', '']); await flushSave(); }); await a.waitForTimeout(300);
+  await a.evaluate(id => openFile(id), fA); await a.waitForTimeout(400);
+  await a.evaluate(() => openKhata()); await a.waitForSelector('.kk-pend[data-fid]'); await a.waitForTimeout(300);
+  ok((await a.textContent('.kk-pend-list')).includes('Kal ka hisaab') && (await a.textContent('.kk-pend-list')).includes('2 badlav'), 'Khata book lists other notes with unpublished entries', await a.textContent('.kk-pend-list'));
+  await a.screenshot({ path: path.join(OUT, 'khata-pending.png') });
+  await a.click('.kk-pend[data-fid]'); await a.waitForSelector('#khPublishGo'); await a.waitForTimeout(300);
+  ok(await a.evaluate(() => state.title) === 'Kal ka hisaab' && (await a.textContent('.sheet.open')).includes('06 Oct · Udhaar: ₹40'), 'Tap → opens that note and its publish screen');
+  await a.click('#khPublishGo'); await a.waitForTimeout(600); await a.evaluate(() => Sheet.close()); await a.waitForTimeout(300);
+  // bulk reminder
+  await a.evaluate(async () => { for (const p of KH.data.parties) if (!p.phone) { p.phone = '98' + String(Math.random()).slice(2, 10); } await khSave(); });
+  await a.evaluate(async () => { await openKhata(); }); await a.waitForSelector('#khRemindAll'); await a.click('#khRemindAll'); await a.waitForSelector('#khBulkSend');
+  const nDue = await a.evaluate(() => KH.data.parties.filter(p => khBalance(p.id) > 0.5).length);
+  ok((await a.$$('.kb-rrow')).length === nDue && (await a.textContent('#khBulkSend')).includes(`${nDue} logon`), 'Remind everybody who owes: list with ticks', nDue);
+  await a.screenshot({ path: path.join(OUT, 'khata-remind-all.png') });
+  await a.click('.kb-rrow >> nth=0 >> input'); await a.click('.sheet.open .chip[data-ch="sms"]');
+  const l0 = await a.evaluate(() => window.__links.length);
+  await a.click('#khBulkSend'); await a.waitForTimeout(700);
+  ok((await a.$$('.kq-row')).length === nDue - 1 && (await a.evaluate(() => window.__links.length)) === l0 + 1, 'Sends to the ticked ones (first opens by itself)', [(await a.$$('.kq-row')).length, nDue]);
+  await a.evaluate(() => Sheet.close()); await a.waitForTimeout(300); await a.evaluate(() => closeAllPages()); await a.waitForTimeout(400);
+  // khata names in the suggestion bar
+  await a.click('#ed'); await a.keyboard.press('Control+End'); await a.keyboard.type('mo'); await a.waitForTimeout(250);
+  ok((await a.$$eval('#suggest .sg.kh', b => b.map(x => x.dataset.w))).includes('Mohan'), 'Khata names come first in the name suggestions', await a.$$eval('#suggest .sg', b => b.map(x => x.textContent)));
+  await a.keyboard.press('Backspace'); await a.keyboard.press('Backspace');
+  // auto backup (phone app) keeps the newest 7
+  const ab = await a.evaluate(async () => {
+    const wrote = [], del = []; const oldW = Native.write, oldP = Native.p;
+    Object.defineProperty(Native, 'on', { get: () => true, configurable: true });
+    Native.write = async (n, b) => { wrote.push([n, b.size]); return 'file://x'; };
+    Native.p = n => n === 'Filesystem' ? { readdir: async () => ({ files: Array.from({ length: 9 }, (_, i) => ({ name: `CalcNote-2026-10-0${i + 1}.json` })).concat([{ name: 'other.txt' }]) }), deleteFile: async o => del.push(o.path) } : oldP.call(Native, n);
+    try { LS.set('cnf_autobk', ''); const r1 = await khAutoBackup(); const r2 = await khAutoBackup(); return { r1, r2, wrote, del }; }
+    finally { Native.write = oldW; Native.p = oldP; delete Native.on; Object.defineProperty(Native, 'on', { get() { try { return !!(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform()); } catch (e) { return false; } }, configurable: true }); }
+  });
+  ok(/^Auto-backup\/CalcNote-\d{4}-\d\d-\d\d\.json$/.test(ab.r1) && ab.r2 === null && ab.wrote.length === 1 && ab.wrote[0][1] > 500 && JSON.stringify(ab.del) === JSON.stringify(['CalcNote Freedom/Auto-backup/CalcNote-2026-10-01.json', 'CalcNote Freedom/Auto-backup/CalcNote-2026-10-02.json']), 'Daily auto backup once a day, keeps the newest 7', ab);
+  await a.evaluate(() => { khHelp(); }); await a.waitForTimeout(300);
+  ok((await a.textContent('.sheet.open')).includes('Kaise use karein') || (await a.textContent('.sheet.open')).includes('kaise use karein'), 'Help sheet');
+  await a.evaluate(() => Sheet.close()); await a.waitForTimeout(300);
   ok(errs5.length === 0, 'No JS errors (khata safety)', errs5);
   await ac.close();
 

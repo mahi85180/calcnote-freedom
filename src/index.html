@@ -631,7 +631,7 @@ const DEFAULTS = {
   sortBy: 'updated', tabsEnabled: true, tabTotals: true, swipeTabs: true, hideTabsTyping: true, newTabName: 'date',
   imgCols: 'auto', imgSize: 'L', imgSno: true, imgSkipBlank: true, imgDate: true, textStyle: 'table',
   autoUpdate: true,
-  khataOn: true, khataMarks: true, khataChannel: 'wa', khataWaApp: 'auto', khataShop: '', khataShopPhone: '', khataLang: 'hinglish', khataMsg: '', khataReason: 'udhaar',
+  khataOn: true, khataMarks: true, khataChannel: 'wa', khataWaApp: 'auto', khataShop: '', khataShopPhone: '', khataLang: 'hinglish', khataMsg: '', khataReason: 'udhaar', khataUpi: '', autoBackup: true,
   lock: false, lockDelay: 0, pinHash: '', pinSalt: '',
   extensions: '// Your own functions & constants – available in every note\n// gst(x) = x * 1.18\n// usd = 83.5\n',
   customCss: ''
@@ -1242,6 +1242,7 @@ function labelFreq() {
   const f = new Map(); const add = w => { if (!w || w.length < 2 || /^\d/.test(w)) return; const k = w.toLowerCase(); const cur = f.get(k); f.set(k, { w: cur ? cur.w : w, n: (cur ? cur.n : 0) + 1 }); };
   for (const [id, arr] of Object.entries(state.labelIndex)) if (id !== state.fileId && Array.isArray(arr)) arr.forEach(add);
   currentLabels().forEach(add);
+  if (settings.khataOn && typeof KH !== 'undefined' && KH.data) for (const p of KH.data.parties) for (const n of [p.name, ...(p.aliases || [])]) { if (!n || n.length < 2) continue; const k = n.toLowerCase(); const cur = f.get(k); f.set(k, { w: n, n: (cur ? cur.n : 0) + 1000, kh: true }); }
   return [...f.values()].sort((a, b) => b.n - a.n || a.w.localeCompare(b.w));
 }
 function hideSuggest() { sgBar.classList.remove('show'); }
@@ -1252,7 +1253,7 @@ function updateSuggest() {
   const prefix = before.toLowerCase(); const all = labelFreq();
   const list = (prefix ? all.filter(x => x.w.toLowerCase().startsWith(prefix) && x.w.toLowerCase() !== prefix) : all).slice(0, 12);
   if (!list.length) return hideSuggest();
-  sgBar.replaceChildren(...list.map(x => el('button', { class: 'sg', 'data-w': x.w, tabindex: '-1', html: prefix ? `<b>${escHtml(x.w.slice(0, prefix.length))}</b>${escHtml(x.w.slice(prefix.length))}` : escHtml(x.w) })));
+  sgBar.replaceChildren(...list.map(x => el('button', { class: 'sg' + (x.kh ? ' kh' : ''), 'data-w': x.w, tabindex: '-1', html: (x.kh ? '📒 ' : '') + (prefix ? `<b>${escHtml(x.w.slice(0, prefix.length))}</b>${escHtml(x.w.slice(prefix.length))}` : escHtml(x.w)) })));
   sgBar.classList.add('show');
 }
 sgBar.addEventListener('mousedown', e => e.preventDefault());
@@ -2694,7 +2695,7 @@ document.addEventListener('touchend', e => {
 }, { passive: true });
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') { flushSave(); Lock.hiddenAt = Date.now(); }
-  else { applyWakeLock(); if (settings.lock && settings.lockDelay >= 0 && Lock.hiddenAt && (Date.now() - Lock.hiddenAt) / 1000 >= settings.lockDelay && !$('#lock').classList.contains('open')) Lock.unlock(); }
+  else { applyWakeLock(); setTimeout(() => khAutoBackup(), 4000); if (settings.lock && settings.lockDelay >= 0 && Lock.hiddenAt && (Date.now() - Lock.hiddenAt) / 1000 >= settings.lockDelay && !$('#lock').classList.contains('open')) Lock.unlock(); }
 });
 window.addEventListener('pagehide', () => flushSave());
 if (window.visualViewport) { const vv = window.visualViewport; vv.addEventListener('resize', () => { document.body.style.height = vv.height + 'px'; document.body.classList.toggle('kbd-open', vv.height < window.innerHeight - 140 && document.activeElement === ED); if (document.activeElement === ED) requestAnimationFrame(caretVisible); }); }
@@ -2719,6 +2720,7 @@ async function init() {
   const app = Native.p('App'); if (app) { try { app.addListener('backButton', nativeBack); } catch (e) {} }
   if (!Native.on && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
   Updater.auto();
+  setTimeout(() => khAutoBackup(), 8000);
   window.__cnfReady = true;
 }
 init().catch(err => { console.error(err); toast('Something went wrong while starting'); });

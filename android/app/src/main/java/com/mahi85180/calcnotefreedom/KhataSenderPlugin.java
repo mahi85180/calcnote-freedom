@@ -16,6 +16,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.ContactsContract;
 import android.telephony.SmsManager;
+import android.telephony.SubscriptionManager;
 
 import androidx.activity.result.ActivityResult;
 import androidx.core.content.ContextCompat;
@@ -86,12 +87,19 @@ public class KhataSenderPlugin extends Plugin {
         call.resolve(r);
     }
 
+    /** The SIM chosen for SMS in the phone settings (dual-SIM phones), else the default SIM. */
     @SuppressWarnings("deprecation")
     private SmsManager smsManager() {
+        int sub = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
+        try {
+            sub = SubscriptionManager.getDefaultSmsSubscriptionId();
+            if (sub == SubscriptionManager.INVALID_SUBSCRIPTION_ID) sub = SubscriptionManager.getDefaultSubscriptionId();
+        } catch (Exception ignored) { }
         if (Build.VERSION.SDK_INT >= 31) {
             SmsManager m = getContext().getSystemService(SmsManager.class);
-            if (m != null) return m;
+            if (m != null) return sub != SubscriptionManager.INVALID_SUBSCRIPTION_ID ? m.createForSubscriptionId(sub) : m;
         }
+        if (sub != SubscriptionManager.INVALID_SUBSCRIPTION_ID) return SmsManager.getSmsManagerForSubscriptionId(sub);
         return SmsManager.getDefault();
     }
 

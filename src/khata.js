@@ -18,19 +18,19 @@ const KH_COLORS = { red: '#C62828', green: '#1B7F4B', blue: '#1565C0', teal: '#0
 const KH_EFFECTS = { gave: 'Baaki badhe (aapne diye)', got: 'Baaki ghate (aapko mile)', none: 'Sirf record (baaki par asar nahi)' };
 const KH_LANG = {
   hinglish: {
-    tpl: 'Namaste {naam} ji,\n{entries}\n{baaki}\n– {dukaan}',
+    tpl: 'Namaste {naam} ji,\n{entries}\n{baaki}\n{upi}\n– {dukaan}',
     get: 'Aapka baaki: {amt}', give: 'Humein aapko dene hain: {amt}', clear: 'Hisaab barabar ✓',
-    changed: 'badla', removed: 'cancel', remind: 'Namaste {naam} ji,\n{baaki}\nKripya jaldi jama karein 🙏\n– {dukaan}'
+    changed: 'badla', removed: 'cancel', remind: 'Namaste {naam} ji,\n{baaki}\nKripya jaldi jama karein 🙏\n{upi}\n– {dukaan}'
   },
   hindi: {
-    tpl: 'नमस्ते {naam} जी,\n{entries}\n{baaki}\n– {dukaan}',
+    tpl: 'नमस्ते {naam} जी,\n{entries}\n{baaki}\n{upi}\n– {dukaan}',
     get: 'आपका बाकी: {amt}', give: 'हमें आपको देने हैं: {amt}', clear: 'हिसाब बराबर ✓',
-    changed: 'बदला', removed: 'रद्द', remind: 'नमस्ते {naam} जी,\n{baaki}\nकृपया जल्द जमा करें 🙏\n– {dukaan}'
+    changed: 'बदला', removed: 'रद्द', remind: 'नमस्ते {naam} जी,\n{baaki}\nकृपया जल्द जमा करें 🙏\n{upi}\n– {dukaan}'
   },
   english: {
-    tpl: 'Hello {naam},\n{entries}\n{baaki}\n– {dukaan}',
+    tpl: 'Hello {naam},\n{entries}\n{baaki}\n{upi}\n– {dukaan}',
     get: 'Your balance: {amt}', give: 'We owe you: {amt}', clear: 'All settled ✓',
-    changed: 'changed', removed: 'cancelled', remind: 'Hello {naam},\n{baaki}\nPlease pay at the earliest 🙏\n– {dukaan}'
+    changed: 'changed', removed: 'cancelled', remind: 'Hello {naam},\n{baaki}\nPlease pay at the earliest 🙏\n{upi}\n– {dukaan}'
   }
 };
 
@@ -212,10 +212,10 @@ function khCalc(text) {
 }
 function khFallbackDate() { const f = state.files.find(x => x.id === state.fileId); return f && f.createdAt ? khISODay(new Date(f.createdAt)) : khToday(); }
 /* every entry line of one tab → item (or null) */
-function khSheetItems(sh, texts, calc) {
+function khSheetItems(sh, texts, calc, fallbackDate) {
   if (!sh.khata) sh.khata = { on: true, reason: settings.khataReason || 'udhaar', formula: 'x', round: false };   // fixed once, so later default changes never rewrite old tabs
   const cfg = khCfg(sh); if (!cfg.on) return [];
-  const fallback = khFallbackDate(); let date = fallback;
+  const fallback = fallbackDate || khFallbackDate(); let date = fallback;
   const out = [];
   texts.forEach((raw, i) => {
     const l = calc.lines[i]; if (!l) return;
@@ -351,16 +351,22 @@ function khEntryLine(x) {
   return head + khMoney(x.amount);
 }
 function khFill(tpl, vars) {
-  let t = String(tpl || '').replace(/\{(naam|name|entries|baaki|dukaan|shop|phone|date)\}/g, (m, k) => {
-    const v = { name: vars.naam, shop: vars.dukaan }[k] ?? vars[k]; return v == null ? '' : String(v);
-  });
-  if (!vars.dukaan) t = t.split('\n').filter(l => !/^\s*[–-]?\s*$/.test(l)).join('\n');
-  return t.replace(/\n{3,}/g, '\n\n').trim();
+  const RE = /\{(naam|name|entries|baaki|dukaan|shop|phone|date|upi)\}/g;
+  const out = [];
+  for (const line of String(tpl || '').split('\n')) {
+    const had = RE.test(line); RE.lastIndex = 0;
+    const r = line.replace(RE, (m, k) => { const v = { name: vars.naam, shop: vars.dukaan }[k] ?? vars[k]; return v == null ? '' : String(v); });
+    if (had && /^[\s–\-:·]*$/.test(r)) continue;                    // e.g. "– {dukaan}" with no shop name
+    out.push(r);
+  }
+  return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
 }
+const khUpiLine = bal => settings.khataUpi && bal > 0.5 ? `UPI: ${settings.khataUpi}` : '';
 function khMessage(party, lines) {
-  return khFill(settings.khataMsg || khWords().tpl, { naam: party.name, entries: lines.map(khEntryLine).join('\n'), baaki: khBalanceLine(khBalance(party.id)), dukaan: settings.khataShop, phone: settings.khataShopPhone, date: khShortDate(khToday()) });
+  const bal = khBalance(party.id);
+  return khFill(settings.khataMsg || khWords().tpl, { naam: party.name, entries: lines.map(khEntryLine).join('\n'), baaki: khBalanceLine(bal), dukaan: settings.khataShop, phone: settings.khataShopPhone, date: khShortDate(khToday()), upi: khUpiLine(bal) });
 }
-function khReminder(party) { return khFill(khWords().remind, { naam: party.name, baaki: khBalanceLine(khBalance(party.id)), dukaan: settings.khataShop, phone: settings.khataShopPhone }); }
+function khReminder(party) { const bal = khBalance(party.id); return khFill(khWords().remind, { naam: party.name, baaki: khBalanceLine(bal), dukaan: settings.khataShop, phone: settings.khataShopPhone, upi: khUpiLine(bal) }); }
 const khDupKey = (name, date, amount) => `${khNorm(name)}|${date}|${khRound(amount)}`;
 const khChannel = p => (p && p.channel) || settings.khataChannel || 'wa';
 
@@ -398,41 +404,66 @@ function khLogMsg(ids, ch, ok) {
 /* sends a list of jobs: SMS go by themselves (phone app), WhatsApp opens one chat per tap */
 function khSendJobs(jobs, title = '📨 Messages', auto = false) {
   if (!jobs.length) return;
-  const list = el('div', { class: 'kq-list' });
+  const list = el('div', { class: 'kq-list' }), prog = el('div', { class: 'kq-prog' });
   const autoSms = !!khPlugin();
+  let stopped = false, paused = false, waiting = null, nextT = null;
   const row = j => {
     const st = j.status === 'sent' ? '✓ Gaya' : j.status === 'opened' ? '✓ Khula' : j.status === 'fail' ? '✗ ' + (j.why || 'Fail') : j.status === 'busy' ? '…' : '';
     return el('div', { class: 'kq-row ' + (j.status || '') },
       el('span', { class: 'kq-ch', text: j.ch === 'sms' ? '✉️' : '💬' }),
       el('div', { class: 'kq-main' }, el('b', { text: j.party.name }), el('span', { text: (j.ch === 'sms' ? 'SMS' : 'WhatsApp') + ' · ' + (j.party.phone || '') })),
       st ? el('span', { class: 'kq-st', text: st }) : null,
-      el('button', { class: 'kq-btn', text: j.status === 'sent' || j.status === 'opened' ? 'Dobara' : 'Bhejo', disabled: j.status === 'busy', onclick: () => go(j) }));
+      el('button', { class: 'kq-btn', text: j.status === 'sent' || j.status === 'opened' ? 'Dobara' : 'Bhejo', disabled: j.status === 'busy', onclick: () => { paused = true; go(j); } }));
   };
-  const draw = () => { list.replaceChildren(...jobs.map(row)); const n = jobs.filter(j => !j.status || j.status === 'fail').length; nextBtn.textContent = n ? `▶ Agla bhejo (${n} baaki)` : '✓ Sab ho gaya'; nextBtn.className = 'btn ' + (n ? 'ok' : 'cancel'); };
-  let waiting = null;
+  const pending = () => jobs.filter(j => !j.status || j.status === 'fail');
+  const draw = () => {
+    list.replaceChildren(...jobs.map(row));
+    const sms = jobs.filter(j => j.ch === 'sms'), wa = jobs.filter(j => j.ch === 'wa'), fail = jobs.filter(j => j.status === 'fail').length;
+    prog.textContent = [sms.length ? `SMS ${sms.filter(j => j.status === 'sent' || j.status === 'opened').length}/${sms.length} gaye` : '', wa.length ? `WhatsApp ${wa.filter(j => j.status === 'opened').length}/${wa.length} khule` : '', fail ? `${fail} fail` : ''].filter(Boolean).join(' · ');
+    const n = pending().length; nextBtn.textContent = n ? (fail && n === fail ? `↻ Fail wale dobara (${fail})` : `▶ Agla bhejo (${n} baaki)`) : '✓ Sab ho gaya'; nextBtn.className = 'btn ' + (n ? 'ok' : 'cancel');
+  };
   const go = async j => {
     if (j.status === 'busy') return;
     j.status = 'busy'; draw();
     const r = j.ch === 'sms' ? await khSms(j.party.phone, j.text) : await khWa(j.party.phone, j.text);
     j.status = !r.ok ? 'fail' : r.opened ? 'opened' : 'sent'; j.why = r.why;
-    khLogMsg(j.ids, j.ch, r.ok); khSave();
+    if (j.ids && j.ids.length) { khLogMsg(j.ids, j.ch, r.ok); khSave(); }
     if (r.opened) waiting = j;
     draw();
   };
-  const nextBtn = el('button', { class: 'btn ok', onclick: () => { const j = jobs.find(x => !x.status || x.status === 'fail'); if (j) go(j); else Sheet.close(); } });
-  let stopped = false;
-  const onBack = () => { if (document.visibilityState === 'visible' && waiting) { waiting = null; draw(); } };
+  const runSms = async () => {                                     // SMS from the SIM, one after another
+    for (const j of jobs) {
+      if (stopped) return false;
+      if (j.ch !== 'sms' || (j.status && j.status !== 'fail')) continue;
+      await go(j); if (j.status === 'opened') return false;         // SMS app had to be opened – continue by taps
+      await new Promise(r => setTimeout(r, 450));
+    }
+    return true;
+  };
+  const nextBtn = el('button', { class: 'btn ok', onclick: async () => {
+    const left = pending(); if (!left.length) { Sheet.close(); return; }
+    paused = false;
+    if (autoSms && left.some(j => j.ch === 'sms')) { await runSms(); const w = pending().find(j => j.ch !== 'sms'); if (w && auto && !stopped) go(w); return; }
+    go(left[0]);
+  } });
+  // back from WhatsApp → the next chat opens by itself (can be stopped)
+  const onBack = () => {
+    if (document.visibilityState !== 'visible' || !waiting) return;
+    waiting = null; draw();
+    const next = pending().find(j => j.ch === 'wa' || !autoSms);
+    if (!auto || paused || stopped || !next) return;
+    toast(`Agla: ${next.party.name} – khul raha hai…`, 1800, { label: 'Ruko', run: () => { paused = true; clearTimeout(nextT); } });
+    clearTimeout(nextT); nextT = setTimeout(() => { if (!paused && !stopped && !next.status) go(next); }, 1600);
+  };
   document.addEventListener('visibilitychange', onBack);
   Sheet.show(el('div', {}, el('h3', { text: title }),
-    el('p', { class: 'msg', text: autoSms ? 'SMS apne aap aapke SIM se jaate hain. WhatsApp har naam pe ek baar khulega – wahan Send dabayein, phir yahan wapas aayein.' : 'Har naam pe tap karein – message likha hua khulega, bas Send dabayein.' }),
-    list, el('div', { class: 'sheet-actions' }, el('button', { class: 'btn cancel', text: 'Band karein', onclick: () => Sheet.close() }), nextBtn)), () => { stopped = true; document.removeEventListener('visibilitychange', onBack); });
+    el('p', { class: 'msg', text: autoSms ? 'SMS apne aap aapke SIM se ja rahe hain. WhatsApp har naam pe khulega – Send dabakar wapas aayein, agla apne aap khulega.' : 'Message likha hua khulega – Send dabakar wapas aayein, agla apne aap khulega.' }),
+    prog, list, el('div', { class: 'sheet-actions' }, el('button', { class: 'btn cancel', text: 'Band karein', onclick: () => Sheet.close() }), nextBtn)), () => { stopped = true; clearTimeout(nextT); document.removeEventListener('visibilitychange', onBack); });
   draw();
-  // SMS: send all of them right away, one after another (stops when the list is closed)
-  // SMS go by themselves one after another; stops when the list is closed or when the SMS app had to be opened instead
   (async () => {
-    if (autoSms) for (const j of jobs) { if (stopped) break; if (j.ch === 'sms' && !j.status) { await go(j); if (j.status === 'opened') break; } }
-    const first = jobs.find(j => !j.status);
-    if (auto && first && !stopped && !(autoSms && first.ch === 'sms')) go(first);       // the user already chose "send" – open it straight away
+    const smsDone = autoSms ? await runSms() : true;
+    const first = pending().find(j => !autoSms || j.ch !== 'sms');
+    if (auto && smsDone && first && !stopped && !paused) go(first);   // the user already chose "send" – open the first chat straight away
   })();
 }
 function khJobsFor(party, text, ids, ch = khChannel(party)) {
@@ -468,39 +499,69 @@ async function khPublishFlow() {
   if (plan.unknown.length) {
     const names = [...new Map(plan.unknown.map(it => [it.key, it])).values()];
     box.append(el('div', { class: 'kp-warn' }, el('b', { text: `⚠ ${names.length} naam ka khata nahi hai` }), el('span', { text: 'Ye entries publish nahi hongi. Naam pe tap karke khata banayein ya jodein.' }),
-      el('div', { class: 'chips' }, ...names.map(it => el('button', { class: 'chip', text: '＋ ' + it.label, onclick: () => khUnknownSheet(it, () => khPublishFlow()) })))));
+      el('div', { class: 'chips' }, ...names.map(it => el('button', { class: 'chip', text: '＋ ' + it.label, onclick: () => khUnknownSheet(it, () => khPublishFlow()) }))),
+      names.length > 1 ? el('button', { class: 'btn ok kf-wide', id: 'khMakeAll', text: `＋ Sab ${names.length} naam ke khate ek saath banayein`, onclick: async () => {
+        const ok = await dialogConfirm({ title: `${names.length} naye khate banayein?`, message: names.map(it => '• ' + khTitleCase(it.label)).join('\n') + '\n\nMobile number baad mein khate ki setting se jod sakte hain.', okText: 'Banayein' });
+        if (!ok) { setTimeout(khPublishFlow, 260); return; }
+        for (const it of names) if (!khResolve(it.label)) await khUpsertParty({ name: khTitleCase(it.label) });
+        toast(`✓ ${names.length} khate bane`); render(true); setTimeout(khPublishFlow, 300);
+      } }) : null));
   }
   if (plan.errors.length) box.append(el('div', { class: 'kp-err' }, el('b', { text: '✗ In lines mein galti hai' }), ...plan.errors.slice(0, 8).map(it => el('span', { text: `Line ${it.i + 1} (${it.sheetName}): ${it.err}` }))));
-  const choice = new Map(), edited = new Map();
+  const choice = new Map(), edited = new Map(), redraw = [];
+  const CH = [['sms', '✉️ SMS'], ['wa', '💬 WhatsApp'], ['both', 'Dono'], ['none', 'Nahi']];
+  const cards = el('div', {});
   for (const g of G) {
     const p = g.party; const after = khBalance(p.id) + g.delta; choice.set(p.id, khHasPhone(p.phone) ? khChannel(p) : 'none');
     const chips = el('div', { class: 'kp-ch' });
-    const drawChips = () => chips.replaceChildren(...(khHasPhone(p.phone) ? [['sms', '✉️ SMS'], ['wa', '💬 WhatsApp'], ['both', 'Dono'], ['none', 'Nahi']].map(([v, l]) => el('button', { class: 'chip' + (choice.get(p.id) === v ? ' active' : ''), 'data-ch': v, text: l, onclick: () => { choice.set(p.id, v); drawChips(); } }))
+    const drawChips = () => chips.replaceChildren(...(khHasPhone(p.phone) ? CH.map(([v, l]) => el('button', { class: 'chip' + (choice.get(p.id) === v ? ' active' : ''), 'data-ch': v, text: l, onclick: () => { choice.set(p.id, v); drawChips(); updBtn(); } }))
       : [el('button', { class: 'chip', text: '📵 Number nahi – jodein', onclick: () => khPartyForm(p, () => khPublishFlow()) })]));
-    drawChips();
+    redraw.push(drawChips);
     const ta = el('textarea', { class: 'kp-msg', rows: 5, style: 'display:none' });
     const prev = el('button', { class: 'kp-link', text: 'Message dekhein / badlein ▾', onclick: () => {
       if (ta.style.display === 'none') { if (!edited.has(p.id)) ta.value = khPreviewMsg(p, g, after); ta.style.display = ''; prev.textContent = 'Message chhupayein ▴'; } else { ta.style.display = 'none'; prev.textContent = 'Message dekhein / badlein ▾'; }
     } });
     ta.addEventListener('input', () => edited.set(p.id, ta.value));
-    box.append(el('div', { class: 'kp-card', 'data-pid': p.id },
+    cards.append(el('div', { class: 'kp-card', 'data-pid': p.id },
       el('div', { class: 'kp-head' }, khAvatar(p), el('div', { class: 'kp-nm' }, el('b', { text: p.name }), el('span', { class: 'kk-' + khCls(after), text: `Ab baaki: ${khMoney(after)} ${khWord(after)}` }))),
       ...g.lines.map(x => el('div', { class: 'kp-line ' + x.kind }, el('span', { class: 'ic', text: x.kind === 'add' ? '＋' : x.kind === 'change' ? '✎' : '✕' }), el('span', { text: khEntryLine(x) }), x.dup ? el('small', { class: 'kp-dup', text: '⚠ shayad pehle se hai' }) : null)),
       chips, prev, ta));
   }
+  redraw.forEach(f => f());
   if (!G.length && !plan.unknown.length && !plan.errors.length) return;
-  const btn = el('button', { class: 'btn ok', id: 'khPublishGo', text: plan.count ? `✓ Publish (${plan.count})` : 'Theek hai', onclick: async () => {
+  // one row to set the message type for everybody at once
+  const withPhone = G.filter(g => khHasPhone(g.party.phone)), noPhone = G.length - withPhone.length;
+  if (withPhone.length > 1) {
+    const bulk = el('div', { class: 'kp-bulk' }, el('span', { text: 'Sabko:' }), ...CH.map(([v, l]) => el('button', { class: 'chip', 'data-all': v, text: l, onclick: () => { withPhone.forEach(g => choice.set(g.party.id, v)); redraw.forEach(f => f()); updBtn(); } })));
+    box.append(bulk);
+  }
+  if (noPhone) box.append(el('p', { class: 'kp-nophone', text: `📵 ${noPhone} khate mein mobile number nahi hai – unko message nahi jaayega (entry phir bhi judegi)` }));
+  // summary of the money
+  let gave = 0, got = 0; for (const it of plan.adds) { if (it.effect === 'gave') gave += it.amount; else if (it.effect === 'got') got += it.amount; }
+  if (gave || got) box.append(el('div', { class: 'kp-sum' }, el('span', { text: `${plan.adds.length} nayi entry` }), gave ? el('b', { class: 'kk-get', text: `Diye ${khMoney(gave)}` }) : null, got ? el('b', { class: 'kk-give', text: `Mile ${khMoney(got)}` }) : null));
+  box.append(cards);
+  const countMsgs = () => { let sms = 0, wa = 0; for (const g of withPhone) { const c = choice.get(g.party.id); if (c === 'sms' || c === 'both') sms++; if (c === 'wa' || c === 'both') wa++; } return { sms, wa }; };
+  const btn = el('button', { class: 'btn ok', id: 'khPublishGo', onclick: async () => {
     if (!plan.count) { Sheet.close(); return; }
     btn.disabled = true;
     const done = await khApplyPlan(plan);
     Sheet.onClose = null; Sheet.close();
     const jobs = [];
     for (const g of G) { const d = done.get(g.party.id); if (!d) continue; const text = edited.get(g.party.id) || khMessage(g.party, g.lines); jobs.push(...khJobsFor(g.party, text, d, choice.get(g.party.id))); }
-    toast(`✓ ${plan.count} badlav khata mein publish hue`);
-    if (jobs.length) setTimeout(() => khSendJobs(jobs, '📨 Messages bhejein'), 280);
+    toast(`✓ ${plan.count} badlav ${done.size} khate mein jud gaye`, 5000, { label: 'Wapas lo', run: () => khUndoPublish() });
+    // SMS go out by themselves; WhatsApp opens one chat after another
+    jobs.sort((x, y) => (x.ch === 'sms' ? 0 : 1) - (y.ch === 'sms' ? 0 : 1));
+    if (jobs.length) setTimeout(() => khSendJobs(jobs, '📨 Messages', true), 280);
   } });
-  Sheet.show(el('div', { class: 'kp' }, el('h3', { text: '📤 Publish – khata mein bhejein' }),
-    el('p', { class: 'msg', text: plan.count ? `${plan.count} badlav ${G.length} khate mein jaayenge. Check karke Publish dabayein.` : 'Abhi publish karne ko kuch nahi hai.' }),
+  const updBtn = () => {
+    if (!plan.count) { btn.textContent = 'Theek hai'; return; }
+    const m = countMsgs(); const parts = [];
+    if (m.sms) parts.push(`${m.sms} SMS`); if (m.wa) parts.push(`${m.wa} WhatsApp`);
+    btn.textContent = parts.length ? `✓ Sab jodein + ${parts.join(' + ')}` : `✓ Sab khate mein jodein (${plan.count})`;
+  };
+  updBtn();
+  Sheet.show(el('div', { class: 'kp' }, el('h3', { text: '📤 Publish – sab khate ek saath' }),
+    el('p', { class: 'msg', text: plan.count ? `${plan.count} badlav ${G.length} khate mein jaayenge. Check karein, phir ek button se sab jud jaayega aur message chale jaayenge.` : 'Abhi publish karne ko kuch nahi hai.' }),
     box, el('div', { class: 'sheet-actions kp-actions' }, el('button', { class: 'btn cancel', text: 'Cancel', onclick: () => Sheet.close() }), btn)));
 }
 function khPreviewMsg(p, g, after) {
@@ -512,17 +573,20 @@ async function khApplyPlan(plan) {
   const mark = (pid, id) => { let a = touched.get(pid); if (!a) touched.set(pid, a = []); a.push(id); };
   const title = displayTitle();
   const src = it => ({ fileId: plan.fileId, fileTitle: title, sheetId: it.sheetId, sheetName: it.sheetName, line: it.raw, pos: it.i, x: it.x, formula: it.formula });
+  const undo = { at: now, fileId: plan.fileId, title, prevPub: KH.data.pub[plan.fileId] || null, ops: [] };
+  const snap = e => ({ partyId: e.partyId, date: e.date, amount: e.amount, effect: e.effect, flip: e.flip, reason: e.reason, reasonName: e.reasonName, src: e.src ? Object.assign({}, e.src) : null, updatedAt: e.updatedAt, histLen: (e.hist || []).length });
   for (const it of plan.adds) {
     const e = { id: newId('ke_'), partyId: it.party.id, date: it.date, amount: it.amount, effect: it.effect, flip: !!it.flip, reason: it.reason, reasonName: it.reasonName, mode: '', note: '', src: src(it), createdAt: now, updatedAt: now, hist: [], msgs: [] };
-    KH.data.entries.push(e); mark(e.partyId, e.id);
+    KH.data.entries.push(e); mark(e.partyId, e.id); undo.ops.push({ t: 'add', id: e.id });
   }
   for (const [it, e] of plan.changes) {
+    undo.ops.push({ t: 'chg', id: e.id, before: snap(e) });
     (e.hist = e.hist || []).push({ at: now, amount: e.amount, effect: e.effect, reasonName: e.reasonName, date: e.date, partyId: e.partyId });
     Object.assign(e, { partyId: it.party.id, date: it.date, amount: it.amount, effect: it.effect, flip: !!it.flip, reason: it.reason, reasonName: it.reasonName, src: src(it), updatedAt: now });
     mark(e.partyId, e.id);
   }
-  for (const e of plan.removes) { (e.hist = e.hist || []).push({ at: now, kind: 'removed', amount: e.amount }); e.deleted = now; e.updatedAt = now; mark(e.partyId, e.id); }
-  KH.data.pub[plan.fileId] = now;
+  for (const e of plan.removes) { undo.ops.push({ t: 'rem', id: e.id, before: snap(e) }); (e.hist = e.hist || []).push({ at: now, kind: 'removed', amount: e.amount }); e.deleted = now; e.updatedAt = now; mark(e.partyId, e.id); }
+  KH.data.pub[plan.fileId] = now; KH.data.lastPub = undo;
   await khSave();
   return touched;
 }
@@ -553,9 +617,23 @@ function khRenderList(body) {
       el('button', { class: 'half', onclick: () => { KHU.filter = KHU.filter === 'give' ? 'all' : 'give'; refreshKhataPages(); } }, el('span', { text: 'Aapko dene hain' }), el('b', { class: 'v give', text: khMoney(give) })),
       el('span', { class: 'sep' }),
       el('button', { class: 'half', onclick: () => { KHU.filter = KHU.filter === 'get' ? 'all' : 'get'; refreshKhataPages(); } }, el('span', { text: 'Aapko milenge' }), el('b', { class: 'v get', text: khMoney(get) }))),
-    el('button', { class: 'kk-sum-rep', text: '📄 Report dekhein ›', onclick: () => { KHU.rep.pid = null; openPage('kreport'); } })));
+    el('div', { class: 'kk-sum-btns' },
+      el('button', { class: 'kk-sum-rep', text: '📄 Report', onclick: () => { KHU.rep.pid = null; openPage('kreport'); } }),
+      get > 0.5 ? el('button', { class: 'kk-sum-rep', id: 'khRemindAll', text: '📨 Sabko yaad dilayein', onclick: khBulkRemind }) : null)));
+  // today at a glance
+  const t = khToday(); let tg = 0, tm = 0, tn = 0;
+  for (const e of D.entries) if (!e.deleted && e.date === t && (KHU.type === 'all' || (M.byId.get(e.partyId) || {}).type === KHU.type)) { tn++; if (e.effect === 'gave') tg += e.amount; else if (e.effect === 'got') tm += e.amount; }
+  if (tn) wrap.append(el('div', { class: 'kk-today' }, el('span', { text: `Aaj ${tn} entry` }), el('b', { class: 'kk-get', text: 'Diye ' + khMoney(tg) }), el('b', { class: 'kk-give', text: 'Mile ' + khMoney(tm) })));
   // unpublished changes in the open note
   if (state.fileId && settings.khataOn) { try { const pl = khPlan(); if (pl.count || pl.unknown.length) wrap.append(el('button', { class: 'kk-pend', onclick: () => { closeAllPages(); setTimeout(khPublishFlow, 300); } }, el('span', { text: '📤' }), el('span', { class: 'm' }, el('b', { text: pl.count ? `"${displayTitle()}" mein ${pl.count} badlav publish baaki` : `"${displayTitle()}" mein naye naam hain` }), pl.unknown.length ? el('small', { text: `${new Set(pl.unknown.map(i => i.key)).size} naam ka khata nahi bana (⚠)` }) : null), el('span', { text: '›' }))); } catch (e) { console.error(e); } }
+  const pend = el('div', { class: 'kk-pend-list' });
+  const drawPend = list => pend.replaceChildren(...(list.length ? [el('div', { class: 'kk-pend-h', text: `📤 Doosre notes mein publish baaki (${list.length})` }), ...list.slice(0, 8).map(n => el('button', { class: 'kk-pend', 'data-fid': n.id, onclick: () => khOpenAndPublish(n.id) }, el('span', { class: 'm' }, el('b', { text: n.title }), el('small', { text: `${n.n} badlav${n.unk ? ` · ${n.unk} naya naam` : ''} · ${khAgo(n.at)}` })), el('span', { text: 'Publish ›' })))] : []));
+  if (settings.khataOn) {
+    const P = KH.pendingNotes;
+    if (P && P.ver === KH.ver && Date.now() - P.at < 60000) drawPend(P.list);
+    else khScanNotes().then(drawPend).catch(e => console.error(e));
+  }
+  wrap.append(pend);
   const q = el('input', { type: 'search', class: 'kk-q', placeholder: 'Naam ya number khojein', value: KHU.q, autocomplete: 'off' });
   const listBox = el('div', { class: 'kk-list' });
   const drawList = () => {
@@ -1031,7 +1109,7 @@ async function khMergeBackup(k) {
 
 /* ---------------- pages & settings ---------------- */
 Object.assign(SETTINGS_PAGES, {
-  khata: { title: '📒 Khata book', cls: 'kpage', actions: () => [{ icon: 'publish', label: 'Publish', run: () => { closeAllPages(); setTimeout(khPublishFlow, 300); } }, { icon: 'settings', label: 'Khata settings', run: () => openPage('khataset') }], render: body => khRenderList(body) },
+  khata: { title: '📒 Khata book', cls: 'kpage', actions: () => [{ icon: 'publish', label: 'Publish', run: () => { closeAllPages(); setTimeout(khPublishFlow, 300); } }, { icon: 'more', label: 'More', run: () => khMoreMenu() }], render: body => khRenderList(body) },
   kparty: { title: () => (khParty(KHU.pid) || {}).name || 'Khata', cls: 'kpage', render: (body, pg) => khRenderParty(body, pg) },
   kreport: { title: 'Report', cls: 'kpage', render: (body, pg) => khRenderReport(body, pg) },
   kreasons: { title: 'Reasons', cls: 'kpage', render: body => khRenderReasons(body) },
@@ -1044,6 +1122,7 @@ Object.assign(SETTINGS_PAGES, {
     { t: 'chips', key: 'khataWaApp', icon: '💬', label: 'WhatsApp app', options: [opt('auto', 'Apne aap'), opt('wa', 'WhatsApp'), opt('biz', 'WA Business')] },
     { t: 'text', key: 'khataShop', icon: '🏪', label: 'Dukaan / aapka naam', sub: 'Message aur report mein dikhega', placeholder: 'Jaise: Mahi Traders' },
     { t: 'text', key: 'khataShopPhone', icon: '📞', label: 'Aapka mobile number', sub: 'Message mein {phone} ki jagah', placeholder: '98xxxxxxxx' },
+    { t: 'text', key: 'khataUpi', icon: '💳', label: 'Aapki UPI ID', sub: 'Baaki wale message mein apne aap judegi – log seedha pay kar sakein', placeholder: 'jaise: mahi@okaxis' },
     { t: 'chips', key: 'khataLang', icon: '🔤', label: 'Message ki bhasha', options: [opt('hinglish', 'Hinglish'), opt('hindi', 'हिंदी'), opt('english', 'English')] },
     { t: 'note', text: 'Apna message format (khali chhodein to bhasha wala format lagega). Jagah: {naam} {entries} {baaki} {dukaan} {phone} {date}' },
     { t: 'textarea', key: 'khataMsg', rows: 6 },
@@ -1051,7 +1130,129 @@ Object.assign(SETTINGS_PAGES, {
     { t: 'section', label: 'Entry' },
     { t: 'nav', page: 'kreasons', icon: '🏷', label: 'Reasons (Udhaar, Jama, Nagad, Kharcha…)', sub: 'Apne reason banayein – baaki badhe, ghate ya sirf record' },
     { t: 'chips', key: 'khataReason', icon: '＋', label: 'Naye tab ka reason', options: () => (KH.data ? KH.data.reasons : KH_DEFAULT_REASONS).map(r => opt(r.id, r.name)) },
+    { t: 'section', label: 'Suraksha' },
+    { t: 'switch', key: 'autoBackup', icon: '💾', label: 'Roz apne aap backup', sub: 'Phone ke Documents/CalcNote Freedom/Auto-backup mein (aakhri 7 din)' },
+    { t: 'action', icon: '💾', label: 'Abhi backup banayein', run: () => Native.on ? khAutoBackup(true) : exportBackup() },
+    { t: 'action', icon: '↶', label: 'Pichhla publish wapas lein', run: () => khUndoPublish() },
     { t: 'action', icon: '🚫', label: 'Chhode gaye naam', sub: 'Jo naam khate mein nahi jaate', run: () => khLoad().then(khIgnoreSheet) },
     { t: 'note', text: 'Kaise kaam karta hai:\n1. Note mein naam ke saath entry likhein – jaise  gopi 12+7\n2. Answer ke aage ⚠ dikhe to tap karke khata banayein\n3. Tab ka reason aur formula tab ke menu (tab pe tap) → Khata setting mein\n4. 📤 Publish dabayein – entries khate mein jaayengi aur SMS / WhatsApp chala jaayega\nEdit karte rehne se kuch nahi jaata – sirf Publish par.' }
   ] }
 });
+
+/* ---------------- undo the last publish ---------------- */
+async function khUndoPublish() {
+  await khLoad(); const u = KH.data.lastPub;
+  if (!u || !u.ops || !u.ops.length) { toast('Wapas lene ko koi publish nahi hai'); return false; }
+  const ok = await dialogConfirm({ title: 'Pichhla publish wapas lein?', message: `"${u.title}" · ${khLongDate(u.at.slice(0, 10))} ${khTime(u.at)}\n${u.ops.length} badlav khate se hata diye jaayenge. Note ki lines phir se ↑ (publish baaki) dikhengi.\n\nJo SMS / WhatsApp chale gaye wo wapas nahi aate.`, okText: 'Wapas lein', danger: true });
+  if (!ok) return false;
+  const byId = new Map(KH.data.entries.map(e => [e.id, e]));
+  const drop = new Set();
+  for (const op of u.ops.slice().reverse()) {
+    const e = byId.get(op.id); if (!e) continue;
+    if (op.t === 'add') drop.add(e.id);
+    else { const b = op.before; e.hist = (e.hist || []).slice(0, b.histLen); delete b.histLen; Object.assign(e, b); if (op.t === 'rem') delete e.deleted; }
+  }
+  KH.data.entries = KH.data.entries.filter(e => !drop.has(e.id));
+  if (u.prevPub) KH.data.pub[u.fileId] = u.prevPub; else delete KH.data.pub[u.fileId];
+  KH.data.lastPub = null;
+  await khSave(); render(true); toast('✓ Pichhla publish wapas liya');
+  return true;
+}
+
+/* ---------------- notes that still have unpublished entries ---------------- */
+async function khScanNotes() {
+  await khLoad();
+  const out = []; const D = KH.data;
+  const files = state.files.filter(f => f.id !== state.fileId && (!D.pub[f.id] || f.updatedAt > D.pub[f.id])).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 40);
+  for (const f of files) {
+    const rec = await Store.get(f.id); if (!rec) continue;
+    let n = 0, unk = 0; const fb = khISODay(new Date(rec.createdAt || f.createdAt || Date.now()));
+    for (const sh of sheetsFromRecord(rec)) {
+      const items = khSheetItems(sh, sh.text.split('\n'), khCalc(sh.text), fb); if (!items.length && !(KH.maps && khMaps().byFile.get(f.id))) continue;
+      const d = khDiffSheet(f.id, sh.id, items); n += d.adds.length + d.changes.length + d.removes.length; unk += items.filter(i => i.unknown && !i.zero).length;
+    }
+    if (n) out.push({ id: f.id, title: f.title || 'Untitled', n, unk, at: f.updatedAt });
+  }
+  KH.pendingNotes = { ver: KH.ver, list: out, at: Date.now() };
+  return out;
+}
+async function khOpenAndPublish(fileId) { closeAllPages(); await new Promise(r => setTimeout(r, 300)); if (state.fileId !== fileId) await openFile(fileId); setTimeout(khPublishFlow, 200); }
+
+/* ---------------- remind everybody who owes money ---------------- */
+function khBulkRemind() {
+  const due = KH.data.parties.map(p => ({ p, b: khBalance(p.id) })).filter(x => x.b > 0.5).sort((a, b) => b.b - a.b);
+  const withPh = due.filter(x => khHasPhone(x.p.phone));
+  if (!due.length) { toast('Kisi par baaki nahi hai ✓'); return; }
+  const pick = new Map(withPh.map(x => [x.p.id, true])); let ch = settings.khataChannel === 'sms' ? 'sms' : settings.khataChannel === 'both' ? 'both' : 'wa';
+  const list = el('div', { class: 'kb-rlist' }), chips = el('div', { class: 'chips' }), btn = el('button', { class: 'btn ok', id: 'khBulkSend' });
+  const upd = () => { const n = [...pick.values()].filter(Boolean).length; btn.textContent = n ? `📨 ${n} logon ko bhejein` : 'Kisi ko nahi chuna'; btn.disabled = !n; };
+  const drawCh = () => chips.replaceChildren(...[['sms', '✉️ SMS'], ['wa', '💬 WhatsApp'], ['both', 'Dono']].map(([v, l]) => el('button', { class: 'chip' + (ch === v ? ' active' : ''), 'data-ch': v, text: l, onclick: () => { ch = v; drawCh(); } })));
+  list.replaceChildren(...withPh.map(x => { const cb = el('input', { type: 'checkbox' }); cb.checked = true; cb.addEventListener('change', () => { pick.set(x.p.id, cb.checked); upd(); });
+    return el('label', { class: 'kb-rrow' }, cb, khAvatar(x.p), el('span', { class: 'nm', text: x.p.name }), el('b', { class: 'kk-get', text: khMoney(x.b) })); }));
+  drawCh(); upd();
+  btn.onclick = () => {
+    const jobs = []; for (const x of withPh) if (pick.get(x.p.id)) jobs.push(...khJobsFor(x.p, khReminder(x.p), [], ch));
+    Sheet.onClose = null; Sheet.close(); jobs.sort((a, b) => (a.ch === 'sms' ? 0 : 1) - (b.ch === 'sms' ? 0 : 1));
+    setTimeout(() => khSendJobs(jobs, '📨 Yaad dilayein', true), 260);
+  };
+  const total = due.reduce((a, x) => a + x.b, 0);
+  Sheet.show(el('div', { class: 'kf' }, el('h3', { text: '📨 Sabko yaad dilayein' }),
+    el('p', { class: 'msg', text: `${due.length} logon par kul ${khMoney(total)} baaki hai.` + (due.length > withPh.length ? ` ${due.length - withPh.length} ka mobile number nahi hai.` : '') }),
+    el('label', { class: 'lbl', text: 'Kaise bhejein' }), chips, el('label', { class: 'lbl', text: 'Kisko' }), list,
+    el('button', { class: 'kp-link', text: 'Message dekhein ▾', onclick: e => { e.currentTarget.replaceWith(el('pre', { class: 'kb-prev', text: withPh[0] ? khReminder(withPh[0].p) : '' })); } }),
+    el('div', { class: 'sheet-actions' }, el('button', { class: 'btn cancel', text: 'Cancel', onclick: () => Sheet.close() }), btn)));
+}
+
+/* ---------------- daily automatic backup (phone app) ---------------- */
+async function khAutoBackup(force) {
+  if (!Native.on || (!settings.autoBackup && !force)) return null;
+  const today = khToday(); if (!force && LS.get('cnf_autobk', '') === today) return null;
+  try {
+    await flushSave(); await khLoad(); await khSaving;
+    const files = []; for (const m of state.files) { const r = await Store.get(m.id); if (r) files.push(Object.assign({}, r, { folder: m.folder, pinned: m.pinned })); }
+    const data = { app: 'CalcNote', edition: 'Freedom', version: 35, exportedAt: new Date().toISOString(), auto: true, folders: state.folders, files, khata: KH.data };
+    const name = `Auto-backup/CalcNote-${today}.json`;
+    await Native.write(name, new Blob([JSON.stringify(data)], { type: 'application/json' }), 'DOCUMENTS');
+    LS.set('cnf_autobk', today);
+    const fs = Native.p('Filesystem');
+    try {                                                           // keep the newest 7
+      const r = await fs.readdir({ path: 'CalcNote Freedom/Auto-backup', directory: 'DOCUMENTS' });
+      const names = (r.files || []).map(f => typeof f === 'string' ? f : f.name).filter(n => /^CalcNote-\d{4}-\d\d-\d\d\.json$/.test(n)).sort();
+      for (const n of names.slice(0, Math.max(0, names.length - 7))) await fs.deleteFile({ path: 'CalcNote Freedom/Auto-backup/' + n, directory: 'DOCUMENTS' });
+    } catch (e) {}
+    if (force) toast('✓ Backup bana: Documents/CalcNote Freedom/Auto-backup');
+    return name;
+  } catch (e) { if (force) toast('Backup nahi bana – Settings → File backup se try karein'); return null; }
+}
+
+/* ---------------- help ---------------- */
+function khHelp() {
+  docSheet('📒 Khata book – kaise use karein', [
+    '1. Note mein naam ke saath likhein:  gopi 12+7',
+    '2. Answer ke aage nishan:  ⚠ naya naam · ↑ publish baaki · ✎ badla · ✓ khate mein',
+    '3. ⚠ pe tap → khata banayein (ya "Sab naam ke khate" ek saath)',
+    '4. 📤 Publish → sab khate ek saath + SMS / WhatsApp',
+    '5. Galti ho gayi? Khata book → ⋮ → "Pichhla publish wapas lein"',
+    '',
+    'Har tab ka alag reason aur formula:  tab pe tap → Khata setting',
+    '   x*120 = rate se,  x/2,  x+10,  x-5 …',
+    'Ek line ka reason:  gopi 500 #jama',
+    'Paisa mila:  khate mein "AAPKO MILE ₹"  ya note mein  gopi -500',
+    '',
+    'Yaad dilana:  khate mein "YAAD DILAYEIN" ya ⋮ → "Sabko yaad dilayein"',
+    'UPI ID Settings → Khata book mein daalein – message mein apne aap judegi.'
+  ].join('\n'));
+}
+function khMoreMenu() {
+  const u = KH.data && KH.data.lastPub;
+  dialogMenu('📒 Khata book', [
+    { key: 'remind', icon: '📨', label: 'Sabko yaad dilayein', sub: 'Jin par baaki hai – SMS / WhatsApp' },
+    { key: 'undo', icon: '↶', label: 'Pichhla publish wapas lein', sub: u ? `"${u.title}" · ${khAgo(u.at)} · ${u.ops.length} badlav` : 'Abhi kuch nahi' },
+    { key: 'reasons', icon: '🏷', label: 'Reasons (Udhaar, Jama…)' },
+    { key: 'settings', icon: '⚙️', label: 'Khata settings' },
+    { key: 'help', icon: '❓', label: 'Kaise use karein' }
+  ]).then(k => {
+    if (k === 'remind') khBulkRemind(); else if (k === 'undo') khUndoPublish(); else if (k === 'reasons') openPage('kreasons');
+    else if (k === 'settings') openPage('khataset'); else if (k === 'help') khHelp();
+  });
+}
