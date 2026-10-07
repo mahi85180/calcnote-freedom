@@ -1,0 +1,326 @@
+{
+  "java": {
+    "outputs": {
+      "distribution": "Temurin-Hotspot",
+      "path": "/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.12-1/x64",
+      "version": "21.0.12+1",
+      "cache-hit": "true"
+    },
+    "outcome": "success",
+    "conclusion": "success"
+  },
+  "android_sdk": {
+    "outputs": {},
+    "outcome": "success",
+    "conclusion": "success"
+  },
+  "ver": {
+    "outputs": {
+      "name": "3.8.0"
+    },
+    "outcome": "success",
+    "conclusion": "success"
+  },
+  "signing": {
+    "outputs": {},
+    "outcome": "success",
+    "conclusion": "success"
+  },
+  "npm_ci": {
+    "outputs": {},
+    "outcome": "success",
+    "conclusion": "success"
+  },
+  "web_build": {
+    "outputs": {},
+    "outcome": "success",
+    "conclusion": "success"
+  },
+  "cap_sync": {
+    "outputs": {},
+    "outcome": "success",
+    "conclusion": "success"
+  },
+  "gradle": {
+    "outputs": {},
+    "outcome": "success",
+    "conclusion": "success"
+  },
+  "apk": {
+    "outputs": {
+      "file": "dist/CalcNote-Freedom-v3.8.0-build16.apk"
+    },
+    "outcome": "success",
+    "conclusion": "success"
+  },
+  "upload_apk": {
+    "outputs": {
+      "artifact-id": "11507042219",
+      "artifact-digest": "e2196ca1ea354b62711ca732506662075c50c75e2e101ddf5a8423881f93e766",
+      "artifact-url": "https://github.com/mahi85180/calcnote-freedom/actions/runs/37674857429/artifacts/11507042219"
+    },
+    "outcome": "success",
+    "conclusion": "success"
+  },
+  "release": {
+    "outputs": {
+      "assets": "[{\"url\":\"https://api.github.com/repos/mahi85180/calcnote-freedom/releases/assets/619611952\",\"id\":619611952,\"node_id\":\"RA_kwDOUwUDSc4k7ocw\",\"name\":\"CalcNote-Freedom-v3.8.0-build16.apk\",\"label\":\"\",\"content_type\":\"application/vnd.android.package-archive\",\"state\":\"uploaded\",\"size\":3560503,\"digest\":\"sha256:efb2cf37ece752e6f2c7f9e24904286c64eb7ab9d07cb6a8c332572e2b865d44\",\"download_count\":0,\"created_at\":\"2026-10-07T19:36:05Z\",\"updated_at\":\"2026-10-07T19:36:06Z\",\"browser_download_url\":\"https://github.com/mahi85180/calcnote-freedom/releases/download/v3.8.0-build16/CalcNote-Freedom-v3.8.0-build16.apk\"}]",
+      "url": "https://github.com/mahi85180/calcnote-freedom/releases/tag/v3.8.0-build16",
+      "id": "406097773",
+      "upload_url": "https://uploads.github.com/repos/mahi85180/calcnote-freedom/releases/406097773/assets{?name,label}"
+    },
+    "outcome": "success",
+    "conclusion": "success"
+  }
+}
+--- gradle.log (tail) ---
+> Task :capacitor-cordova-android-plugins:extractDeepLinksRelease
+> Task :capacitor-filesystem:extractDeepLinksRelease
+> Task :capacitor-cordova-android-plugins:processReleaseManifest
+> Task :capacitor-haptics:extractDeepLinksRelease
+> Task :capacitor-filesystem:processReleaseManifest
+> Task :capacitor-share:extractDeepLinksRelease
+> Task :capacitor-haptics:processReleaseManifest
+> Task :capacitor-share:processReleaseManifest
+> Task :capacitor-android:compileReleaseLibraryResources
+> Task :app:processReleaseMainManifest
+> Task :app:processReleaseManifest
+> Task :capacitor-app:compileReleaseLibraryResources
+> Task :capacitor-cordova-android-plugins:compileReleaseLibraryResources
+> Task :capacitor-filesystem:compileReleaseLibraryResources
+> Task :capacitor-haptics:compileReleaseLibraryResources
+> Task :capacitor-share:compileReleaseLibraryResources
+> Task :app:processReleaseManifestForPackage
+> Task :capacitor-app:bundleLibCompileToJarRelease
+> Task :capacitor-cordova-android-plugins:bundleLibCompileToJarRelease
+> Task :capacitor-haptics:bundleLibCompileToJarRelease
+> Task :capacitor-share:bundleLibCompileToJarRelease
+> Task :app:desugarReleaseFileDependencies
+> Task :app:mergeReleaseStartupProfile
+> Task :capacitor-android:prepareReleaseArtProfile
+> Task :capacitor-app:prepareReleaseArtProfile
+> Task :capacitor-cordova-android-plugins:prepareReleaseArtProfile
+> Task :capacitor-filesystem:prepareReleaseArtProfile
+> Task :capacitor-haptics:prepareReleaseArtProfile
+> Task :capacitor-share:prepareReleaseArtProfile
+> Task :app:mergeReleaseArtProfile
+> Task :app:processReleaseResources
+> Task :capacitor-app:bundleLibRuntimeToJarRelease
+> Task :capacitor-haptics:bundleLibRuntimeToJarRelease
+> Task :capacitor-share:bundleLibRuntimeToJarRelease
+> Task :capacitor-android:bundleLibRuntimeToJarRelease
+> Task :capacitor-cordova-android-plugins:bundleLibRuntimeToJarRelease
+> Task :app:mergeReleaseShaders
+> Task :app:compileReleaseShaders NO-SOURCE
+> Task :app:generateReleaseAssets UP-TO-DATE
+> Task :capacitor-android:mergeReleaseShaders
+> Task :capacitor-android:compileReleaseShaders NO-SOURCE
+> Task :capacitor-android:generateReleaseAssets UP-TO-DATE
+> Task :capacitor-android:mergeReleaseAssets
+> Task :capacitor-app:mergeReleaseShaders
+> Task :capacitor-app:compileReleaseShaders NO-SOURCE
+> Task :capacitor-app:generateReleaseAssets UP-TO-DATE
+> Task :capacitor-app:mergeReleaseAssets
+> Task :capacitor-cordova-android-plugins:mergeReleaseShaders
+> Task :capacitor-cordova-android-plugins:compileReleaseShaders NO-SOURCE
+> Task :capacitor-cordova-android-plugins:generateReleaseAssets UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:mergeReleaseAssets
+> Task :capacitor-filesystem:mergeReleaseShaders
+> Task :capacitor-filesystem:compileReleaseShaders NO-SOURCE
+> Task :capacitor-filesystem:generateReleaseAssets UP-TO-DATE
+> Task :capacitor-filesystem:mergeReleaseAssets
+> Task :capacitor-haptics:mergeReleaseShaders
+> Task :capacitor-haptics:compileReleaseShaders NO-SOURCE
+> Task :capacitor-haptics:generateReleaseAssets UP-TO-DATE
+> Task :capacitor-haptics:mergeReleaseAssets
+> Task :capacitor-share:mergeReleaseShaders
+> Task :capacitor-share:compileReleaseShaders NO-SOURCE
+> Task :capacitor-share:generateReleaseAssets UP-TO-DATE
+> Task :capacitor-share:mergeReleaseAssets
+> Task :app:mergeReleaseAssets
+> Task :app:compressReleaseAssets
+> Task :app:extractReleaseVersionControlInfo
+> Task :app:extractProguardFiles
+> Task :capacitor-android:processReleaseJavaRes NO-SOURCE
+> Task :capacitor-android:createFullJarRelease
+> Task :capacitor-android:extractProguardFiles
+> Task :capacitor-android:generateReleaseLintModel
+> Task :capacitor-android:prepareLintJarForPublish
+> Task :capacitor-app:processReleaseJavaRes NO-SOURCE
+> Task :capacitor-app:createFullJarRelease
+> Task :capacitor-app:extractProguardFiles
+> Task :capacitor-app:generateReleaseLintModel
+> Task :capacitor-app:prepareLintJarForPublish
+> Task :capacitor-cordova-android-plugins:processReleaseJavaRes NO-SOURCE
+> Task :capacitor-cordova-android-plugins:createFullJarRelease
+> Task :capacitor-cordova-android-plugins:extractProguardFiles
+> Task :capacitor-cordova-android-plugins:generateReleaseLintModel
+> Task :capacitor-cordova-android-plugins:prepareLintJarForPublish
+> Task :capacitor-filesystem:extractProguardFiles
+> Task :capacitor-filesystem:prepareLintJarForPublish
+> Task :capacitor-haptics:processReleaseJavaRes NO-SOURCE
+> Task :capacitor-haptics:createFullJarRelease
+> Task :capacitor-haptics:extractProguardFiles
+> Task :capacitor-haptics:generateReleaseLintModel
+> Task :capacitor-haptics:prepareLintJarForPublish
+> Task :capacitor-share:processReleaseJavaRes NO-SOURCE
+> Task :capacitor-share:createFullJarRelease
+> Task :capacitor-share:extractProguardFiles
+> Task :capacitor-share:generateReleaseLintModel
+> Task :capacitor-share:prepareLintJarForPublish
+> Task :capacitor-app:checkReleaseAarMetadata
+> Task :capacitor-app:stripReleaseDebugSymbols NO-SOURCE
+> Task :capacitor-app:copyReleaseJniLibsProjectAndLocalJars
+> Task :capacitor-app:extractDeepLinksForAarRelease
+> Task :capacitor-app:extractReleaseAnnotations
+> Task :capacitor-app:mergeReleaseGeneratedProguardFiles
+> Task :capacitor-app:mergeReleaseConsumerProguardFiles
+> Task :capacitor-app:mergeReleaseJavaResource
+> Task :capacitor-filesystem:checkReleaseAarMetadata
+> Task :capacitor-app:syncReleaseLibJars
+> Task :capacitor-app:bundleReleaseLocalLintAar
+> Task :capacitor-filesystem:stripReleaseDebugSymbols NO-SOURCE
+> Task :capacitor-filesystem:copyReleaseJniLibsProjectAndLocalJars
+> Task :capacitor-filesystem:extractDeepLinksForAarRelease
+> Task :capacitor-haptics:checkReleaseAarMetadata
+> Task :capacitor-haptics:stripReleaseDebugSymbols NO-SOURCE
+> Task :capacitor-haptics:copyReleaseJniLibsProjectAndLocalJars
+> Task :capacitor-haptics:extractDeepLinksForAarRelease
+> Task :capacitor-haptics:extractReleaseAnnotations
+> Task :capacitor-haptics:mergeReleaseGeneratedProguardFiles
+> Task :capacitor-haptics:mergeReleaseConsumerProguardFiles
+> Task :capacitor-haptics:mergeReleaseJavaResource
+> Task :capacitor-share:checkReleaseAarMetadata
+> Task :capacitor-haptics:syncReleaseLibJars
+> Task :capacitor-haptics:bundleReleaseLocalLintAar
+> Task :capacitor-share:stripReleaseDebugSymbols NO-SOURCE
+> Task :capacitor-share:copyReleaseJniLibsProjectAndLocalJars
+> Task :capacitor-share:extractDeepLinksForAarRelease
+> Task :capacitor-share:extractReleaseAnnotations
+> Task :capacitor-share:mergeReleaseGeneratedProguardFiles
+> Task :capacitor-share:mergeReleaseConsumerProguardFiles
+> Task :capacitor-share:mergeReleaseJavaResource
+> Task :capacitor-android:checkReleaseAarMetadata
+> Task :capacitor-share:syncReleaseLibJars
+> Task :capacitor-share:bundleReleaseLocalLintAar
+> Task :capacitor-android:stripReleaseDebugSymbols NO-SOURCE
+> Task :capacitor-android:extractDeepLinksForAarRelease
+> Task :capacitor-android:copyReleaseJniLibsProjectAndLocalJars
+> Task :capacitor-android:extractReleaseAnnotations
+> Task :capacitor-android:mergeReleaseGeneratedProguardFiles
+> Task :capacitor-android:mergeReleaseConsumerProguardFiles
+> Task :capacitor-android:mergeReleaseJavaResource
+> Task :capacitor-cordova-android-plugins:checkReleaseAarMetadata
+> Task :capacitor-android:syncReleaseLibJars
+> Task :capacitor-android:bundleReleaseLocalLintAar
+> Task :capacitor-cordova-android-plugins:stripReleaseDebugSymbols NO-SOURCE
+> Task :capacitor-cordova-android-plugins:copyReleaseJniLibsProjectAndLocalJars
+> Task :capacitor-cordova-android-plugins:extractDeepLinksForAarRelease
+> Task :capacitor-cordova-android-plugins:extractReleaseAnnotations
+> Task :capacitor-cordova-android-plugins:mergeReleaseGeneratedProguardFiles
+> Task :capacitor-cordova-android-plugins:mergeReleaseConsumerProguardFiles
+> Task :capacitor-cordova-android-plugins:mergeReleaseJavaResource
+> Task :capacitor-cordova-android-plugins:syncReleaseLibJars
+> Task :capacitor-cordova-android-plugins:bundleReleaseLocalLintAar
+> Task :capacitor-android:writeReleaseLintModelMetadata
+> Task :app:mergeExtDexRelease
+> Task :capacitor-app:writeReleaseLintModelMetadata
+> Task :capacitor-cordova-android-plugins:writeReleaseLintModelMetadata
+> Task :capacitor-filesystem:writeReleaseLintModelMetadata
+> Task :capacitor-haptics:writeReleaseLintModelMetadata
+> Task :capacitor-share:writeReleaseLintModelMetadata
+> Task :capacitor-android:generateReleaseLintVitalModel
+> Task :capacitor-app:generateReleaseLintVitalModel
+> Task :capacitor-cordova-android-plugins:generateReleaseLintVitalModel
+> Task :capacitor-haptics:generateReleaseLintVitalModel
+> Task :capacitor-share:generateReleaseLintVitalModel
+> Task :app:processReleaseJavaRes NO-SOURCE
+> Task :app:optimizeReleaseResources
+> Task :app:collectReleaseDependencies
+> Task :app:sdkReleaseDependencyData
+> Task :app:validateSigningRelease
+> Task :app:writeReleaseAppMetadata
+> Task :app:writeReleaseSigningConfigVersions
+> Task :capacitor-android:bundleReleaseAar
+> Task :capacitor-android:mapReleaseSourceSetPaths
+> Task :capacitor-android:mergeReleaseResources
+
+> Task :capacitor-filesystem:compileReleaseKotlin
+w: file:///home/runner/work/calcnote-freedom/calcnote-freedom/node_modules/@capacitor/filesystem/android/src/main/kotlin/com/capacitorjs/plugins/filesystem/FilesystemPlugin.kt:335:31 'fun downloadFile(call: PluginCall): Unit' is deprecated. Use @capacitor/file-transfer plugin instead.
+w: file:///home/runner/work/calcnote-freedom/calcnote-freedom/node_modules/@capacitor/filesystem/android/src/main/kotlin/com/capacitorjs/plugins/filesystem/LegacyFilesystemImplementation.kt:66:29 Java type mismatch: inferred type is 'String?', but 'String' was expected.
+
+> Task :capacitor-filesystem:compileReleaseJavaWithJavac NO-SOURCE
+> Task :capacitor-filesystem:bundleLibRuntimeToDirRelease
+> Task :capacitor-android:verifyReleaseResources
+> Task :capacitor-filesystem:bundleLibCompileToJarRelease
+
+> Task :app:compileReleaseJavaWithJavac
+Note: /home/runner/work/calcnote-freedom/calcnote-freedom/android/app/src/main/java/com/mahi85180/calcnotefreedom/UpdaterPlugin.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :app:dexBuilderRelease
+> Task :capacitor-filesystem:bundleLibRuntimeToJarRelease
+> Task :app:mergeReleaseGlobalSynthetics
+> Task :app:mergeDexRelease
+> Task :capacitor-filesystem:processReleaseJavaRes
+> Task :capacitor-filesystem:createFullJarRelease
+> Task :capacitor-filesystem:generateReleaseLintModel
+> Task :app:generateReleaseLintVitalReportModel
+> Task :capacitor-filesystem:extractReleaseAnnotations
+> Task :capacitor-filesystem:mergeReleaseGeneratedProguardFiles
+> Task :capacitor-filesystem:mergeReleaseConsumerProguardFiles
+> Task :capacitor-filesystem:mergeReleaseJavaResource
+> Task :capacitor-filesystem:syncReleaseLibJars
+> Task :capacitor-filesystem:bundleReleaseLocalLintAar
+> Task :capacitor-filesystem:generateReleaseLintVitalModel
+> Task :app:compileReleaseArtProfile
+> Task :capacitor-android:assembleRelease
+> Task :capacitor-app:bundleReleaseAar
+> Task :capacitor-app:mapReleaseSourceSetPaths
+> Task :app:mergeReleaseJavaResource
+> Task :capacitor-app:mergeReleaseResources
+> Task :capacitor-cordova-android-plugins:bundleReleaseAar
+> Task :capacitor-cordova-android-plugins:mapReleaseSourceSetPaths
+> Task :capacitor-app:verifyReleaseResources
+> Task :capacitor-app:lintVitalAnalyzeRelease
+> Task :capacitor-cordova-android-plugins:mergeReleaseResources
+> Task :capacitor-app:assembleRelease
+> Task :capacitor-filesystem:bundleReleaseAar
+> Task :capacitor-filesystem:mapReleaseSourceSetPaths
+> Task :capacitor-filesystem:mergeReleaseResources
+> Task :capacitor-cordova-android-plugins:lintVitalAnalyzeRelease
+> Task :capacitor-cordova-android-plugins:verifyReleaseResources
+> Task :capacitor-cordova-android-plugins:assembleRelease
+> Task :capacitor-haptics:bundleReleaseAar
+> Task :capacitor-haptics:mapReleaseSourceSetPaths
+> Task :capacitor-filesystem:verifyReleaseResources
+> Task :capacitor-haptics:mergeReleaseResources
+> Task :capacitor-filesystem:assembleRelease
+> Task :capacitor-share:bundleReleaseAar
+> Task :capacitor-share:mapReleaseSourceSetPaths
+> Task :capacitor-share:mergeReleaseResources
+> Task :capacitor-haptics:verifyReleaseResources
+> Task :capacitor-haptics:assembleRelease
+> Task :capacitor-share:verifyReleaseResources
+> Task :capacitor-share:assembleRelease
+> Task :capacitor-android:lintVitalAnalyzeRelease
+> Task :capacitor-haptics:lintVitalAnalyzeRelease
+> Task :capacitor-share:lintVitalAnalyzeRelease
+> Task :capacitor-filesystem:lintVitalAnalyzeRelease
+> Task :app:lintVitalAnalyzeRelease
+> Task :app:lintVitalReportRelease
+> Task :app:lintVitalRelease
+> Task :app:packageRelease
+> Task :app:createReleaseApkListingFileRedirect
+> Task :app:assembleRelease
+
+[Incubating] Problems report is available at: file:///home/runner/work/calcnote-freedom/calcnote-freedom/android/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 53s
+285 actionable tasks: 285 executed

@@ -1,0 +1,60 @@
+  ✓ [77s] #tag inside a // comment is not a reason
+  ✓ [78s] A #tag typo keeps the published entry (no cancel)
+  ✓ [79s] Renaming a khata keeps the old name working
+  ✓ [79s] Name that stops matching shows ⚠ but does not cancel
+  ✓ [79s] Changing a reason’s effect does not rewrite old entries
+  ✓ [80s] A duplicated tab has khata off – nothing posted twice
+  ✓ [80s] If turned on, the copy is flagged “shayad pehle se hai”
+  ✓ [81s] A duplicated file has khata off
+  ✓ [81s] Entry from a deleted note can be edited / deleted
+  ✓ [83s] Re-created khata warns before posting old lines again
+  ✓ [83s] Reminder opens a preview, nothing sent yet
+  ✓ [87s] Reminder SMS after confirming
+  ✓ [88s] Report search does not show a wrong closing balance
+  ✓ [88s] Mark sits left of the amount and never hides digits
+  ✓ [90s] All new names get a khata in one click; no-phone note
+  ✓ [90s] UPI ID added to the message only when money is due
+  ✓ [90s] No empty UPI line when not set
+  ✓ [92s] After publish: "Wapas lo" (undo) in the message
+  ✓ [93s] Undo publish puts the khata back and the lines show ↑ again
+  ✓ [94s] Khata book lists other notes with unpublished entries
+  ✓ [95s] Tap → opens that note and its publish screen
+  ✓ [96s] Remind everybody who owes: list with ticks
+  ✓ [97s] Sends to the ticked ones (first opens by itself)
+  ✓ [98s] Khata names come first in the name suggestions
+  ✓ [98s] Daily auto backup once a day, keeps the newest 7
+  ✓ [99s] Help sheet
+  ✓ [99s] No JS errors (khata safety)
+  ✓ [100s] Backup page shows Drive backup is off
+  ✓ [101s] Short how-to before the Save-to screen
+  ✓ [102s] Setup writes a full backup (notes + khata) to Drive at once
+  ✓ [102s] No second backup within 6 hours
+  ✓ [103s] Automatic backup after 6 hours
+  ✓ [103s] An empty phone never overwrites a good Drive backup
+  ✓ [103s] Lost permission is reported clearly
+  ✓ [103s] Khata book shows the backup warning
+  ✓ [105s] Choosing the place again fixes it
+  ✓ [105s] Drive link stays on this phone (not in settings export)
+  ✓ [105s] No JS errors (Drive backup)
+  ✓ [106s] New phone: first start offers to bring the old data back
+  ✓ [107s] Restore screen counts files and khata
+  ✓ [108s] Notes and khata are back on the new phone
+  ✓ [110s] After restore it offers to turn on Drive backup here too
+  ✓ [110s] No JS errors (restore)
+  ✓ [112s] PDF button makes a real PDF file
+  ✓ [112s] 47 lines → 2 A4 pages
+  ✓ [112s] With tabs: PDF of this tab or of all tabs
+  ✓ [113s] All-tabs PDF
+  ✓ [113s] Khata PDF with UPI QR; picture is ready before you tap share
+  ✓ [114s] Khata report → PDF
+  ✓ [114s] Short link with the hisaab inside (no server)
+  ✓ [114s] Customer page: balance, Pay button (any UPI app), QR, last 30 entries
+  ✓ [115s] Broken link shows a clear message
+  ✓ [115s] Hindi page; no pay button when nothing is due
+  ✓ [115s] No JS errors on the customer page
+  ✓ [115s] Reminder carries the link and UPI
+  ✓ [116s] SMS without link (setting), WhatsApp with link
+  ✓ [117s] If the link page is not online, the link line is left out
+  ✓ [117s] No JS errors (PDF / link)
+
+PASS 238  FAIL 0
