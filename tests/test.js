@@ -7,7 +7,8 @@ const OLD = fs.readFileSync(path.join(__dirname, 'original-v1.html'), 'utf8');
 const MATHJS = require.resolve('mathjs/lib/browser/math.js');
 const OUT = path.join(__dirname, 'out'); fs.mkdirSync(OUT, { recursive: true });
 let pass = 0, fail = 0; const fails = [];
-const ok = (c, name, extra) => { if (c) pass++; else { fail++; fails.push(name + (extra !== undefined ? '  → ' + JSON.stringify(extra).slice(0, 300) : '')); } };
+const PROG = !!process.env.TEST_PROGRESS; const T0 = Date.now();
+const ok = (c, name, extra) => { if (PROG) console.log(`${c ? '  ✓' : '  ✗'} [${Math.round((Date.now() - T0) / 1000)}s] ${name}`); if (c) pass++; else { fail++; fails.push(name + (extra !== undefined ? '  → ' + JSON.stringify(extra).slice(0, 300) : '')); } };
 const external = []; let fakeRelease = { tag_name: 'v3.1.0-build5', name: 'CalcNote Freedom 3.1.0 (build 5)', body: 'Fixes', assets: [{ name: 'CalcNote-Freedom.apk', size: 3500000, browser_download_url: 'https://github.com/x.apk' }], html_url: 'https://github.com/r' };
 async function setup(ctx) {
   await ctx.route('**/*', r => {
