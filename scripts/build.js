@@ -14,6 +14,8 @@ html = html.replace('/*MATHJS_INLINE*/', () => '/* math.js 11.8.0 | Apache-2.0 |
 html = html.replace(/version: '[\d.]+'/, `version: '${pkg.version}'`).replace(/build: 0,/, `build: ${parseInt(process.env.BUILD_NUMBER || '0', 10) || 0},`);
 const cap = fs.readFileSync(require.resolve('@capacitor/core/dist/capacitor.js'), 'utf8').replace(/\/\/# sourceMappingURL=.*$/m, '').replace(/<\/script/gi, '<\\/script');
 html = html.replace('/*CAPACITOR_INLINE*/', () => cap);
+html = html.replace('/*KHATA_CSS*/', () => fs.readFileSync(path.join(root, 'src/khata.css'), 'utf8'));
+html = html.replace('/*KHATA_JS*/', () => fs.readFileSync(path.join(root, 'src/khata.js'), 'utf8').replace(/<\/script/gi, '<\\/script'));
 fs.writeFileSync(path.join(out, 'index.html'), html);
 
 fs.copyFileSync(path.join(root, 'assets/icon.svg'), path.join(out, 'icon.svg'));

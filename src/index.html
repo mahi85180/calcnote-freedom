@@ -372,6 +372,7 @@ body.kp-open .toast{bottom:auto;top:calc(var(--header-h) + var(--safe-top) + 14p
   .page-body{max-width:820px;width:100%;margin:0 auto}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/*KHATA_CSS*/
 </style>
 <style id="userCss"></style>
 <script>/*CAPACITOR_INLINE*/</script>
@@ -521,6 +522,8 @@ const ICON = {
   import: 'M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z',
   file: 'M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z',
   send: 'M2.01 21L23 12 2.01 3 2 10l15 2-15 2z',
+  book: 'M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z',
+  publish: 'M5 4v2h14V4H5zm0 10h4v6h6v-6h4l-7-7-7 7z',
   help: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z',
   lock: 'M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z',
   award: 'M12 1l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 14.3 6.8 17.1l1-5.8L3.5 7.2l5.9-.9z',
@@ -616,7 +619,7 @@ const DEFAULT_KEYS = [
 const DEFAULTS = {
   theme: 'light', accent: 'green', opColor: 'orange', font: 'system', italic: false, fontSize: 20, resultBold: false, resultColor: 'text', amountColor: 'blue', itemColor: 'accent', dateHl: 'yellow', dateColor: 'purple', rowSpacing: 'normal',
   lineNumbers: true, divider: true, separators: false, resultAlign: 'right', resultWidth: 36, highlightLine: true,
-  showTotalBar: true, totalModeHint: true, toolbar: ['undo', 'new', 'save', 'settings'], keepAwake: false,
+  showTotalBar: true, totalModeHint: true, toolbar: ['undo', 'publish', 'khata', 'settings'], keepAwake: false,
   syntax: true, autoBrackets: false, tapCopy: true, lineMenu: true, swipe: true, undoEnabled: true, copyFormat: 'lines',
   kbSuggest: true, autoCorrect: false, autoCap: false, nameSuggest: true, selectionSum: true, runningTotal: false, negRed: true, openAtEnd: true,
   dateOnNew: true, autoDate: true, dateFormat: 'dmy_short',
@@ -624,10 +627,11 @@ const DEFAULTS = {
   xMultiply: true, currency: true, defaultTotal: 'sum',
   keypadEnabled: true, kpStart: false, vibrate: true, keySound: false, kpHeight: 'normal', kpOrder: '789',
   sciTab: true, customTab: true, customKeys: DEFAULT_KEYS,
-  sideActions: ['serial', 'date', 'image', 'sharetext', 'copy', 'csv', 'redo', 'clear', 'update', 'settings', 'help'],
+  sideActions: ['khata', 'publish', 'save', 'serial', 'date', 'image', 'sharetext', 'copy', 'csv', 'redo', 'clear', 'update', 'settings', 'help'],
   sortBy: 'updated', tabsEnabled: true, tabTotals: true, swipeTabs: true, hideTabsTyping: true, newTabName: 'date',
   imgCols: 'auto', imgSize: 'L', imgSno: true, imgSkipBlank: true, imgDate: true, textStyle: 'table',
   autoUpdate: true,
+  khataOn: true, khataMarks: true, khataChannel: 'wa', khataWaApp: 'auto', khataShop: '', khataShopPhone: '', khataLang: 'hinglish', khataMsg: '', khataReason: 'udhaar',
   lock: false, lockDelay: 0, pinHash: '', pinSalt: '',
   extensions: '// Your own functions & constants – available in every note\n// gst(x) = x * 1.18\n// usd = 83.5\n',
   customCss: ''
@@ -651,7 +655,13 @@ const settings = (() => {
     out.toolbar = out.toolbar.filter(a => a !== 'text' && a !== 'select');
     if (!out.customKeys.some(k => k.i === '{date}')) out.customKeys.splice(4, 0, { l: '📅 Today', i: '{date}' });
   }
-  out._v = 33;
+  if ((s._v || 0) < 34) {                                   // v3.5: khata book
+    const old = ['undo', 'new', 'save', 'settings'];
+    if (JSON.stringify(out.toolbar) === JSON.stringify(old)) out.toolbar = ['undo', 'publish', 'khata', 'settings'];
+    else for (const a of ['publish', 'khata']) if (!out.toolbar.includes(a) && out.toolbar.length < 5) out.toolbar.push(a);
+    for (const a of ['save', 'publish', 'khata']) if (!out.sideActions.includes(a)) out.sideActions.unshift(a);
+  }
+  out._v = 34;
   return out;
 })();
 function persistSettings() { LS.set(SKEY, JSON.stringify(settings)); }
@@ -778,7 +788,8 @@ const Engine = (() => {
       if (!text) { block = []; return; }
       if (/^(\/\/|#)/.test(text)) { out.kind = 'comment'; return; }
       if (isDateLine(text)) { out.kind = 'date'; block = []; return; }
-      text = text.replace(/\s\/\/.*$/, '').trim();
+      text = text.replace(/\s\/\/.*$/, '').replace(/(^|\s)#[^\s#\d][^\s#]*/g, '$1').trim();
+      if (!text) { out.kind = 'comment'; return; }
       if (last !== undefined) { scope.ans = last; scope.prev = last; } else { delete scope.ans; delete scope.prev; }
       let label = '', body = text;
       const colon = text.match(/^([^:]*[A-Za-z\u0080-￿][^:]*?)\s*:\s*(.*)$/);
@@ -858,7 +869,7 @@ const rawNum = v => String(clean(v));
 
 /* ---------------- Syntax highlighting ---------------- */
 const escHtml = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const TOKEN = /(\/\/.*$)|(\d[\d,]*(?:\.\d+)?(?:e[+-]?\d+)?%?|\.\d+%?)|([+\-*\/×÷^=()%!−,<>:[\]]|\bmod\b|\bof\b|\bto\b|\bin\b)|([A-Za-z_À-￿][\wÀ-￿]*)|(\s+)|([\s\S])/g;
+const TOKEN = /(\/\/.*$)|(#[^\s#\d][^\s#]*)|(\d[\d,]*(?:\.\d+)?(?:e[+-]?\d+)?%?|\.\d+%?)|([+\-*\/×÷^=()%!−,<>:[\]]|\bmod\b|\bof\b|\bto\b|\bin\b)|([A-Za-z_À-￿][\wÀ-￿]*)|(\s+)|([\s\S])/g;
 function highlightHTML(text, vars, labelVars) {
   if (!text) return '​';
   if (/^\s*(\/\/|#)/.test(text)) return `<span class="t-com">${escHtml(text)}</span>`;
@@ -866,14 +877,15 @@ function highlightHTML(text, vars, labelVars) {
   while ((m = TOKEN.exec(text))) {
     const s = escHtml(m[0]);
     if (m[1]) out += `<span class="t-com">${s}</span>`;
-    else if (m[2]) out += s;
-    else if (m[3]) out += `<span class="t-op">${s}</span>`;
-    else if (m[4]) {
-      const w = m[4]; const next = text.slice(TOKEN.lastIndex).trimStart()[0];
+    else if (m[2]) out += m.index === 0 || /\s/.test(text[m.index - 1]) ? `<span class="t-tag">${s}</span>` : `<span class="t-lbl">${s}</span>`;
+    else if (m[3]) out += s;
+    else if (m[4]) out += `<span class="t-op">${s}</span>`;
+    else if (m[5]) {
+      const w = m[5]; const next = text.slice(TOKEN.lastIndex).trimStart()[0];
       const isFn = next === '(' || (vars && vars.has(w) && !(labelVars && labelVars.has(w))) || /^(sum|total|avg|average|count|ans|prev|pi|e|line\d+|row\d+)$/i.test(w);
       out += `<span class="${isFn ? 't-fn' : 't-lbl'}">${s}</span>`;
     }
-    else if (m[5]) out += m[5];
+    else if (m[6]) out += m[6];
     else out += `<span class="t-lbl">${s}</span>`;
   }
   return out;
@@ -1016,6 +1028,7 @@ function render(forcePaint) {
   const repaint = forcePaint || varsKey !== lastVarsKey; lastVarsKey = varsKey;
   syncCount(texts.length);
   let serial = 0;                                              // numbering starts at 1 below each date
+  let kbm = null; try { kbm = khLineMarks(res, texts); } catch (e) { console.error(e); }
   texts.forEach((t, i) => {
     const l = res.lines[i];
     const isDateLine0 = l.kind === 'date';
@@ -1030,6 +1043,7 @@ function render(forcePaint) {
     const r = cells.r[i]; let html = '', cls = 'r';
     if (l.kind === 'num') {
       html = escHtml(fmtNum(l.value));
+      if (kbm && kbm[i]) { html = kbm[i] + html; cls += ' has-kb'; }
       if (l.agg) cls += ' agg'; else if (!l.countable) cls += ' muted';
       if (settings.negRed && l.value < 0) cls += ' neg';
       if (settings.runningTotal && l.countable && l.running !== l.value) html = `<span class="rt">Σ ${escHtml(fmtNum(l.running))}</span>` + html;
@@ -1046,7 +1060,7 @@ function render(forcePaint) {
   }
   const digits = String(texts.length).length;
   document.documentElement.style.setProperty('--num-w', `calc(${Math.max(2, digits)} * 0.56em + ${settings.lineNumbers ? 14 : 0}px)`);
-  renderTotal(); updateActiveTabTotal();
+  renderTotal(); updateActiveTabTotal(); khScheduleCount();
   ED.placeholder = texts.length === 1 && !texts[0] ? 'Type here…  e.g.  Milk 2 × 28' : '';
 }
 function queueRender() { if (!renderQueued) { renderQueued = true; requestAnimationFrame(() => { if (renderQueued) render(); }); } }
@@ -1111,6 +1125,7 @@ ED.addEventListener('beforeinput', e => {
 });
 GUT.addEventListener('click', e => { const g = e.target.closest('.g'); if (g && settings.lineMenu) lineMenu(+g.dataset.i); });
 RES.addEventListener('click', e => {
+  const kb = e.target.closest('.kb-b'); if (kb) { e.stopPropagation(); khLineSheet(+kb.dataset.kb); return; }
   const r = e.target.closest('.r'); if (!r || !r.textContent || !settings.tapCopy) return;
   const l = state.calc && state.calc.lines[+r.dataset.i];
   const v = l && l.kind === 'num' ? rawNum(l.value) : r.textContent;
@@ -1289,7 +1304,7 @@ function saveNow(showToast = false) {
   if (!state.fileId) return saveChain;
   const id = state.fileId, now = new Date().toISOString();
   const cur = state.sheets[state.sheetIdx]; if (cur) { cur.text = ED.value; cur.total = state.total; }
-  const sheetsSnap = state.sheets.map(sh => ({ id: sh.id, name: sh.name, color: sh.color || '', rows: sh.text.split('\n').map((t, i) => ({ id: 'row_' + (i + 1), text: t })), totalSettings: JSON.parse(JSON.stringify(sh.total)) }));
+  const sheetsSnap = state.sheets.map(sh => ({ id: sh.id, name: sh.name, color: sh.color || '', rows: sh.text.split('\n').map((t, i) => ({ id: 'row_' + (i + 1), text: t })), totalSettings: JSON.parse(JSON.stringify(sh.total)), khata: sh.khata ? Object.assign({}, sh.khata) : undefined }));
   const activeSheet = state.sheetIdx, title = state.title, folder = state.folder;
   const multi = state.sheets.length > 1;
   const totalText = multi ? fmtNum(grandTotal()) : (state.calc && !state.calc.totalError ? totalString() : '');
@@ -1367,7 +1382,7 @@ async function moveFlow(id) {
   if (id === state.fileId) { state.folder = target; setTitle(state.title); await saveNow(); } else { const rec = await Store.get(id); if (rec) { rec.folder = target; await Store.set(id, rec); } await saveFileList(); }
   toast(target ? `Moved to ${folderName(target)}` : 'Moved out of folder');
 }
-async function duplicateFlow(id) { await flushSave(); const rec = await Store.get(id); if (!rec) return; closeSidebar(); await createFile((rec.title || 'Untitled') + ' (copy)', (rec.rows || []).map(r => r.text || ''), rec.totalSettings, rec.folder, Array.isArray(rec.sheets) ? rec.sheets.map(sh => Object.assign({}, sh, { id: newId('sh_') })) : null); toast('Duplicated ✓'); }
+async function duplicateFlow(id) { await flushSave(); const rec = await Store.get(id); if (!rec) return; closeSidebar(); await createFile((rec.title || 'Untitled') + ' (copy)', (rec.rows || []).map(r => r.text || ''), rec.totalSettings, rec.folder, Array.isArray(rec.sheets) ? rec.sheets.map(sh => Object.assign({}, sh, { id: newId('sh_') })) : null); for (const sh of state.sheets) sh.khata = Object.assign({}, khCfg(sh), { on: false }); scheduleSave(); render(true); toast(settings.khataOn ? 'Duplicated ✓ – khata is off in the copy (tab menu → Khata setting)' : 'Duplicated ✓'); }
 async function pinFlow(id) { const m = state.files.find(f => f.id === id); if (!m) return; m.pinned = !m.pinned; const rec = await Store.get(id); if (rec) { rec.pinned = m.pinned; await Store.set(id, rec); } await saveFileList(); toast(m.pinned ? 'Pinned 📌' : 'Unpinned'); }
 async function deleteFlow(id, { ask = true } = {}) {
   const m = state.files.find(f => f.id === id); if (!m) return;
@@ -1482,7 +1497,7 @@ $('#sortChips').addEventListener('click', e => { const c = e.target.closest('.ch
 const TAB_COLORS = { '': 'None', red: '#E53935', orange: '#FB8C00', yellow: '#FDD835', green: '#43A047', teal: '#00897B', blue: '#1E88E5', purple: '#8E24AA', pink: '#D81B60', grey: '#757575' };
 const sheetCache = new Map();
 function sheetsFromRecord(rec) {
-  const mk = (sh, i) => ({ id: String(sh.id || newId('sh_')), name: String(sh.name || 'Sheet ' + (i + 1)), color: sh.color || '', text: (Array.isArray(sh.rows) ? sh.rows : []).map(r => String((r && r.text) || '')).join('\n'), total: normTotal(sh.totalSettings) });
+  const mk = (sh, i) => ({ id: String(sh.id || newId('sh_')), name: String(sh.name || 'Sheet ' + (i + 1)), color: sh.color || '', text: (Array.isArray(sh.rows) ? sh.rows : []).map(r => String((r && r.text) || '')).join('\n'), total: normTotal(sh.totalSettings), khata: sh.khata && typeof sh.khata === 'object' ? Object.assign({}, sh.khata) : null });
   if (Array.isArray(rec.sheets) && rec.sheets.length) return rec.sheets.map(mk);
   return [mk({ id: 'sh_1', name: 'Sheet 1', rows: rec.rows || [], totalSettings: rec.totalSettings }, 0)];
 }
@@ -1592,9 +1607,9 @@ function moveSheet(from, to, scroll) {
 async function duplicateSheet(i = state.sheetIdx) {
   stashSheet(); const sh = state.sheets[i];
   trackCurrent();
-  const copy = { id: newId('sh_'), name: (sh.name + ' (copy)').slice(0, 40), color: sh.color, text: sh.text, total: JSON.parse(JSON.stringify(sh.total)) };
+  const copy = { id: newId('sh_'), name: (sh.name + ' (copy)').slice(0, 40), color: sh.color, text: sh.text, total: JSON.parse(JSON.stringify(sh.total)), khata: Object.assign({}, khCfg(sh), { on: false }) };
   state.sheets.splice(i + 1, 0, copy); state.sheetIdx = state.sheets.indexOf(curSheetObj());
-  await switchSheet(i + 1); scheduleSave(); toast('Tab duplicated ✓');
+  await switchSheet(i + 1); scheduleSave(); toast(settings.khataOn && khCfg(sh).on ? 'Tab duplicated ✓ – khata is off in the copy' : 'Tab duplicated ✓');
 }
 async function tabMenu(i = state.sheetIdx) {
   const sh = state.sheets[i]; if (!sh) return;
@@ -1607,6 +1622,7 @@ async function tabMenu(i = state.sheetIdx) {
     i > 0 ? { key: 'left', icon: '←', label: 'Move left' } : null,
     i < n - 1 ? { key: 'right', icon: '→', label: 'Move right' } : null,
     { key: 'image', icon: '🖼️', label: 'Share this tab as image' },
+    settings.khataOn ? { key: 'khata', icon: '📒', label: 'Khata setting of this tab', sub: (() => { const c = khCfg(sh); return c.on ? `${(khReason(c.reason) || {}).name || c.reason} · ${c.formula === 'x' ? 'total as it is' : c.formula}` : 'Off – lines do not go to the khata'; })() } : null,
     { key: 'all', icon: '▦', label: 'All tabs & grand total', sub: `${n} tab${n === 1 ? '' : 's'} · ${fmtNum(grandTotal())}` },
     n > 1 ? { key: 'del', icon: '🗑', label: 'Delete tab', danger: true } : null
   ]);
@@ -1620,6 +1636,7 @@ async function tabMenu(i = state.sheetIdx) {
   else if (key === 'new') { if (i !== state.sheetIdx) await switchSheet(i, { animate: false }); addSheet({ after: i }); }
   else if (key === 'left') moveSheet(i, i - 1);
   else if (key === 'right') moveSheet(i, i + 1);
+  else if (key === 'khata') { await khLoad(); khTabSettings(i); }
   else if (key === 'image') { if (i !== state.sheetIdx) await switchSheet(i, { animate: false }); shareImage(); }
   else if (key === 'all') openTabPicker();
   else if (key === 'del') deleteSheet(i);
@@ -1786,6 +1803,8 @@ const ACTIONS = {
   clear: { label: 'Clear all lines', icon: 'file', emoji: '🧹', run: () => { closeSidebar(); clearAll(); }, danger: true },
   newtab: { label: 'New tab', icon: 'add', emoji: '📑', run: () => { closeSidebar(); addSheet(); } },
   tabs: { label: 'All tabs', icon: 'toggles', emoji: '▦', run: () => { closeSidebar(); openTabPicker(); } },
+  khata: { label: 'Khata book', icon: 'book', emoji: '📒', run: () => openKhata() },
+  publish: { label: 'Publish to khata', icon: 'publish', emoji: '📤', run: () => { closeSidebar(); khPublishFlow(); } },
   update: { label: 'Check for update', icon: 'update', emoji: '⬆️', run: () => { closeSidebar(); Updater.check(false); } },
   help: { label: 'Help & examples', icon: 'help', emoji: '❓', run: () => openHelp() },
   more: { label: 'More…', icon: 'more', emoji: '⋮', run: () => moreMenu() }
@@ -2189,9 +2208,10 @@ async function downloadImage() { if (!imageBlob) return; await saveBlob(imageBlo
 async function exportBackup() {
   removeEmptyPendingDate(); await flushSave();
   const files = []; for (const m of state.files) { const r = await Store.get(m.id); if (r) files.push(Object.assign({}, r, { folder: m.folder, pinned: m.pinned })); }
-  const data = { app: 'CalcNote', edition: 'Freedom', version: 31, exportedAt: new Date().toISOString(), folders: state.folders, files };
+  await khLoad(); await khSaving;
+  const data = { app: 'CalcNote', edition: 'Freedom', version: 35, exportedAt: new Date().toISOString(), folders: state.folders, files, khata: KH.data };
   await saveBlob(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }), `CalcNoteFreedom_Backup_${new Date().toISOString().slice(0, 10)}.json`);
-  if (!Native.on) toast(`Backup exported (${files.length} file${files.length === 1 ? '' : 's'}) ✓`);
+  if (!Native.on) toast(`Backup exported (${files.length} file${files.length === 1 ? '' : 's'}, ${KH.data.parties.length} khata) ✓`);
 }
 function extractFiles(data) {
   const found = new Map();
@@ -2202,8 +2222,9 @@ function extractFiles(data) {
 }
 async function importBackupText(text) {
   let data; try { data = JSON.parse(text); } catch (e) { toast('That file is not a valid backup'); return 0; }
-  const incoming = extractFiles(data); if (!incoming.length) { toast('No files found in this backup'); return 0; }
-  const ok = await dialogConfirm({ title: 'Restore backup?', message: `${incoming.length} file${incoming.length === 1 ? '' : 's'} found. They will be added (nothing is overwritten).`, okText: 'Restore' });
+  const incoming = extractFiles(data); const kh = data && data.khata && typeof data.khata === 'object' ? data.khata : null;
+  if (!incoming.length && !kh) { toast('No files found in this backup'); return 0; }
+  const ok = await dialogConfirm({ title: 'Restore backup?', message: `${incoming.length} file${incoming.length === 1 ? '' : 's'}${kh ? ` and ${(kh.parties || []).length} khata` : ''} found. They will be added (nothing is overwritten).`, okText: 'Restore' });
   if (!ok) return 0;
   await flushSave();
   const folderMap = {};
@@ -2220,8 +2241,12 @@ async function importBackupText(text) {
     if (existing) { const cur = await Store.get(f.id); const sig = x => JSON.stringify([(x.rows || []).map(r => r.text), (x.sheets || []).map(sh => (sh.rows || []).map(r => r && (r.text ?? r)))]); if (cur && sig(cur) === sig(f)) { skipped++; continue; } }
     const rec = { id: existing ? newId() : f.id, title: String(f.title || '').slice(0, 120) + (existing ? ' (restored)' : ''), folder: folderMap[f.folder] || '', pinned: !!f.pinned, rows: rowsData, totalSettings: normTotal(f.totalSettings), createdAt: f.createdAt || new Date().toISOString(), updatedAt: f.updatedAt || new Date().toISOString() };
     if (Array.isArray(f.sheets) && f.sheets.length) {
-      rec.sheets = f.sheets.filter(sh => sh && Array.isArray(sh.rows)).slice(0, 200).map((sh, i) => ({ id: String(sh.id || newId('sh_')), name: String(sh.name || 'Sheet ' + (i + 1)).slice(0, 40), color: String(sh.color || ''), rows: sh.rows.map((r, j) => ({ id: 'row_' + (j + 1), text: String((r && (r.text ?? r)) || '').slice(0, 5000) })), totalSettings: normTotal(sh.totalSettings) }));
+      rec.sheets = f.sheets.filter(sh => sh && Array.isArray(sh.rows)).slice(0, 200).map((sh, i) => ({ id: String(sh.id || newId('sh_')), name: String(sh.name || 'Sheet ' + (i + 1)).slice(0, 40), color: String(sh.color || ''), rows: sh.rows.map((r, j) => ({ id: 'row_' + (j + 1), text: String((r && (r.text ?? r)) || '').slice(0, 5000) })), totalSettings: normTotal(sh.totalSettings), khata: sh.khata && typeof sh.khata === 'object' ? { on: sh.khata.on !== false, reason: String(sh.khata.reason || 'udhaar'), formula: String(sh.khata.formula || 'x').slice(0, 200), round: !!sh.khata.round } : undefined }));
       rec.activeSheet = Math.min(f.activeSheet | 0, rec.sheets.length - 1);
+    }
+    if (existing) {                                                   // a restored copy must not post the same khata entries again
+      if (!rec.sheets) rec.sheets = [{ id: 'sh_1', name: 'Sheet 1', color: '', rows: rowsData, totalSettings: rec.totalSettings }];
+      rec.sheets.forEach(sh => { sh.khata = Object.assign({ reason: 'udhaar', formula: 'x', round: false }, sh.khata || {}, { on: false }); });
     }
     const calc = Engine.run(rowsData.map(r => r.text), engineOpts({ total: rec.totalSettings }));
     await Store.set(rec.id, rec);
@@ -2229,7 +2254,8 @@ async function importBackupText(text) {
     added++;
   }
   await saveFileList();
-  toast(`Restored ${added} file${added === 1 ? '' : 's'}${skipped ? ` · ${skipped} already present` : ''} ✓`, 2800);
+  const kn = kh ? await khMergeBackup(kh) : 0;
+  toast(`Restored ${added} file${added === 1 ? '' : 's'}${kn ? ` · ${kn} khata` : ''}${skipped ? ` · ${skipped} already present` : ''} ✓`, 2800);
   return added;
 }
 $('#importInput').addEventListener('change', async e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return; if (f.size > 20 * 1024 * 1024) { toast('File is too large'); return; } importBackupText(await f.text()); });
@@ -2363,6 +2389,7 @@ const SETTINGS_PAGES = {
     { t: 'nav', page: 'share', icon: 'image', label: 'Share Settings', sub: 'Image columns, text size, table text' },
     { t: 'nav', page: 'features', icon: 'toggles', label: 'Features on / off', sub: 'Turn any feature on or off' },
     { t: 'nav', page: 'extensions', icon: 'puzzle', label: 'User extensions', sub: 'Your own functions, constants and CSS' },
+    { t: 'nav', page: 'khataset', icon: 'book', label: 'Khata book', sub: 'SMS / WhatsApp, message, reasons, shop name' },
     { t: 'nav', page: 'security', icon: 'shield', label: 'Security', sub: 'App lock with PIN' },
     { t: 'sep' }, { t: 'section', label: 'Backup/Restore Settings' },
     { t: 'nav', page: 'impexp', icon: 'import', label: 'Import/Export Settings', sub: 'Copy your setup to another phone' },
@@ -2530,8 +2557,12 @@ const pageStack = [];
 function openSettings(page = 'root') { closeSidebar(); if (document.activeElement === ED) ED.blur(); openPage(page); }
 function openPage(name) {
   const def = SETTINGS_PAGES[name]; if (!def) return;
-  const pg = el('section', { class: 'page', 'data-page': name, 'aria-label': def.title },
-    el('div', { class: 'page-header' }, el('button', { class: 'icon-btn', 'aria-label': 'Back', html: svg('back'), onclick: () => Overlays.remove('page:' + name) }), el('div', { class: 'page-title', text: def.title })),
+  if (pageStack.includes(name)) { const ex = $(`#pages .page[data-page="${name}"]`); if (ex) { renderPage(ex, name); return; } }
+  const title = typeof def.title === 'function' ? def.title() : def.title;
+  const acts = typeof def.actions === 'function' ? def.actions() : [];
+  const pg = el('section', { class: 'page' + (def.cls ? ' ' + def.cls : ''), 'data-page': name, 'aria-label': title },
+    el('div', { class: 'page-header' }, el('button', { class: 'icon-btn', 'aria-label': 'Back', html: svg('back'), onclick: () => Overlays.remove('page:' + name) }), el('div', { class: 'page-title', text: title }),
+      ...acts.map(a => el('button', { class: 'page-act', 'aria-label': a.label, title: a.label, html: a.icon ? svg(a.icon) : '', text: a.icon ? undefined : a.text, onclick: a.run }))),
     el('div', { class: 'page-body' }));
   $('#pages').append(pg); renderPage(pg, name);
   requestAnimationFrame(() => requestAnimationFrame(() => pg.classList.add('open')));
@@ -2541,7 +2572,7 @@ function openPage(name) {
 function closeAllPages() { [...pageStack].reverse().forEach(n => Overlays.remove('page:' + n)); }
 function refreshOpenPage() { $$('#pages .page').forEach(pg => renderPage(pg, pg.dataset.page, true)); }
 function pIcon(icon) { return ICON[icon] ? el('span', { class: 'p-ic', html: svg(icon) }) : el('span', { class: 'p-ic', text: icon || '' }); }
-function renderPage(pg, name, keepScroll) { const body = pg.querySelector('.page-body'); const scroll = body.scrollTop; body.replaceChildren(...SETTINGS_PAGES[name].items.filter(it => !it.when || it.when()).map(renderItem).filter(Boolean)); if (keepScroll) body.scrollTop = scroll; }
+function renderPage(pg, name, keepScroll) { const body = pg.querySelector('.page-body'); const scroll = body.scrollTop; const def = SETTINGS_PAGES[name]; if (def.render) { try { def.render(body, pg); } catch (e) { console.error(e); body.replaceChildren(el('div', { class: 'p-note', text: 'Something went wrong: ' + e.message })); } if (keepScroll) body.scrollTop = scroll; return; } body.replaceChildren(...SETTINGS_PAGES[name].items.filter(it => !it.when || it.when()).map(renderItem).filter(Boolean)); if (keepScroll) body.scrollTop = scroll; }
 function renderItem(it) {
   const sub = typeof it.sub === 'function' ? it.sub() : it.sub;
   const txt = () => el('span', { class: 'p-txt' }, it.label, sub ? el('span', { class: 'p-sub', text: sub }) : null);
@@ -2552,6 +2583,11 @@ function renderItem(it) {
     case 'nav': return el('button', { class: 'p-item', 'data-nav': it.page, onclick: () => openPage(it.page) }, pIcon(it.icon), txt());
     case 'action': return el('button', { class: 'p-item', onclick: it.run }, pIcon(it.icon), txt());
     case 'info': return el('div', { class: 'p-item' }, pIcon(it.icon), txt());
+    case 'text': {
+      const input = el('input', { type: 'text', class: 'p-input', placeholder: it.placeholder || '', autocomplete: 'off', 'data-key': it.key }); input.value = settings[it.key] || '';
+      let t; input.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => setSetting(it.key, input.value.trim()), 300); });
+      return el('div', { class: 'p-item col', style: 'cursor:default' }, el('div', { class: 'p-row' }, pIcon(it.icon), txt()), input);
+    }
     case 'switch': {
       const input = el('input', { type: 'checkbox', 'data-key': it.key }); input.checked = !!settings[it.key];
       input.addEventListener('change', () => { setSetting(it.key, input.checked); if (['keepAwake', 'keypadEnabled'].includes(it.key)) refreshOpenPage(); });
@@ -2608,7 +2644,7 @@ function listEditor({ all, key, max, label, sub, icon }) {
 }
 async function resetSettings() {
   const ok = await dialogConfirm({ title: 'Reset all settings?', message: 'Theme, keypad, toolbar, extensions etc. go back to default. Files and app lock are kept.', okText: 'Reset', danger: true }); if (!ok) return;
-  const keep = { lock: settings.lock, pinHash: settings.pinHash, pinSalt: settings.pinSalt, _v: 33 };
+  const keep = { lock: settings.lock, pinHash: settings.pinHash, pinSalt: settings.pinSalt, _v: 34 };
   Object.keys(settings).forEach(k => delete settings[k]); Object.assign(settings, JSON.parse(JSON.stringify(DEFAULTS)), keep);
   persistSettings(); fmtCache.clear(); applySettings(); render(true); refreshOpenPage(); toast('Settings reset ✓');
 }
@@ -2619,6 +2655,8 @@ async function shareApp() {
   const ok = await copyText(text); toast(ok ? 'Link copied ✓' : 'Could not copy');
 }
 function openLink(url) { const a = el('a', { href: url, target: '_blank', rel: 'noopener' }); document.body.append(a); a.click(); a.remove(); }
+
+/*KHATA_JS*/
 
 /* ---------------- Wire up UI ---------------- */
 $('#btnMenu').addEventListener('click', openSidebar);
@@ -2672,7 +2710,7 @@ function nativeBack() {
 async function init() {
   applySettings(); updateKbSwitch();
   if (settings.lock && settings.pinHash) await Lock.unlock();
-  await loadLists();
+  await loadLists(); await khLoad();
   const last = await Store.get('lastFileId'); let opened = false;
   if (last && state.files.some(f => f.id === last)) opened = await openFile(last);
   while (!opened && state.files.length) opened = await openFile(sortedFiles()[0].id);

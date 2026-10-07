@@ -372,6 +372,178 @@ body.kp-open .toast{bottom:auto;top:calc(var(--header-h) + var(--safe-top) + 14p
   .page-body{max-width:820px;width:100%;margin:0 auto}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* ===== KHATA BOOK ===== */
+:root{--kk-get:#C62828;--kk-get-soft:#FDEEEE;--kk-give:#1B7F4B;--kk-give-soft:#E8F5EE;--kk-card:var(--surface);--kk-line:var(--border);--kk-ink:var(--text);--kk-soft:var(--text-2)}
+html[data-theme="dark"],html[data-theme="black"]{--kk-get:#FF8A80;--kk-get-soft:#3A1D1C;--kk-give:#69D49A;--kk-give-soft:#173226}
+.kk-get{color:var(--kk-get)!important}.kk-give{color:var(--kk-give)!important}.kk-clear{color:var(--kk-soft)!important}
+/* note marks before the answers */
+.r.has-kb{position:relative}
+.kb-b{position:absolute;left:2px;top:50%;transform:translateY(-50%);min-width:1.35em;padding:0 4px;border-radius:7px;font-size:.62em;line-height:1.6;font-weight:900;text-align:center;cursor:pointer;font-style:normal}
+.kb-b::after{content:'';position:absolute;inset:-10px -8px}
+.r.has-kb{padding-left:calc(7px + 1.05em)}
+.kb-b.ok{color:var(--kk-give);background:var(--kk-give-soft)}
+.kb-b.new,.kb-b.chg{color:#fff;background:#EF6C00}
+.kb-b.unk{color:#7A4F00;background:#FFE08A}
+.kb-b.err{color:#fff;background:var(--danger)}
+.kb-b.zero{color:var(--text-3);background:transparent}
+.t-tag{color:#8E24AA;font-weight:700}
+/* toolbar count bubble */
+.icon-btn{position:relative}
+.tb-count{position:absolute;top:5px;right:3px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#E53935;color:#fff;font-size:10.5px;font-weight:800;line-height:17px;text-align:center;box-shadow:0 0 0 2px var(--primary);pointer-events:none}
+.tb-count.warn{background:#FFB300;color:#3E2723}
+/* light pages */
+.page.kpage{background:var(--bg);color:var(--kk-ink)}
+.page.kpage .page-header{background:var(--primary);color:var(--on-primary)}
+.page.kpage .page-header .icon-btn svg{fill:var(--on-primary)}
+.page-act{border:none;background:none;color:inherit;font-size:15px;font-weight:700;padding:8px 10px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:4px}
+.page-act svg{width:24px;height:24px;fill:currentColor}
+.kk{padding:10px 12px 90px;max-width:760px;margin:0 auto}
+.kk button{font-family:inherit}
+.kk-tabs{display:flex;gap:4px;border-bottom:2px solid var(--kk-line);margin-bottom:10px}
+.kk-tabs button{flex:1;border:none;background:none;padding:10px 6px 9px;font-weight:800;font-size:14.5px;color:var(--kk-soft);border-bottom:3px solid transparent;margin-bottom:-2px;cursor:pointer}
+.kk-tabs button.on{color:var(--strong);border-bottom-color:var(--strong)}
+.kk-sum{background:var(--kk-card);border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,.08);overflow:hidden;border:1px solid var(--kk-line);margin-bottom:12px}
+.kk-sum-top{display:flex;padding:12px 6px 10px}
+.kk-sum-top .half{flex:1;border:none;background:none;color:var(--kk-soft);display:flex;flex-direction:column;align-items:center;gap:3px;font-size:13.5px;font-weight:700;cursor:pointer}
+.kk-sum-top .v{font-size:23px;font-weight:800}
+.kk-sum-top .sep{width:1px;background:var(--kk-line);margin:4px 0}
+.v.get,.kk-amt.get b{color:var(--kk-get)}.v.give,.kk-amt.give b{color:var(--kk-give)}
+.kk-sum-rep{width:100%;border:none;border-top:1px solid var(--kk-line);background:color-mix(in srgb,var(--primary) 14%,var(--kk-card));color:var(--strong);font-weight:800;padding:11px;font-size:14.5px;cursor:pointer}
+.kk-pend{width:100%;display:flex;align-items:center;gap:10px;border:1.5px dashed #EF6C00;background:color-mix(in srgb,#EF6C00 10%,var(--kk-card));color:var(--kk-ink);border-radius:12px;padding:10px 12px;margin-bottom:12px;text-align:left;cursor:pointer;font-size:14px}
+.kk-pend .m{flex:1;display:flex;flex-direction:column}.kk-pend small{color:#B26A00;font-weight:700}
+.kk-off{display:flex;flex-direction:column;gap:6px;background:#FFF8E1;color:#5D4037;border-radius:12px;padding:12px;margin-bottom:12px}
+.kk-search{display:flex;gap:8px;margin-bottom:10px}
+.kk-q{flex:1;min-width:0;padding:11px 12px;border:1.5px solid var(--kk-line);border-radius:12px;background:var(--kk-card);color:var(--kk-ink);font-size:15.5px;font-family:inherit;outline:none;margin-bottom:10px;width:100%}
+.kk-search .kk-q{margin-bottom:0}
+.kk-q:focus{border-color:var(--primary)}
+.kk-fbtn{border:1.5px solid var(--kk-line);background:var(--kk-card);color:var(--strong);border-radius:12px;padding:0 12px;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap}
+.kk-showing{display:flex;align-items:center;justify-content:space-between;background:color-mix(in srgb,var(--primary) 14%,var(--kk-card));border-radius:10px;padding:6px 6px 6px 12px;margin-bottom:10px;font-size:13.5px;font-weight:700}
+.kk-showing button{border:none;background:none;font-size:16px;cursor:pointer;color:inherit;padding:2px 8px}
+.kk-list{background:var(--kk-card);border-radius:14px;border:1px solid var(--kk-line);overflow:hidden}
+.kk-row{display:flex;align-items:center;gap:12px;padding:11px 12px;border:none;border-bottom:1px solid var(--kk-line);width:100%;background:none;color:var(--kk-ink);text-align:left;cursor:pointer}
+.kk-row:last-child{border-bottom:none}
+.kk-row:active{background:var(--surface-2)}
+.kk-row .mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.kk-row .mid b{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kk-row .mid span{font-size:12.5px;color:var(--kk-soft)}
+.kk-av{width:44px;height:44px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;background:rgba(21,101,192,.13);color:#1565C0}
+.kk-av.sup{background:rgba(123,31,162,.13);color:#7B1FA2}
+.kk-av.big{width:52px;height:52px;font-size:18px}
+.kk-amt{display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right}
+.kk-amt b{display:block;font-size:17px;font-variant-numeric:tabular-nums}
+.kk-amt.clear b{color:var(--kk-soft)}
+.kk-amt span{font-size:11.5px;font-weight:700;color:var(--kk-soft)}
+.kk-amt .kk-rem{color:#1565C0;font-weight:800;font-size:11.5px;padding:2px 0}
+.kk-empty{text-align:center;color:var(--kk-soft);padding:28px 16px;font-size:15px;line-height:1.5}
+.kk-empty p{margin:8px 0 0;font-size:14px}
+.kk-fab{position:fixed;right:16px;bottom:calc(20px + var(--safe-bottom));z-index:3;border:none;border-radius:30px;background:#AD1457;color:#fff;font-weight:800;font-size:15.5px;padding:14px 20px;box-shadow:0 6px 18px rgba(0,0,0,.25);cursor:pointer}
+.kk-note{font-size:13.5px;color:var(--kk-soft);line-height:1.5;margin:4px 2px 12px}
+/* party page */
+.kk-phead{background:var(--kk-card);border:1px solid var(--kk-line);border-radius:16px;padding:12px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.kk-pid{display:flex;align-items:center;gap:12px}
+.kk-pid .mid{flex:1;min-width:0}
+.kk-pid .nm{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.kk-pid .nm b{font-size:19px}
+.kk-type{font-size:11.5px;font-weight:800;background:color-mix(in srgb,var(--primary) 18%,transparent);color:var(--strong);padding:2px 8px;border-radius:8px}
+.kk-set{border:none;background:none;color:var(--kk-soft);font-weight:700;font-size:13px;padding:4px 0;cursor:pointer}
+.kk-call{width:44px;height:44px;border-radius:50%;border:none;background:var(--kk-give-soft);font-size:20px;cursor:pointer}
+.kk-pbal{display:flex;justify-content:space-between;align-items:center;margin-top:10px;border-radius:12px;padding:12px 14px;background:var(--surface-2);font-weight:700}
+.kk-pbal b{font-size:24px;font-variant-numeric:tabular-nums}
+.kk-pbal.get{background:var(--kk-get-soft)}.kk-pbal.get b,.kk-pbal.get span{color:var(--kk-get)}
+.kk-pbal.give{background:var(--kk-give-soft)}.kk-pbal.give b,.kk-pbal.give span{color:var(--kk-give)}
+.kk-acts{display:grid;grid-template-columns:repeat(3,1fr);background:var(--kk-card);border-radius:14px;border:1px solid var(--kk-line);margin-bottom:12px}
+.kk-acts button{border:none;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;font-weight:800;font-size:13px;color:var(--strong);cursor:pointer}
+.kk-acts button span{font-size:22px}
+.kk-open{font-size:13.5px;color:var(--kk-soft);text-align:center;margin:-2px 0 10px}
+.kk-cols,.kk-e{display:grid;grid-template-columns:minmax(0,1fr) 96px 96px}
+.kk-cols{font-size:11.5px;font-weight:800;color:var(--kk-soft);padding:0 2px 6px;letter-spacing:.3px}
+.kk-cols span:not(:first-child){text-align:right;padding-right:10px}
+.kk-cols .gave{color:var(--kk-get)}.kk-cols .got{color:var(--kk-give)}
+.kk-day{text-align:center;font-size:12.5px;color:var(--kk-soft);font-weight:700;margin:12px 0 6px}
+.kk-e{width:100%;background:var(--kk-card);border:1px solid var(--kk-line);border-radius:12px;margin-bottom:8px;overflow:hidden;min-height:64px;padding:0;text-align:left;color:var(--kk-ink);cursor:pointer;font-size:14px}
+.kk-e .l{display:flex;flex-direction:column;gap:2px;padding:8px 10px;min-width:0}
+.kk-e .when{font-size:11.5px;color:var(--kk-soft)}
+.kk-e .who{font-size:14.5px}
+.kk-e .what{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kk-e .dot,.chip .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.kk-e .c{display:flex;align-items:center;justify-content:flex-end;padding:0 10px;font-weight:800;font-size:15.5px;font-variant-numeric:tabular-nums}
+.kk-e .c.gave{background:var(--kk-get-soft);color:var(--kk-get)}.kk-e .c.got{background:var(--kk-give-soft);color:var(--kk-give)}
+.kk-e .c:empty{background:none}
+.kk-e.rec .c{background:none}
+.kk-bal{display:inline-block;align-self:flex-start;margin-top:3px;font-size:11.5px;font-weight:800;padding:2px 8px;border-radius:8px;background:var(--surface-2);color:var(--kk-soft)}
+.kk-bal.get{background:var(--kk-get-soft);color:var(--kk-get)}.kk-bal.give{background:var(--kk-give-soft);color:var(--kk-give)}
+.kk-btns{position:fixed;left:0;right:0;bottom:0;z-index:3;display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 12px calc(10px + var(--safe-bottom));background:linear-gradient(to top,var(--bg) 75%,transparent);max-width:760px;margin:0 auto}
+.kk-btns .btn{font-size:16px;padding:15px 8px;font-weight:800}
+.btn.kk-gave{background:var(--kk-get);color:#fff}.btn.kk-got{background:var(--kk-give);color:#fff}
+@media (max-width:380px){.kk-cols,.kk-e{grid-template-columns:minmax(0,1fr) 80px 80px}.kk-e .c{font-size:14px;padding:0 6px}}
+/* report */
+.kk-per{margin-bottom:10px}
+.kk-range{margin-bottom:10px}
+.kk-range input{padding:10px;border:1.5px solid var(--kk-line);border-radius:10px;background:var(--kk-card);color:var(--kk-ink);font-size:15px;width:100%}
+.kk-rsum{background:var(--kk-card);border:1px solid var(--kk-line);border-radius:14px;padding:4px 12px;margin-bottom:12px}
+.kk-rsum .r1{display:flex;justify-content:space-between;padding:9px 0;font-size:14px;border-bottom:1px solid var(--kk-line)}
+.kk-rsum .r1:last-child{border-bottom:none}
+.kk-rsum .r2{display:grid;grid-template-columns:1fr 1fr 1fr;padding:10px 0;border-bottom:1px solid var(--kk-line);gap:6px}
+.kk-rsum .r2>div{display:flex;flex-direction:column;gap:2px;font-size:12.5px;color:var(--kk-soft);font-weight:700}
+.kk-rsum .r2 .gave,.kk-rsum .r2 .got{text-align:right}
+.kk-rsum .r2 .gave b{color:var(--kk-get);font-size:17px}.kk-rsum .r2 .got b{color:var(--kk-give);font-size:17px}
+/* sheets used by the khata */
+.kf .lbl{margin-top:12px!important}
+.kf input[type=tel],.kf input[type=search]{width:100%;padding:12px 4px 10px;font-size:17px;border:none;border-bottom:2px solid var(--border);background:transparent;color:var(--text);font-family:inherit;outline:none}
+.kf input:focus{border-bottom-color:var(--primary)}
+.kf .chips{margin-top:4px}
+.kf-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.kf-row{display:flex;align-items:flex-end;justify-content:space-between;gap:8px}
+.kf-pick{border:none;background:color-mix(in srgb,var(--primary) 15%,transparent);color:var(--strong);font-weight:800;border-radius:10px;padding:7px 10px;font-size:13px;cursor:pointer}
+.kf-err{color:var(--danger);font-weight:700;font-size:14px;margin:8px 4px 0;min-height:1px}
+.kf-prev{font-size:14px;margin:10px 4px 0;line-height:1.5;color:var(--text-2)}
+.kf-prev b{font-size:15px}
+.kf-prev.bad{color:var(--danger);font-weight:700}
+.kf-prev small{color:var(--text-3)}
+.kf-wide{width:100%;margin:6px 0 4px}
+.kf-sw{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.kf-sw .swatch{width:34px;height:34px;border-radius:50%;border:3px solid transparent;cursor:pointer}
+.kf-sw .swatch.active{border-color:var(--text);box-shadow:0 0 0 2px var(--surface) inset}
+.kf-sw-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 4px;font-size:15.5px;font-weight:600;cursor:pointer}
+.kf-send{display:flex;gap:10px;margin:12px 0 4px}
+.chip.kr-gave.active{border-color:var(--kk-get);background:var(--kk-get-soft);color:var(--kk-get)}
+.chip.kr-got.active{border-color:var(--kk-give);background:var(--kk-give-soft);color:var(--kk-give)}
+.kp-card{border:1px solid var(--border);border-radius:14px;padding:10px 12px;margin:10px 0;background:var(--surface)}
+.kp-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.kp-head .kk-av{width:38px;height:38px;font-size:13px}
+.kp-nm{display:flex;flex-direction:column}.kp-nm span{font-size:13px;font-weight:700}
+.kp-line{display:flex;gap:8px;font-size:14px;padding:3px 0;font-variant-numeric:tabular-nums}
+.kp-line .ic{width:18px;text-align:center;font-weight:900}
+.kp-line.add .ic{color:#EF6C00}.kp-line.change .ic{color:#1565C0}.kp-line.remove{color:var(--text-2);text-decoration:line-through}.kp-line.remove .ic{color:var(--danger)}
+.kp-ch{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
+.kp-ch .chip{padding:7px 10px;font-size:13px}
+.kp-link{border:none;background:none;color:#1565C0;font-weight:800;font-size:13.5px;padding:8px 2px;cursor:pointer;text-align:left}
+.kp-msg{width:100%;margin-top:4px;border:1.5px solid var(--border)!important;border-radius:10px;padding:8px!important;font-size:14.5px!important;line-height:1.45}
+.kp-warn,.kp-err{display:flex;flex-direction:column;gap:6px;border-radius:12px;padding:10px 12px;margin:8px 0;font-size:13.5px}
+.kp-warn{background:#FFF8E1;color:#5D4037}.kp-err{background:color-mix(in srgb,var(--danger) 12%,var(--surface));color:var(--danger)}
+.kp-actions{position:sticky;bottom:calc(-18px - var(--safe-bottom));background:var(--surface);padding:10px 0 6px;margin-bottom:-6px}
+.kq-list{display:flex;flex-direction:column;gap:6px;margin:8px 0}
+.kq-row{display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:12px;padding:8px 10px}
+.kq-row.sent,.kq-row.opened{background:var(--kk-give-soft)}
+.kq-row.fail{background:var(--kk-get-soft)}
+.kq-ch{font-size:20px}
+.kq-main{flex:1;min-width:0;display:flex;flex-direction:column}.kq-main span{font-size:12.5px;color:var(--text-2)}
+.kq-st{font-size:12.5px;font-weight:800;max-width:40%;text-align:right}
+.kq-btn{border:none;border-radius:10px;padding:8px 12px;background:var(--primary);color:#fff;font-weight:800;cursor:pointer}
+.kd-big{display:flex;justify-content:space-between;align-items:center;border-radius:14px;padding:14px;margin:4px 0 10px;background:var(--surface-2);font-weight:700}
+.kd-big b{font-size:26px}
+.kd-big.gave{background:var(--kk-get-soft);color:var(--kk-get)}.kd-big.got{background:var(--kk-give-soft);color:var(--kk-give)}
+.kd-kv{display:flex;justify-content:space-between;gap:16px;padding:8px 4px;border-bottom:1px solid var(--row-border);font-size:14.5px}
+.kd-kv span{color:var(--text-2)}.kd-kv b{text-align:right;word-break:break-word}
+.kd-h{font-size:13px;color:var(--text-2);padding:3px 4px}
+.kd-st{border-radius:10px;padding:10px 12px;font-weight:800;font-size:14px;margin-bottom:8px}
+.kd-st.ok{background:var(--kk-give-soft);color:var(--kk-give)}.kd-st.new,.kd-st.chg{background:#FFF3E0;color:#E65100}.kd-st.err{background:var(--kk-get-soft);color:var(--kk-get)}.kd-st.zero{background:var(--surface-2);color:var(--text-2)}
+.menu-item .kk-av{width:36px;height:36px;font-size:13px}
+@media (min-width:700px){.kk-fab{right:calc(50% - 360px)}}
+.p-input{width:100%;padding:11px 12px;border-radius:10px;border:1.5px solid #4A4A4A;background:#232323;color:#F1F1F1;font-size:16px;font-family:inherit;outline:none}
+.p-input:focus{border-color:#80CBC4}
+.kp-dup{color:#E65100;font-weight:800;margin-left:auto;white-space:nowrap}
+
 </style>
 <style id="userCss"></style>
 <script>/*! Capacitor: https://capacitorjs.com/ - MIT License */
@@ -487,7 +659,7 @@ var capacitorExports=function(e){"use strict";var t;e.ExceptionCode=void 0,(t=e.
 /* =====================================================================
    CalcNote Freedom – notepad calculator
    ===================================================================== */
-const APP = { name: 'CalcNote Freedom', version: '3.4.0', build: 0, repo: 'https://github.com/mahi85180/calcnote-freedom', api: 'https://api.github.com/repos/mahi85180/calcnote-freedom/releases/latest' };
+const APP = { name: 'CalcNote Freedom', version: '3.5.0', build: 0, repo: 'https://github.com/mahi85180/calcnote-freedom', api: 'https://api.github.com/repos/mahi85180/calcnote-freedom/releases/latest' };
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 const el = (tag, props = {}, ...kids) => {
@@ -527,6 +699,8 @@ const ICON = {
   import: 'M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z',
   file: 'M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z',
   send: 'M2.01 21L23 12 2.01 3 2 10l15 2-15 2z',
+  book: 'M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z',
+  publish: 'M5 4v2h14V4H5zm0 10h4v6h6v-6h4l-7-7-7 7z',
   help: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z',
   lock: 'M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z',
   award: 'M12 1l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 14.3 6.8 17.1l1-5.8L3.5 7.2l5.9-.9z',
@@ -622,7 +796,7 @@ const DEFAULT_KEYS = [
 const DEFAULTS = {
   theme: 'light', accent: 'green', opColor: 'orange', font: 'system', italic: false, fontSize: 20, resultBold: false, resultColor: 'text', amountColor: 'blue', itemColor: 'accent', dateHl: 'yellow', dateColor: 'purple', rowSpacing: 'normal',
   lineNumbers: true, divider: true, separators: false, resultAlign: 'right', resultWidth: 36, highlightLine: true,
-  showTotalBar: true, totalModeHint: true, toolbar: ['undo', 'new', 'save', 'settings'], keepAwake: false,
+  showTotalBar: true, totalModeHint: true, toolbar: ['undo', 'publish', 'khata', 'settings'], keepAwake: false,
   syntax: true, autoBrackets: false, tapCopy: true, lineMenu: true, swipe: true, undoEnabled: true, copyFormat: 'lines',
   kbSuggest: true, autoCorrect: false, autoCap: false, nameSuggest: true, selectionSum: true, runningTotal: false, negRed: true, openAtEnd: true,
   dateOnNew: true, autoDate: true, dateFormat: 'dmy_short',
@@ -630,10 +804,11 @@ const DEFAULTS = {
   xMultiply: true, currency: true, defaultTotal: 'sum',
   keypadEnabled: true, kpStart: false, vibrate: true, keySound: false, kpHeight: 'normal', kpOrder: '789',
   sciTab: true, customTab: true, customKeys: DEFAULT_KEYS,
-  sideActions: ['serial', 'date', 'image', 'sharetext', 'copy', 'csv', 'redo', 'clear', 'update', 'settings', 'help'],
+  sideActions: ['khata', 'publish', 'save', 'serial', 'date', 'image', 'sharetext', 'copy', 'csv', 'redo', 'clear', 'update', 'settings', 'help'],
   sortBy: 'updated', tabsEnabled: true, tabTotals: true, swipeTabs: true, hideTabsTyping: true, newTabName: 'date',
   imgCols: 'auto', imgSize: 'L', imgSno: true, imgSkipBlank: true, imgDate: true, textStyle: 'table',
   autoUpdate: true,
+  khataOn: true, khataMarks: true, khataChannel: 'wa', khataWaApp: 'auto', khataShop: '', khataShopPhone: '', khataLang: 'hinglish', khataMsg: '', khataReason: 'udhaar',
   lock: false, lockDelay: 0, pinHash: '', pinSalt: '',
   extensions: '// Your own functions & constants – available in every note\n// gst(x) = x * 1.18\n// usd = 83.5\n',
   customCss: ''
@@ -657,7 +832,13 @@ const settings = (() => {
     out.toolbar = out.toolbar.filter(a => a !== 'text' && a !== 'select');
     if (!out.customKeys.some(k => k.i === '{date}')) out.customKeys.splice(4, 0, { l: '📅 Today', i: '{date}' });
   }
-  out._v = 33;
+  if ((s._v || 0) < 34) {                                   // v3.5: khata book
+    const old = ['undo', 'new', 'save', 'settings'];
+    if (JSON.stringify(out.toolbar) === JSON.stringify(old)) out.toolbar = ['undo', 'publish', 'khata', 'settings'];
+    else for (const a of ['publish', 'khata']) if (!out.toolbar.includes(a) && out.toolbar.length < 5) out.toolbar.push(a);
+    for (const a of ['save', 'publish', 'khata']) if (!out.sideActions.includes(a)) out.sideActions.unshift(a);
+  }
+  out._v = 34;
   return out;
 })();
 function persistSettings() { LS.set(SKEY, JSON.stringify(settings)); }
@@ -784,7 +965,8 @@ const Engine = (() => {
       if (!text) { block = []; return; }
       if (/^(\/\/|#)/.test(text)) { out.kind = 'comment'; return; }
       if (isDateLine(text)) { out.kind = 'date'; block = []; return; }
-      text = text.replace(/\s\/\/.*$/, '').trim();
+      text = text.replace(/\s\/\/.*$/, '').replace(/(^|\s)#[^\s#\d][^\s#]*/g, '$1').trim();
+      if (!text) { out.kind = 'comment'; return; }
       if (last !== undefined) { scope.ans = last; scope.prev = last; } else { delete scope.ans; delete scope.prev; }
       let label = '', body = text;
       const colon = text.match(/^([^:]*[A-Za-z\u0080-￿][^:]*?)\s*:\s*(.*)$/);
@@ -864,7 +1046,7 @@ const rawNum = v => String(clean(v));
 
 /* ---------------- Syntax highlighting ---------------- */
 const escHtml = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const TOKEN = /(\/\/.*$)|(\d[\d,]*(?:\.\d+)?(?:e[+-]?\d+)?%?|\.\d+%?)|([+\-*\/×÷^=()%!−,<>:[\]]|\bmod\b|\bof\b|\bto\b|\bin\b)|([A-Za-z_À-￿][\wÀ-￿]*)|(\s+)|([\s\S])/g;
+const TOKEN = /(\/\/.*$)|(#[^\s#\d][^\s#]*)|(\d[\d,]*(?:\.\d+)?(?:e[+-]?\d+)?%?|\.\d+%?)|([+\-*\/×÷^=()%!−,<>:[\]]|\bmod\b|\bof\b|\bto\b|\bin\b)|([A-Za-z_À-￿][\wÀ-￿]*)|(\s+)|([\s\S])/g;
 function highlightHTML(text, vars, labelVars) {
   if (!text) return '​';
   if (/^\s*(\/\/|#)/.test(text)) return `<span class="t-com">${escHtml(text)}</span>`;
@@ -872,14 +1054,15 @@ function highlightHTML(text, vars, labelVars) {
   while ((m = TOKEN.exec(text))) {
     const s = escHtml(m[0]);
     if (m[1]) out += `<span class="t-com">${s}</span>`;
-    else if (m[2]) out += s;
-    else if (m[3]) out += `<span class="t-op">${s}</span>`;
-    else if (m[4]) {
-      const w = m[4]; const next = text.slice(TOKEN.lastIndex).trimStart()[0];
+    else if (m[2]) out += m.index === 0 || /\s/.test(text[m.index - 1]) ? `<span class="t-tag">${s}</span>` : `<span class="t-lbl">${s}</span>`;
+    else if (m[3]) out += s;
+    else if (m[4]) out += `<span class="t-op">${s}</span>`;
+    else if (m[5]) {
+      const w = m[5]; const next = text.slice(TOKEN.lastIndex).trimStart()[0];
       const isFn = next === '(' || (vars && vars.has(w) && !(labelVars && labelVars.has(w))) || /^(sum|total|avg|average|count|ans|prev|pi|e|line\d+|row\d+)$/i.test(w);
       out += `<span class="${isFn ? 't-fn' : 't-lbl'}">${s}</span>`;
     }
-    else if (m[5]) out += m[5];
+    else if (m[6]) out += m[6];
     else out += `<span class="t-lbl">${s}</span>`;
   }
   return out;
@@ -1022,6 +1205,7 @@ function render(forcePaint) {
   const repaint = forcePaint || varsKey !== lastVarsKey; lastVarsKey = varsKey;
   syncCount(texts.length);
   let serial = 0;                                              // numbering starts at 1 below each date
+  let kbm = null; try { kbm = khLineMarks(res, texts); } catch (e) { console.error(e); }
   texts.forEach((t, i) => {
     const l = res.lines[i];
     const isDateLine0 = l.kind === 'date';
@@ -1036,6 +1220,7 @@ function render(forcePaint) {
     const r = cells.r[i]; let html = '', cls = 'r';
     if (l.kind === 'num') {
       html = escHtml(fmtNum(l.value));
+      if (kbm && kbm[i]) { html = kbm[i] + html; cls += ' has-kb'; }
       if (l.agg) cls += ' agg'; else if (!l.countable) cls += ' muted';
       if (settings.negRed && l.value < 0) cls += ' neg';
       if (settings.runningTotal && l.countable && l.running !== l.value) html = `<span class="rt">Σ ${escHtml(fmtNum(l.running))}</span>` + html;
@@ -1052,7 +1237,7 @@ function render(forcePaint) {
   }
   const digits = String(texts.length).length;
   document.documentElement.style.setProperty('--num-w', `calc(${Math.max(2, digits)} * 0.56em + ${settings.lineNumbers ? 14 : 0}px)`);
-  renderTotal(); updateActiveTabTotal();
+  renderTotal(); updateActiveTabTotal(); khScheduleCount();
   ED.placeholder = texts.length === 1 && !texts[0] ? 'Type here…  e.g.  Milk 2 × 28' : '';
 }
 function queueRender() { if (!renderQueued) { renderQueued = true; requestAnimationFrame(() => { if (renderQueued) render(); }); } }
@@ -1117,6 +1302,7 @@ ED.addEventListener('beforeinput', e => {
 });
 GUT.addEventListener('click', e => { const g = e.target.closest('.g'); if (g && settings.lineMenu) lineMenu(+g.dataset.i); });
 RES.addEventListener('click', e => {
+  const kb = e.target.closest('.kb-b'); if (kb) { e.stopPropagation(); khLineSheet(+kb.dataset.kb); return; }
   const r = e.target.closest('.r'); if (!r || !r.textContent || !settings.tapCopy) return;
   const l = state.calc && state.calc.lines[+r.dataset.i];
   const v = l && l.kind === 'num' ? rawNum(l.value) : r.textContent;
@@ -1295,7 +1481,7 @@ function saveNow(showToast = false) {
   if (!state.fileId) return saveChain;
   const id = state.fileId, now = new Date().toISOString();
   const cur = state.sheets[state.sheetIdx]; if (cur) { cur.text = ED.value; cur.total = state.total; }
-  const sheetsSnap = state.sheets.map(sh => ({ id: sh.id, name: sh.name, color: sh.color || '', rows: sh.text.split('\n').map((t, i) => ({ id: 'row_' + (i + 1), text: t })), totalSettings: JSON.parse(JSON.stringify(sh.total)) }));
+  const sheetsSnap = state.sheets.map(sh => ({ id: sh.id, name: sh.name, color: sh.color || '', rows: sh.text.split('\n').map((t, i) => ({ id: 'row_' + (i + 1), text: t })), totalSettings: JSON.parse(JSON.stringify(sh.total)), khata: sh.khata ? Object.assign({}, sh.khata) : undefined }));
   const activeSheet = state.sheetIdx, title = state.title, folder = state.folder;
   const multi = state.sheets.length > 1;
   const totalText = multi ? fmtNum(grandTotal()) : (state.calc && !state.calc.totalError ? totalString() : '');
@@ -1373,7 +1559,7 @@ async function moveFlow(id) {
   if (id === state.fileId) { state.folder = target; setTitle(state.title); await saveNow(); } else { const rec = await Store.get(id); if (rec) { rec.folder = target; await Store.set(id, rec); } await saveFileList(); }
   toast(target ? `Moved to ${folderName(target)}` : 'Moved out of folder');
 }
-async function duplicateFlow(id) { await flushSave(); const rec = await Store.get(id); if (!rec) return; closeSidebar(); await createFile((rec.title || 'Untitled') + ' (copy)', (rec.rows || []).map(r => r.text || ''), rec.totalSettings, rec.folder, Array.isArray(rec.sheets) ? rec.sheets.map(sh => Object.assign({}, sh, { id: newId('sh_') })) : null); toast('Duplicated ✓'); }
+async function duplicateFlow(id) { await flushSave(); const rec = await Store.get(id); if (!rec) return; closeSidebar(); await createFile((rec.title || 'Untitled') + ' (copy)', (rec.rows || []).map(r => r.text || ''), rec.totalSettings, rec.folder, Array.isArray(rec.sheets) ? rec.sheets.map(sh => Object.assign({}, sh, { id: newId('sh_') })) : null); for (const sh of state.sheets) sh.khata = Object.assign({}, khCfg(sh), { on: false }); scheduleSave(); render(true); toast(settings.khataOn ? 'Duplicated ✓ – khata is off in the copy (tab menu → Khata setting)' : 'Duplicated ✓'); }
 async function pinFlow(id) { const m = state.files.find(f => f.id === id); if (!m) return; m.pinned = !m.pinned; const rec = await Store.get(id); if (rec) { rec.pinned = m.pinned; await Store.set(id, rec); } await saveFileList(); toast(m.pinned ? 'Pinned 📌' : 'Unpinned'); }
 async function deleteFlow(id, { ask = true } = {}) {
   const m = state.files.find(f => f.id === id); if (!m) return;
@@ -1488,7 +1674,7 @@ $('#sortChips').addEventListener('click', e => { const c = e.target.closest('.ch
 const TAB_COLORS = { '': 'None', red: '#E53935', orange: '#FB8C00', yellow: '#FDD835', green: '#43A047', teal: '#00897B', blue: '#1E88E5', purple: '#8E24AA', pink: '#D81B60', grey: '#757575' };
 const sheetCache = new Map();
 function sheetsFromRecord(rec) {
-  const mk = (sh, i) => ({ id: String(sh.id || newId('sh_')), name: String(sh.name || 'Sheet ' + (i + 1)), color: sh.color || '', text: (Array.isArray(sh.rows) ? sh.rows : []).map(r => String((r && r.text) || '')).join('\n'), total: normTotal(sh.totalSettings) });
+  const mk = (sh, i) => ({ id: String(sh.id || newId('sh_')), name: String(sh.name || 'Sheet ' + (i + 1)), color: sh.color || '', text: (Array.isArray(sh.rows) ? sh.rows : []).map(r => String((r && r.text) || '')).join('\n'), total: normTotal(sh.totalSettings), khata: sh.khata && typeof sh.khata === 'object' ? Object.assign({}, sh.khata) : null });
   if (Array.isArray(rec.sheets) && rec.sheets.length) return rec.sheets.map(mk);
   return [mk({ id: 'sh_1', name: 'Sheet 1', rows: rec.rows || [], totalSettings: rec.totalSettings }, 0)];
 }
@@ -1598,9 +1784,9 @@ function moveSheet(from, to, scroll) {
 async function duplicateSheet(i = state.sheetIdx) {
   stashSheet(); const sh = state.sheets[i];
   trackCurrent();
-  const copy = { id: newId('sh_'), name: (sh.name + ' (copy)').slice(0, 40), color: sh.color, text: sh.text, total: JSON.parse(JSON.stringify(sh.total)) };
+  const copy = { id: newId('sh_'), name: (sh.name + ' (copy)').slice(0, 40), color: sh.color, text: sh.text, total: JSON.parse(JSON.stringify(sh.total)), khata: Object.assign({}, khCfg(sh), { on: false }) };
   state.sheets.splice(i + 1, 0, copy); state.sheetIdx = state.sheets.indexOf(curSheetObj());
-  await switchSheet(i + 1); scheduleSave(); toast('Tab duplicated ✓');
+  await switchSheet(i + 1); scheduleSave(); toast(settings.khataOn && khCfg(sh).on ? 'Tab duplicated ✓ – khata is off in the copy' : 'Tab duplicated ✓');
 }
 async function tabMenu(i = state.sheetIdx) {
   const sh = state.sheets[i]; if (!sh) return;
@@ -1613,6 +1799,7 @@ async function tabMenu(i = state.sheetIdx) {
     i > 0 ? { key: 'left', icon: '←', label: 'Move left' } : null,
     i < n - 1 ? { key: 'right', icon: '→', label: 'Move right' } : null,
     { key: 'image', icon: '🖼️', label: 'Share this tab as image' },
+    settings.khataOn ? { key: 'khata', icon: '📒', label: 'Khata setting of this tab', sub: (() => { const c = khCfg(sh); return c.on ? `${(khReason(c.reason) || {}).name || c.reason} · ${c.formula === 'x' ? 'total as it is' : c.formula}` : 'Off – lines do not go to the khata'; })() } : null,
     { key: 'all', icon: '▦', label: 'All tabs & grand total', sub: `${n} tab${n === 1 ? '' : 's'} · ${fmtNum(grandTotal())}` },
     n > 1 ? { key: 'del', icon: '🗑', label: 'Delete tab', danger: true } : null
   ]);
@@ -1626,6 +1813,7 @@ async function tabMenu(i = state.sheetIdx) {
   else if (key === 'new') { if (i !== state.sheetIdx) await switchSheet(i, { animate: false }); addSheet({ after: i }); }
   else if (key === 'left') moveSheet(i, i - 1);
   else if (key === 'right') moveSheet(i, i + 1);
+  else if (key === 'khata') { await khLoad(); khTabSettings(i); }
   else if (key === 'image') { if (i !== state.sheetIdx) await switchSheet(i, { animate: false }); shareImage(); }
   else if (key === 'all') openTabPicker();
   else if (key === 'del') deleteSheet(i);
@@ -1792,6 +1980,8 @@ const ACTIONS = {
   clear: { label: 'Clear all lines', icon: 'file', emoji: '🧹', run: () => { closeSidebar(); clearAll(); }, danger: true },
   newtab: { label: 'New tab', icon: 'add', emoji: '📑', run: () => { closeSidebar(); addSheet(); } },
   tabs: { label: 'All tabs', icon: 'toggles', emoji: '▦', run: () => { closeSidebar(); openTabPicker(); } },
+  khata: { label: 'Khata book', icon: 'book', emoji: '📒', run: () => openKhata() },
+  publish: { label: 'Publish to khata', icon: 'publish', emoji: '📤', run: () => { closeSidebar(); khPublishFlow(); } },
   update: { label: 'Check for update', icon: 'update', emoji: '⬆️', run: () => { closeSidebar(); Updater.check(false); } },
   help: { label: 'Help & examples', icon: 'help', emoji: '❓', run: () => openHelp() },
   more: { label: 'More…', icon: 'more', emoji: '⋮', run: () => moreMenu() }
@@ -2195,9 +2385,10 @@ async function downloadImage() { if (!imageBlob) return; await saveBlob(imageBlo
 async function exportBackup() {
   removeEmptyPendingDate(); await flushSave();
   const files = []; for (const m of state.files) { const r = await Store.get(m.id); if (r) files.push(Object.assign({}, r, { folder: m.folder, pinned: m.pinned })); }
-  const data = { app: 'CalcNote', edition: 'Freedom', version: 31, exportedAt: new Date().toISOString(), folders: state.folders, files };
+  await khLoad(); await khSaving;
+  const data = { app: 'CalcNote', edition: 'Freedom', version: 35, exportedAt: new Date().toISOString(), folders: state.folders, files, khata: KH.data };
   await saveBlob(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }), `CalcNoteFreedom_Backup_${new Date().toISOString().slice(0, 10)}.json`);
-  if (!Native.on) toast(`Backup exported (${files.length} file${files.length === 1 ? '' : 's'}) ✓`);
+  if (!Native.on) toast(`Backup exported (${files.length} file${files.length === 1 ? '' : 's'}, ${KH.data.parties.length} khata) ✓`);
 }
 function extractFiles(data) {
   const found = new Map();
@@ -2208,8 +2399,9 @@ function extractFiles(data) {
 }
 async function importBackupText(text) {
   let data; try { data = JSON.parse(text); } catch (e) { toast('That file is not a valid backup'); return 0; }
-  const incoming = extractFiles(data); if (!incoming.length) { toast('No files found in this backup'); return 0; }
-  const ok = await dialogConfirm({ title: 'Restore backup?', message: `${incoming.length} file${incoming.length === 1 ? '' : 's'} found. They will be added (nothing is overwritten).`, okText: 'Restore' });
+  const incoming = extractFiles(data); const kh = data && data.khata && typeof data.khata === 'object' ? data.khata : null;
+  if (!incoming.length && !kh) { toast('No files found in this backup'); return 0; }
+  const ok = await dialogConfirm({ title: 'Restore backup?', message: `${incoming.length} file${incoming.length === 1 ? '' : 's'}${kh ? ` and ${(kh.parties || []).length} khata` : ''} found. They will be added (nothing is overwritten).`, okText: 'Restore' });
   if (!ok) return 0;
   await flushSave();
   const folderMap = {};
@@ -2226,8 +2418,12 @@ async function importBackupText(text) {
     if (existing) { const cur = await Store.get(f.id); const sig = x => JSON.stringify([(x.rows || []).map(r => r.text), (x.sheets || []).map(sh => (sh.rows || []).map(r => r && (r.text ?? r)))]); if (cur && sig(cur) === sig(f)) { skipped++; continue; } }
     const rec = { id: existing ? newId() : f.id, title: String(f.title || '').slice(0, 120) + (existing ? ' (restored)' : ''), folder: folderMap[f.folder] || '', pinned: !!f.pinned, rows: rowsData, totalSettings: normTotal(f.totalSettings), createdAt: f.createdAt || new Date().toISOString(), updatedAt: f.updatedAt || new Date().toISOString() };
     if (Array.isArray(f.sheets) && f.sheets.length) {
-      rec.sheets = f.sheets.filter(sh => sh && Array.isArray(sh.rows)).slice(0, 200).map((sh, i) => ({ id: String(sh.id || newId('sh_')), name: String(sh.name || 'Sheet ' + (i + 1)).slice(0, 40), color: String(sh.color || ''), rows: sh.rows.map((r, j) => ({ id: 'row_' + (j + 1), text: String((r && (r.text ?? r)) || '').slice(0, 5000) })), totalSettings: normTotal(sh.totalSettings) }));
+      rec.sheets = f.sheets.filter(sh => sh && Array.isArray(sh.rows)).slice(0, 200).map((sh, i) => ({ id: String(sh.id || newId('sh_')), name: String(sh.name || 'Sheet ' + (i + 1)).slice(0, 40), color: String(sh.color || ''), rows: sh.rows.map((r, j) => ({ id: 'row_' + (j + 1), text: String((r && (r.text ?? r)) || '').slice(0, 5000) })), totalSettings: normTotal(sh.totalSettings), khata: sh.khata && typeof sh.khata === 'object' ? { on: sh.khata.on !== false, reason: String(sh.khata.reason || 'udhaar'), formula: String(sh.khata.formula || 'x').slice(0, 200), round: !!sh.khata.round } : undefined }));
       rec.activeSheet = Math.min(f.activeSheet | 0, rec.sheets.length - 1);
+    }
+    if (existing) {                                                   // a restored copy must not post the same khata entries again
+      if (!rec.sheets) rec.sheets = [{ id: 'sh_1', name: 'Sheet 1', color: '', rows: rowsData, totalSettings: rec.totalSettings }];
+      rec.sheets.forEach(sh => { sh.khata = Object.assign({ reason: 'udhaar', formula: 'x', round: false }, sh.khata || {}, { on: false }); });
     }
     const calc = Engine.run(rowsData.map(r => r.text), engineOpts({ total: rec.totalSettings }));
     await Store.set(rec.id, rec);
@@ -2235,7 +2431,8 @@ async function importBackupText(text) {
     added++;
   }
   await saveFileList();
-  toast(`Restored ${added} file${added === 1 ? '' : 's'}${skipped ? ` · ${skipped} already present` : ''} ✓`, 2800);
+  const kn = kh ? await khMergeBackup(kh) : 0;
+  toast(`Restored ${added} file${added === 1 ? '' : 's'}${kn ? ` · ${kn} khata` : ''}${skipped ? ` · ${skipped} already present` : ''} ✓`, 2800);
   return added;
 }
 $('#importInput').addEventListener('change', async e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return; if (f.size > 20 * 1024 * 1024) { toast('File is too large'); return; } importBackupText(await f.text()); });
@@ -2369,6 +2566,7 @@ const SETTINGS_PAGES = {
     { t: 'nav', page: 'share', icon: 'image', label: 'Share Settings', sub: 'Image columns, text size, table text' },
     { t: 'nav', page: 'features', icon: 'toggles', label: 'Features on / off', sub: 'Turn any feature on or off' },
     { t: 'nav', page: 'extensions', icon: 'puzzle', label: 'User extensions', sub: 'Your own functions, constants and CSS' },
+    { t: 'nav', page: 'khataset', icon: 'book', label: 'Khata book', sub: 'SMS / WhatsApp, message, reasons, shop name' },
     { t: 'nav', page: 'security', icon: 'shield', label: 'Security', sub: 'App lock with PIN' },
     { t: 'sep' }, { t: 'section', label: 'Backup/Restore Settings' },
     { t: 'nav', page: 'impexp', icon: 'import', label: 'Import/Export Settings', sub: 'Copy your setup to another phone' },
@@ -2536,8 +2734,12 @@ const pageStack = [];
 function openSettings(page = 'root') { closeSidebar(); if (document.activeElement === ED) ED.blur(); openPage(page); }
 function openPage(name) {
   const def = SETTINGS_PAGES[name]; if (!def) return;
-  const pg = el('section', { class: 'page', 'data-page': name, 'aria-label': def.title },
-    el('div', { class: 'page-header' }, el('button', { class: 'icon-btn', 'aria-label': 'Back', html: svg('back'), onclick: () => Overlays.remove('page:' + name) }), el('div', { class: 'page-title', text: def.title })),
+  if (pageStack.includes(name)) { const ex = $(`#pages .page[data-page="${name}"]`); if (ex) { renderPage(ex, name); return; } }
+  const title = typeof def.title === 'function' ? def.title() : def.title;
+  const acts = typeof def.actions === 'function' ? def.actions() : [];
+  const pg = el('section', { class: 'page' + (def.cls ? ' ' + def.cls : ''), 'data-page': name, 'aria-label': title },
+    el('div', { class: 'page-header' }, el('button', { class: 'icon-btn', 'aria-label': 'Back', html: svg('back'), onclick: () => Overlays.remove('page:' + name) }), el('div', { class: 'page-title', text: title }),
+      ...acts.map(a => el('button', { class: 'page-act', 'aria-label': a.label, title: a.label, html: a.icon ? svg(a.icon) : '', text: a.icon ? undefined : a.text, onclick: a.run }))),
     el('div', { class: 'page-body' }));
   $('#pages').append(pg); renderPage(pg, name);
   requestAnimationFrame(() => requestAnimationFrame(() => pg.classList.add('open')));
@@ -2547,7 +2749,7 @@ function openPage(name) {
 function closeAllPages() { [...pageStack].reverse().forEach(n => Overlays.remove('page:' + n)); }
 function refreshOpenPage() { $$('#pages .page').forEach(pg => renderPage(pg, pg.dataset.page, true)); }
 function pIcon(icon) { return ICON[icon] ? el('span', { class: 'p-ic', html: svg(icon) }) : el('span', { class: 'p-ic', text: icon || '' }); }
-function renderPage(pg, name, keepScroll) { const body = pg.querySelector('.page-body'); const scroll = body.scrollTop; body.replaceChildren(...SETTINGS_PAGES[name].items.filter(it => !it.when || it.when()).map(renderItem).filter(Boolean)); if (keepScroll) body.scrollTop = scroll; }
+function renderPage(pg, name, keepScroll) { const body = pg.querySelector('.page-body'); const scroll = body.scrollTop; const def = SETTINGS_PAGES[name]; if (def.render) { try { def.render(body, pg); } catch (e) { console.error(e); body.replaceChildren(el('div', { class: 'p-note', text: 'Something went wrong: ' + e.message })); } if (keepScroll) body.scrollTop = scroll; return; } body.replaceChildren(...SETTINGS_PAGES[name].items.filter(it => !it.when || it.when()).map(renderItem).filter(Boolean)); if (keepScroll) body.scrollTop = scroll; }
 function renderItem(it) {
   const sub = typeof it.sub === 'function' ? it.sub() : it.sub;
   const txt = () => el('span', { class: 'p-txt' }, it.label, sub ? el('span', { class: 'p-sub', text: sub }) : null);
@@ -2558,6 +2760,11 @@ function renderItem(it) {
     case 'nav': return el('button', { class: 'p-item', 'data-nav': it.page, onclick: () => openPage(it.page) }, pIcon(it.icon), txt());
     case 'action': return el('button', { class: 'p-item', onclick: it.run }, pIcon(it.icon), txt());
     case 'info': return el('div', { class: 'p-item' }, pIcon(it.icon), txt());
+    case 'text': {
+      const input = el('input', { type: 'text', class: 'p-input', placeholder: it.placeholder || '', autocomplete: 'off', 'data-key': it.key }); input.value = settings[it.key] || '';
+      let t; input.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => setSetting(it.key, input.value.trim()), 300); });
+      return el('div', { class: 'p-item col', style: 'cursor:default' }, el('div', { class: 'p-row' }, pIcon(it.icon), txt()), input);
+    }
     case 'switch': {
       const input = el('input', { type: 'checkbox', 'data-key': it.key }); input.checked = !!settings[it.key];
       input.addEventListener('change', () => { setSetting(it.key, input.checked); if (['keepAwake', 'keypadEnabled'].includes(it.key)) refreshOpenPage(); });
@@ -2614,7 +2821,7 @@ function listEditor({ all, key, max, label, sub, icon }) {
 }
 async function resetSettings() {
   const ok = await dialogConfirm({ title: 'Reset all settings?', message: 'Theme, keypad, toolbar, extensions etc. go back to default. Files and app lock are kept.', okText: 'Reset', danger: true }); if (!ok) return;
-  const keep = { lock: settings.lock, pinHash: settings.pinHash, pinSalt: settings.pinSalt, _v: 33 };
+  const keep = { lock: settings.lock, pinHash: settings.pinHash, pinSalt: settings.pinSalt, _v: 34 };
   Object.keys(settings).forEach(k => delete settings[k]); Object.assign(settings, JSON.parse(JSON.stringify(DEFAULTS)), keep);
   persistSettings(); fmtCache.clear(); applySettings(); render(true); refreshOpenPage(); toast('Settings reset ✓');
 }
@@ -2625,6 +2832,1065 @@ async function shareApp() {
   const ok = await copyText(text); toast(ok ? 'Link copied ✓' : 'Could not copy');
 }
 function openLink(url) { const a = el('a', { href: url, target: '_blank', rel: 'noopener' }); document.body.append(a); a.click(); a.remove(); }
+
+/* =====================================================================
+   KHATA BOOK – party accounts that fill themselves from the notes.
+   A line like "gopi 12+7" (in a tab with khata on) becomes a DRAFT entry
+   for Gopi's khata. Nothing is posted or sent until "Publish" is pressed;
+   then the changes since the last publish go into the khata and the
+   messages (SMS / WhatsApp) are sent.
+   Sign rule (like Khatabook): balance > 0 → you will GET (red),
+   balance < 0 → you have to GIVE (green).
+   ===================================================================== */
+const KH_DEFAULT_REASONS = [
+  { id: 'udhaar', name: 'Udhaar', effect: 'gave', color: 'red' },
+  { id: 'jama', name: 'Jama', effect: 'got', color: 'green' },
+  { id: 'nagad', name: 'Nagad', effect: 'none', color: 'blue' },
+  { id: 'cashsale', name: 'Cash sale', effect: 'none', color: 'teal' },
+  { id: 'kharcha', name: 'Kharcha', effect: 'none', color: 'orange' }
+];
+const KH_COLORS = { red: '#C62828', green: '#1B7F4B', blue: '#1565C0', teal: '#00796B', orange: '#E65100', purple: '#6A1B9A', pink: '#AD1457', grey: '#616161', brown: '#6D4C41' };
+const KH_EFFECTS = { gave: 'Baaki badhe (aapne diye)', got: 'Baaki ghate (aapko mile)', none: 'Sirf record (baaki par asar nahi)' };
+const KH_LANG = {
+  hinglish: {
+    tpl: 'Namaste {naam} ji,\n{entries}\n{baaki}\n– {dukaan}',
+    get: 'Aapka baaki: {amt}', give: 'Humein aapko dene hain: {amt}', clear: 'Hisaab barabar ✓',
+    changed: 'badla', removed: 'cancel', remind: 'Namaste {naam} ji,\n{baaki}\nKripya jaldi jama karein 🙏\n– {dukaan}'
+  },
+  hindi: {
+    tpl: 'नमस्ते {naam} जी,\n{entries}\n{baaki}\n– {dukaan}',
+    get: 'आपका बाकी: {amt}', give: 'हमें आपको देने हैं: {amt}', clear: 'हिसाब बराबर ✓',
+    changed: 'बदला', removed: 'रद्द', remind: 'नमस्ते {naam} जी,\n{baaki}\nकृपया जल्द जमा करें 🙏\n– {dukaan}'
+  },
+  english: {
+    tpl: 'Hello {naam},\n{entries}\n{baaki}\n– {dukaan}',
+    get: 'Your balance: {amt}', give: 'We owe you: {amt}', clear: 'All settled ✓',
+    changed: 'changed', removed: 'cancelled', remind: 'Hello {naam},\n{baaki}\nPlease pay at the earliest 🙏\n– {dukaan}'
+  }
+};
+
+const KH = { data: null, loading: null, ver: 0, maps: null, mapsVer: -1, calcCache: new Map(), last: null, countT: null };
+
+/* ---------------- storage ---------------- */
+function khNormalize(d) {
+  d = d && typeof d === 'object' ? d : {};
+  const reasons = Array.isArray(d.reasons) && d.reasons.length ? d.reasons.filter(r => r && r.id && r.name) : [];
+  return {
+    v: 1,
+    parties: Array.isArray(d.parties) ? d.parties.filter(p => p && p.id && p.name) : [],
+    entries: Array.isArray(d.entries) ? d.entries.filter(e => e && e.id && e.partyId) : [],
+    reasons: reasons.length ? reasons : JSON.parse(JSON.stringify(KH_DEFAULT_REASONS)),
+    ignore: Array.isArray(d.ignore) ? d.ignore.filter(Boolean) : [],
+    pub: d.pub && typeof d.pub === 'object' ? d.pub : {}
+  };
+}
+function khLoad() {
+  if (KH.data) return Promise.resolve(KH.data);
+  if (!KH.loading) KH.loading = Store.get('khata').then(d => { KH.data = khNormalize(d); KH.ver++; return KH.data; }).catch(() => { KH.data = khNormalize(null); return KH.data; });
+  return KH.loading;
+}
+let khSaving = Promise.resolve();
+function khSave() {
+  KH.ver++;
+  const snap = KH.data;
+  khSaving = khSaving.then(() => Store.set('khata', snap)).catch(e => { console.error(e); toast('Khata save nahi hua – dobara koshish karein'); });
+  khAfterChange();
+  return khSaving;
+}
+function khAfterChange() { if (typeof render === 'function' && state.fileId) queueRender(); khScheduleCount(); refreshKhataPages(); }
+function refreshKhataPages() { $$('#pages .page.kpage').forEach(pg => renderPage(pg, pg.dataset.page, true)); }
+
+/* ---------------- small helpers ---------------- */
+const khRound = v => Math.round((+v + Number.EPSILON) * 100) / 100;
+const khMoney = v => '₹' + fmtNum(khRound(Math.abs(v)));
+const khNorm = s => String(s || '').toLowerCase().normalize('NFKC').replace(/[^\p{L}\p{M}\p{N}]+/gu, ' ').trim();
+const khToday = () => { const d = new Date(); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; };
+const khISODay = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+const khDate = iso => { const [y, m, d] = String(iso || '').split('-').map(Number); return y ? new Date(y, (m || 1) - 1, d || 1) : new Date(); };
+const khShortDate = iso => { const d = khDate(iso); return `${pad2(d.getDate())} ${MONTHS[d.getMonth()]}`; };
+const khLongDate = iso => { const d = khDate(iso); return `${pad2(d.getDate())} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`; };
+function khDayHead(iso) {
+  const t = khToday(); const y = new Date(); y.setDate(y.getDate() - 1);
+  return khLongDate(iso) + (iso === t ? ' · Aaj' : iso === khISODay(y) ? ' · Kal' : '');
+}
+function khAgo(iso) {
+  if (!iso) return '';
+  const s = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (s < 60) return 'abhi';
+  if (s < 3600) return Math.floor(s / 60) + ' min pehle';
+  if (s < 86400) return Math.floor(s / 3600) + ' ghante pehle';
+  if (s < 86400 * 30) return Math.floor(s / 86400) + ' din pehle';
+  return khLongDate(String(iso).slice(0, 10));
+}
+const khTime = iso => { if (!iso) return ''; const d = new Date(iso); let h = d.getHours(); const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return `${h}:${pad2(d.getMinutes())} ${ap}`; };
+function khInitials(name) { const w = String(name || '?').trim().split(/\s+/).filter(Boolean); return ((w[0] || '?')[0] + (w.length > 1 ? w[w.length - 1][0] : '')).toUpperCase(); }
+function khPhone(p) {                                             // for WhatsApp: country code, digits only
+  let d = String(p || '').replace(/\D/g, '');
+  if (d.length === 11 && d[0] === '0') d = d.slice(1);
+  if (d.length === 10) d = '91' + d;
+  return d;
+}
+const khHasPhone = p => String(p || '').replace(/\D/g, '').length >= 10;
+function khLev(a, b) {                                            // edit distance, small strings only
+  if (Math.abs(a.length - b.length) > 2) return 9;
+  const prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    let diag = prev[0]; prev[0] = i;
+    for (let j = 1; j <= b.length; j++) { const tmp = prev[j]; prev[j] = Math.min(prev[j] + 1, prev[j - 1] + 1, diag + (a[i - 1] === b[j - 1] ? 0 : 1)); diag = tmp; }
+  }
+  return prev[b.length];
+}
+
+/* ---------------- parties & entries ---------------- */
+function khMaps() {
+  if (KH.maps && KH.mapsVer === KH.ver) return KH.maps;
+  const D = KH.data || khNormalize(null);
+  const names = new Map(), byId = new Map(), bal = new Map(), byFile = new Map(), last = new Map(), reasons = new Map();
+  for (const r of D.reasons) reasons.set(r.id, r);
+  for (const p of D.parties) {
+    byId.set(p.id, p); bal.set(p.id, khRound(+p.opening || 0)); last.set(p.id, p.updatedAt || p.createdAt || '');
+    for (const n of [p.name, ...(p.aliases || [])]) { const k = khNorm(n); if (k && !names.has(k)) names.set(k, p); }
+  }
+  for (const e of D.entries) {
+    if (e.deleted) continue;
+    if (e.effect === 'gave') bal.set(e.partyId, khRound((bal.get(e.partyId) || 0) + e.amount));
+    else if (e.effect === 'got') bal.set(e.partyId, khRound((bal.get(e.partyId) || 0) - e.amount));
+    const t = e.updatedAt || e.createdAt || ''; if (t > (last.get(e.partyId) || '')) last.set(e.partyId, t);
+    if (e.src && e.src.fileId) { let a = byFile.get(e.src.fileId); if (!a) byFile.set(e.src.fileId, a = []); a.push(e); }
+  }
+  KH.maps = { names, byId, bal, byFile, last, reasons }; KH.mapsVer = KH.ver;
+  return KH.maps;
+}
+const khParty = id => khMaps().byId.get(id) || null;
+const khBalance = id => khMaps().bal.get(id) || 0;
+const khReason = id => khMaps().reasons.get(id) || null;
+function khReasonOf(e) { const r = khReason(e.reason); return { name: r ? r.name : (e.reasonName || 'Entry'), color: KH_COLORS[(r && r.color) || ''] || '#616161' }; }
+function khResolve(name) {
+  const k = khNorm(name); if (!k) return null;
+  const m = khMaps().names; const hit = m.get(k); if (hit) return hit;
+  const w = k.split(' ');                                         // "gopi paid in cash" → gopi
+  for (let n = w.length - 1; n >= 1; n--) { const p = m.get(w.slice(0, n).join(' ')); if (p) return p; }
+  return null;
+}
+function khIgnored(name) { const k = khNorm(name); if (!k) return false; const ig = KH.data ? KH.data.ignore : []; if (ig.includes(k)) return true; const w = k.split(' '); return w.length > 1 && !khResolve(name) && ig.includes(w[0]); }
+function khSuggest(name, max = 4) {
+  const k = khNorm(name); if (!k) return [];
+  const out = [];
+  for (const p of (KH.data ? KH.data.parties : [])) {
+    let best = 9;
+    for (const n of [p.name, ...(p.aliases || [])]) {
+      const m = khNorm(n); if (!m) continue;
+      let s = khLev(k, m);
+      if (s > 2 && k.length >= 3 && (m.startsWith(k) || k.startsWith(m) || m.split(' ').includes(k) || k.split(' ').includes(m))) s = 2;
+      best = Math.min(best, s);
+    }
+    if (best <= (k.length <= 3 ? 1 : 2)) out.push([best, p]);
+  }
+  return out.sort((a, b) => a[0] - b[0]).slice(0, max).map(x => x[1]);
+}
+function khPartyEntries(pid) { return (KH.data ? KH.data.entries : []).filter(e => e.partyId === pid && !e.deleted).sort((a, b) => (a.date + (a.createdAt || '')).localeCompare(b.date + (b.createdAt || ''))); }
+function khWithRunning(list, pid) {                               // oldest → newest, with balance after each entry
+  const p = khParty(pid); let run = khRound(p ? +p.opening || 0 : 0);
+  return list.map(e => { if (e.effect === 'gave') run = khRound(run + e.amount); else if (e.effect === 'got') run = khRound(run - e.amount); return { e, run }; });
+}
+function khNameTaken(names, exceptId) {
+  for (const n of names) { const k = khNorm(n); if (!k) continue; const p = khMaps().names.get(k); if (p && p.id !== exceptId) return { name: n, party: p }; }
+  return null;
+}
+async function khUpsertParty(data, id) {
+  await khLoad();
+  const now = new Date().toISOString();
+  if (id) {
+    const p = khParty(id); if (!p) return null;
+    if (data.name && khNorm(data.name) !== khNorm(p.name)) {               // renamed: the old name keeps working in the notes
+      const al = (data.aliases || p.aliases || []).slice(); if (!al.some(a => khNorm(a) === khNorm(p.name))) al.push(p.name); data.aliases = al;
+    }
+    Object.assign(p, data, { updatedAt: now }); await khSave(); return p;
+  }
+  const p = Object.assign({ id: newId('kp_'), name: '', phone: '', type: 'customer', aliases: [], opening: 0, channel: '', note: '', createdAt: now, updatedAt: now }, data);
+  KH.data.parties.push(p);
+  // a new khata name is no longer "ignored"
+  const keys = [p.name, ...(p.aliases || [])].map(khNorm); KH.data.ignore = KH.data.ignore.filter(k => !keys.includes(k));
+  await khSave(); return p;
+}
+
+/* ---------------- tab settings & formula ---------------- */
+function khCfg(sh) { return Object.assign({ on: true, reason: settings.khataReason || 'udhaar', formula: 'x', round: false }, (sh && sh.khata) || {}); }
+const khFormulaCache = new Map();
+function khApplyFormula(formula, x) {
+  const f = String(formula || '').trim();
+  if (!f || f === 'x') return x;
+  let c = khFormulaCache.get(f);
+  if (c === undefined) {
+    try { c = math.compile(f.replace(/[×✕]/g, '*').replace(/÷/g, '/').replace(/[−–]/g, '-').replace(/(\d),(?=\d{2,3}\b)/g, '$1')); } catch (e) { c = null; }
+    if (khFormulaCache.size > 200) khFormulaCache.clear(); khFormulaCache.set(f, c);
+  }
+  if (!c) return NaN;
+  try { const v = c.evaluate({ x, value: x, X: x }); return typeof v === 'number' ? v : (v && typeof v.toNumber === 'function' ? v.toNumber() : NaN); } catch (e) { return NaN; }
+}
+function khFormulaOk(formula) { const v = khApplyFormula(formula, 7); return Number.isFinite(v); }
+function khTag(raw) { const m = String(raw || '').replace(/(^|\s)\/\/.*$/, '').match(/(?:^|\s)#([^\s#\d][^\s#]*)/); return m ? m[1] : ''; }
+function khFindReason(tag) {
+  const t = khNorm(tag); if (!t) return null;
+  const rs = KH.data ? KH.data.reasons : [];
+  return rs.find(r => r.id === t || khNorm(r.name) === t) || rs.find(r => khNorm(r.name).replace(/ /g, '').startsWith(t.replace(/ /g, ''))) || null;
+}
+
+/* ---------------- reading the notes ---------------- */
+function khCalc(text) {
+  const key = text + '\u0000' + settings.angle + settings.extensions + settings.labelVars + settings.excludeAssign + settings.sumKeyword + settings.units + settings.xMultiply + settings.currency;
+  let r = KH.calcCache.get(key);
+  if (r) { KH.calcCache.delete(key); KH.calcCache.set(key, r); return r; }      // most recently used goes last
+  r = Engine.run(text.split('\n'), engineOpts());
+  KH.calcCache.set(key, r); while (KH.calcCache.size > 400) KH.calcCache.delete(KH.calcCache.keys().next().value);
+  return r;
+}
+function khFallbackDate() { const f = state.files.find(x => x.id === state.fileId); return f && f.createdAt ? khISODay(new Date(f.createdAt)) : khToday(); }
+/* every entry line of one tab → item (or null) */
+function khSheetItems(sh, texts, calc) {
+  if (!sh.khata) sh.khata = { on: true, reason: settings.khataReason || 'udhaar', formula: 'x', round: false };   // fixed once, so later default changes never rewrite old tabs
+  const cfg = khCfg(sh); if (!cfg.on) return [];
+  const fallback = khFallbackDate(); let date = fallback;
+  const out = [];
+  texts.forEach((raw, i) => {
+    const l = calc.lines[i]; if (!l) return;
+    if (l.kind === 'date') { const d = parseDateLine(raw); date = d ? khISODay(d) : fallback; return; }
+    if (l.kind !== 'num' || l.agg || l.assign || !l.label) return;
+    const label = l.label.trim(); if (!label || /^(line|row)\d+$/i.test(label)) return;
+    const it = { i, sheetId: sh.id, sheetName: sh.name, label, key: khNorm(label), raw: String(raw).trim(), x: l.value, date };
+    if (!it.key) return;
+    if (khIgnored(label)) { it.ignored = true; out.push(it); return; }
+    const tag = khTag(raw); let reason = tag ? khFindReason(tag) : null;
+    if (tag && !reason) it.err = `#${tag} naam ka reason nahi mila`;
+    if (!reason) reason = khReason(cfg.reason) || (KH.data && KH.data.reasons[0]) || KH_DEFAULT_REASONS[0];
+    let v = khApplyFormula(cfg.formula, l.value);
+    if (!Number.isFinite(v)) { it.err = it.err || 'Tab ka formula galat hai'; v = 0; }
+    if (cfg.round) v = Math.round(v);
+    let effect = reason.effect;
+    let flip = false;
+    if (v < 0) { v = -v; flip = true; effect = effect === 'gave' ? 'got' : effect === 'got' ? 'gave' : 'none'; }
+    Object.assign(it, { amount: khRound(v), effect, flip, reason: reason.id, reasonName: reason.name, formula: cfg.formula });
+    const p = khResolve(label); if (p) it.party = p; else it.unknown = true;
+    if (it.amount === 0 && !it.err) it.zero = true;
+    out.push(it);
+  });
+  return out;
+}
+/* compare the tab's lines with what was published from it before */
+function khDiffSheet(fileId, sheetId, items) {
+  const published = (khMaps().byFile.get(fileId) || []).filter(e => e.src.sheetId === sheetId).sort((a, b) => (a.src.pos || 0) - (b.src.pos || 0) || (a.createdAt || '').localeCompare(b.createdAt || ''));
+  const live = items.filter(it => it.party && !it.err && !it.zero && !it.ignored);
+  const same = (it, e) => Math.abs(it.amount - e.amount) < 0.005 && it.reason === e.reason && !!it.flip === !!e.flip;
+  const group = (arr, keyFn) => { const m = new Map(); for (const x of arr) { const k = keyFn(x); let a = m.get(k); if (!a) m.set(k, a = []); a.push(x); } return m; };
+  const pairs = [], adds = [], removes = [];
+  const pubG = group(published, e => e.partyId + '|' + e.date), liveG = group(live, it => it.party.id + '|' + it.date);
+  const leftPub = [], leftLive = [];
+  for (const [k, its] of liveG) {
+    const pubs = (pubG.get(k) || []).slice(); pubG.delete(k);
+    const rest = [];
+    for (const it of its) { const j = pubs.findIndex(e => same(it, e)); if (j >= 0) { pairs.push([it, pubs[j]]); pubs.splice(j, 1); } else rest.push(it); }
+    while (rest.length && pubs.length) pairs.push([rest.shift(), pubs.shift()]);
+    leftLive.push(...rest); leftPub.push(...pubs);
+  }
+  for (const pubs of pubG.values()) leftPub.push(...pubs);
+  // same person, different date (the date line was changed) → a change, not cancel + new
+  for (const it of leftLive) {
+    let j = leftPub.findIndex(e => e.partyId === it.party.id && same(it, e));
+    if (j < 0) j = leftPub.findIndex(e => e.partyId === it.party.id);
+    if (j >= 0) { pairs.push([it, leftPub[j]]); leftPub.splice(j, 1); } else adds.push(it);
+  }
+  // a line that still exists but has a typo (#tag, formula) or a name that no longer matches keeps its entry as it is
+  const held = items.filter(it => !it.zero && !it.ignored && (it.err || it.unknown) && it.raw);
+  for (const e of leftPub) {
+    const j = held.findIndex(h => (h.party && h.party.id === e.partyId) || (e.src && (khNorm(h.raw) === khNorm(e.src.line) || (h.i === e.src.pos && Math.abs((h.amount || 0) - e.amount) < 0.005))));
+    if (j >= 0) { held[j].held = e; held.splice(j, 1); } else removes.push(e);
+  }
+  const changes = [];
+  for (const [it, e] of pairs) {
+    it.entry = e;
+    if (same(it, e) && it.date === e.date) it.status = 'ok';
+    else { it.status = 'changed'; changes.push([it, e]); }
+  }
+  for (const it of adds) it.status = 'new';
+  return { adds, changes, removes, items };
+}
+function khEnabled() { return !!(settings.khataOn && KH.data); }
+/* the small mark shown before each answer: ✓ in khata, ↑ to publish, ✎ changed, ⚠ new name */
+function khLineMarks(calc, texts) {
+  KH.last = null;
+  if (!khEnabled() || !settings.khataMarks || !state.fileId) return null;
+  const sh = state.sheets[state.sheetIdx]; if (!sh || !khCfg(sh).on) return null;
+  const items = khSheetItems(sh, texts, calc);
+  khDiffSheet(state.fileId, sh.id, items);
+  KH.last = { sheetId: sh.id, items };
+  const marks = [];
+  for (const it of items) {
+    let c, t;
+    if (it.ignored) continue;
+    if (it.err) { c = 'err'; t = '!'; }
+    else if (it.unknown) { c = 'unk'; t = '⚠'; }
+    else if (it.zero) { c = 'zero'; t = '·'; }
+    else if (it.status === 'ok') { c = 'ok'; t = '✓'; }
+    else if (it.status === 'changed') { c = 'chg'; t = '✎'; }
+    else { c = 'new'; t = '↑'; }
+    marks[it.i] = `<span class="kb-b ${c}" data-kb="${it.i}">${t}</span>`;
+  }
+  return marks;
+}
+/* all tabs of the open file → publish plan */
+function khPlan() {
+  const fileId = state.fileId; const cur = state.sheets[state.sheetIdx]; if (cur) { cur.text = ED.value; cur.total = state.total; }
+  const plan = { fileId, adds: [], changes: [], removes: [], unknown: [], errors: [], sheets: 0 };
+  const liveSheetIds = new Set();
+  state.sheets.forEach(sh => {
+    liveSheetIds.add(sh.id);
+    const texts = sh.text.split('\n'); const calc = sh === cur ? state.calc : khCalc(sh.text);
+    if (!calc) return;
+    const items = khSheetItems(sh, texts, calc);
+    const cfg = khCfg(sh);
+    if (!cfg.on) { (khMaps().byFile.get(fileId) || []).filter(e => e.src.sheetId === sh.id).forEach(e => plan.removes.push(e)); return; }
+    plan.sheets++;
+    const d = khDiffSheet(fileId, sh.id, items);
+    plan.adds.push(...d.adds); plan.changes.push(...d.changes); plan.removes.push(...d.removes);
+    for (const it of items) { if (it.err && !it.ignored) plan.errors.push(it); else if (it.unknown && !it.zero) plan.unknown.push(it); }
+  });
+  // tabs that were deleted: their published entries are cancelled too
+  (khMaps().byFile.get(fileId) || []).forEach(e => { if (!liveSheetIds.has(e.src.sheetId)) plan.removes.push(e); });
+  plan.count = plan.adds.length + plan.changes.length + plan.removes.length;
+  return plan;
+}
+function khScheduleCount() { clearTimeout(KH.countT); KH.countT = setTimeout(khUpdateCount, 350); }
+function khUpdateCount() {
+  const b = $('#tb-publish'); if (!b) return;
+  let n = 0, warn = 0;
+  if (khEnabled() && state.fileId && state.calc) { try { const p = khPlan(); n = p.count; warn = p.unknown.length + p.errors.length; } catch (e) { console.error(e); } }
+  let badge = b.querySelector('.tb-count');
+  if (!n && !warn) { if (badge) badge.remove(); b.classList.remove('has-count'); return; }
+  if (!badge) { badge = el('span', { class: 'tb-count' }); b.append(badge); }
+  badge.textContent = n ? String(n > 99 ? '99+' : n) : '!'; badge.classList.toggle('warn', !n && !!warn);
+  b.classList.add('has-count');
+}
+
+/* ---------------- messages ---------------- */
+const khWords = () => KH_LANG[settings.khataLang] || KH_LANG.hinglish;
+function khBalanceLine(bal) { const w = khWords(); return Math.abs(bal) < 0.5 ? w.clear : (bal > 0 ? w.get : w.give).replace('{amt}', khMoney(bal)); }
+function khEntryLine(x) {
+  const w = khWords(); const head = `${khShortDate(x.date)} · ${x.reasonName}: ${x.flip ? '−' : ''}`;
+  if (x.kind === 'change') {
+    const d = x.oldDate && x.oldDate !== x.date ? `${khShortDate(x.oldDate)} ➜ ${khShortDate(x.date)}` : khShortDate(x.date);
+    const r = x.oldReason && x.oldReason !== x.reasonName ? `${x.oldReason} ➜ ${x.reasonName}` : x.reasonName;
+    const a = Math.abs((x.old || 0) - x.amount) >= 0.005 ? `${khMoney(x.old)} ➜ ${khMoney(x.amount)}` : khMoney(x.amount);
+    return `${d} · ${r}: ${a} (${w.changed})`;
+  }
+  if (x.kind === 'remove') return head + `${khMoney(x.amount)} (${w.removed})`;
+  return head + khMoney(x.amount);
+}
+function khFill(tpl, vars) {
+  let t = String(tpl || '').replace(/\{(naam|name|entries|baaki|dukaan|shop|phone|date)\}/g, (m, k) => {
+    const v = { name: vars.naam, shop: vars.dukaan }[k] ?? vars[k]; return v == null ? '' : String(v);
+  });
+  if (!vars.dukaan) t = t.split('\n').filter(l => !/^\s*[–-]?\s*$/.test(l)).join('\n');
+  return t.replace(/\n{3,}/g, '\n\n').trim();
+}
+function khMessage(party, lines) {
+  return khFill(settings.khataMsg || khWords().tpl, { naam: party.name, entries: lines.map(khEntryLine).join('\n'), baaki: khBalanceLine(khBalance(party.id)), dukaan: settings.khataShop, phone: settings.khataShopPhone, date: khShortDate(khToday()) });
+}
+function khReminder(party) { return khFill(khWords().remind, { naam: party.name, baaki: khBalanceLine(khBalance(party.id)), dukaan: settings.khataShop, phone: settings.khataShopPhone }); }
+const khDupKey = (name, date, amount) => `${khNorm(name)}|${date}|${khRound(amount)}`;
+const khChannel = p => (p && p.channel) || settings.khataChannel || 'wa';
+
+/* ---------------- sending (SMS straight from the SIM, WhatsApp with one tap) ---------------- */
+function khPlugin() { return Native.on ? Native.p('KhataSender') : null; }
+const khNotImpl = e => /not implemented|UNIMPLEMENTED|not available/i.test(String((e && (e.code || '')) + ' ' + (e && e.message || '')));
+const khSmsAsk = { denied: false };
+async function khSms(phone, text) {
+  const ks = khPlugin(); const digits = String(phone || '').replace(/[^\d+]/g, '');
+  if (ks && !khSmsAsk.denied) {
+    try {
+      const info = await ks.apps();
+      if (!info.smsPermission) {
+        const r = await ks.requestSms();
+        if (!r || !r.granted) { khSmsAsk.denied = true; setTimeout(() => { khSmsAsk.denied = false; }, 60000); toast('SMS permission nahi mili – SMS app khol rahe hain'); openLink('sms:' + digits + '?body=' + encodeURIComponent(text)); return { ok: true, opened: true }; }
+      }
+      const r = await ks.sendSms({ phone: digits, text });
+      return r && r.ok === false ? { ok: false, why: 'SMS nahi gaya (balance / network check karein)' } : { ok: true };
+    } catch (e) { if (!khNotImpl(e)) return { ok: false, why: (e && e.message) || 'SMS nahi gaya' }; }
+  }
+  openLink('sms:' + digits + '?body=' + encodeURIComponent(text)); return { ok: true, opened: true };
+}
+async function khWa(phone, text) {
+  const ks = khPlugin(); const pkg = settings.khataWaApp === 'biz' ? 'com.whatsapp.w4b' : settings.khataWaApp === 'wa' ? 'com.whatsapp' : '';
+  if (ks) {
+    try { await ks.whatsapp({ phone: khPhone(phone), text, pkg }); return { ok: true, opened: true }; }
+    catch (e) { if (!khNotImpl(e)) return { ok: false, why: (e && e.message) || 'WhatsApp nahi khula' }; }
+  }
+  openLink('https://wa.me/' + khPhone(phone) + '?text=' + encodeURIComponent(text)); return { ok: true, opened: true };
+}
+function khLogMsg(ids, ch, ok) {
+  const at = new Date().toISOString(); const set = new Set(ids);
+  for (const e of KH.data.entries) if (set.has(e.id)) { (e.msgs = e.msgs || []).push({ at, ch, ok }); if (e.msgs.length > 20) e.msgs.splice(0, e.msgs.length - 20); }
+}
+/* sends a list of jobs: SMS go by themselves (phone app), WhatsApp opens one chat per tap */
+function khSendJobs(jobs, title = '📨 Messages', auto = false) {
+  if (!jobs.length) return;
+  const list = el('div', { class: 'kq-list' });
+  const autoSms = !!khPlugin();
+  const row = j => {
+    const st = j.status === 'sent' ? '✓ Gaya' : j.status === 'opened' ? '✓ Khula' : j.status === 'fail' ? '✗ ' + (j.why || 'Fail') : j.status === 'busy' ? '…' : '';
+    return el('div', { class: 'kq-row ' + (j.status || '') },
+      el('span', { class: 'kq-ch', text: j.ch === 'sms' ? '✉️' : '💬' }),
+      el('div', { class: 'kq-main' }, el('b', { text: j.party.name }), el('span', { text: (j.ch === 'sms' ? 'SMS' : 'WhatsApp') + ' · ' + (j.party.phone || '') })),
+      st ? el('span', { class: 'kq-st', text: st }) : null,
+      el('button', { class: 'kq-btn', text: j.status === 'sent' || j.status === 'opened' ? 'Dobara' : 'Bhejo', disabled: j.status === 'busy', onclick: () => go(j) }));
+  };
+  const draw = () => { list.replaceChildren(...jobs.map(row)); const n = jobs.filter(j => !j.status || j.status === 'fail').length; nextBtn.textContent = n ? `▶ Agla bhejo (${n} baaki)` : '✓ Sab ho gaya'; nextBtn.className = 'btn ' + (n ? 'ok' : 'cancel'); };
+  let waiting = null;
+  const go = async j => {
+    if (j.status === 'busy') return;
+    j.status = 'busy'; draw();
+    const r = j.ch === 'sms' ? await khSms(j.party.phone, j.text) : await khWa(j.party.phone, j.text);
+    j.status = !r.ok ? 'fail' : r.opened ? 'opened' : 'sent'; j.why = r.why;
+    khLogMsg(j.ids, j.ch, r.ok); khSave();
+    if (r.opened) waiting = j;
+    draw();
+  };
+  const nextBtn = el('button', { class: 'btn ok', onclick: () => { const j = jobs.find(x => !x.status || x.status === 'fail'); if (j) go(j); else Sheet.close(); } });
+  let stopped = false;
+  const onBack = () => { if (document.visibilityState === 'visible' && waiting) { waiting = null; draw(); } };
+  document.addEventListener('visibilitychange', onBack);
+  Sheet.show(el('div', {}, el('h3', { text: title }),
+    el('p', { class: 'msg', text: autoSms ? 'SMS apne aap aapke SIM se jaate hain. WhatsApp har naam pe ek baar khulega – wahan Send dabayein, phir yahan wapas aayein.' : 'Har naam pe tap karein – message likha hua khulega, bas Send dabayein.' }),
+    list, el('div', { class: 'sheet-actions' }, el('button', { class: 'btn cancel', text: 'Band karein', onclick: () => Sheet.close() }), nextBtn)), () => { stopped = true; document.removeEventListener('visibilitychange', onBack); });
+  draw();
+  // SMS: send all of them right away, one after another (stops when the list is closed)
+  // SMS go by themselves one after another; stops when the list is closed or when the SMS app had to be opened instead
+  (async () => {
+    if (autoSms) for (const j of jobs) { if (stopped) break; if (j.ch === 'sms' && !j.status) { await go(j); if (j.status === 'opened') break; } }
+    const first = jobs.find(j => !j.status);
+    if (auto && first && !stopped && !(autoSms && first.ch === 'sms')) go(first);       // the user already chose "send" – open it straight away
+  })();
+}
+function khJobsFor(party, text, ids, ch = khChannel(party)) {
+  if (!khHasPhone(party.phone) || ch === 'none') return [];
+  const out = [];
+  if (ch === 'sms' || ch === 'both') out.push({ party, ch: 'sms', text, ids });
+  if (ch === 'wa' || ch === 'both') out.push({ party, ch: 'wa', text, ids });
+  return out;
+}
+
+/* ---------------- PUBLISH ---------------- */
+async function khPublishFlow() {
+  await khLoad();
+  if (!settings.khataOn) { const ok = await dialogConfirm({ title: 'Khata book band hai', message: 'Settings → Khata book mein ise chalu karein?', okText: 'Chalu karein' }); if (!ok) return; setSetting('khataOn', true); }
+  removeEmptyPendingDate(); render();
+  const plan = khPlan();
+  if (!plan.count && !plan.unknown.length && !plan.errors.length) { toast(plan.sheets ? 'Sab kuch khata mein publish ho chuka hai ✓' : 'Is note ke kisi tab mein khata chalu nahi hai'); return; }
+  // group by party
+  const groups = new Map();
+  const add = (p, x) => { let g = groups.get(p.id); if (!g) groups.set(p.id, g = { party: p, lines: [], delta: 0 }); g.lines.push(x); };
+  const eff = (effect, amt) => effect === 'gave' ? amt : effect === 'got' ? -amt : 0;
+  const curTabs = new Set(plan.adds.map(it => it.sheetId));
+  const others = new Set(KH.data.entries.filter(e => e.delParty || (!e.deleted && (!e.src || e.src.fileId !== plan.fileId || !curTabs.has(e.src.sheetId)))).map(e => khDupKey(e.delParty || (khParty(e.partyId) || {}).name, e.date, e.amount)));
+  for (const it of plan.adds) { add(it.party, { kind: 'add', date: it.date, reasonName: it.reasonName, amount: it.amount, flip: it.flip, dup: others.has(khDupKey(it.party.name, it.date, it.amount)) }); groups.get(it.party.id).delta += eff(it.effect, it.amount); }
+  for (const [it, e] of plan.changes) {
+    if (it.party.id !== e.partyId) continue;
+    add(it.party, { kind: 'change', date: it.date, reasonName: it.reasonName, amount: it.amount, flip: it.flip, old: e.amount, oldDate: e.date, oldReason: khReasonOf(e).name });
+    groups.get(it.party.id).delta += eff(it.effect, it.amount) - eff(e.effect, e.amount);
+  }
+  for (const e of plan.removes) { const p = khParty(e.partyId); if (!p) continue; add(p, { kind: 'remove', date: e.date, reasonName: khReasonOf(e).name, amount: e.amount }); groups.get(p.id).delta -= eff(e.effect, e.amount); }
+  const G = [...groups.values()].sort((a, b) => a.party.name.localeCompare(b.party.name));
+  const box = el('div', {});
+  if (plan.unknown.length) {
+    const names = [...new Map(plan.unknown.map(it => [it.key, it])).values()];
+    box.append(el('div', { class: 'kp-warn' }, el('b', { text: `⚠ ${names.length} naam ka khata nahi hai` }), el('span', { text: 'Ye entries publish nahi hongi. Naam pe tap karke khata banayein ya jodein.' }),
+      el('div', { class: 'chips' }, ...names.map(it => el('button', { class: 'chip', text: '＋ ' + it.label, onclick: () => khUnknownSheet(it, () => khPublishFlow()) })))));
+  }
+  if (plan.errors.length) box.append(el('div', { class: 'kp-err' }, el('b', { text: '✗ In lines mein galti hai' }), ...plan.errors.slice(0, 8).map(it => el('span', { text: `Line ${it.i + 1} (${it.sheetName}): ${it.err}` }))));
+  const choice = new Map(), edited = new Map();
+  for (const g of G) {
+    const p = g.party; const after = khBalance(p.id) + g.delta; choice.set(p.id, khHasPhone(p.phone) ? khChannel(p) : 'none');
+    const chips = el('div', { class: 'kp-ch' });
+    const drawChips = () => chips.replaceChildren(...(khHasPhone(p.phone) ? [['sms', '✉️ SMS'], ['wa', '💬 WhatsApp'], ['both', 'Dono'], ['none', 'Nahi']].map(([v, l]) => el('button', { class: 'chip' + (choice.get(p.id) === v ? ' active' : ''), 'data-ch': v, text: l, onclick: () => { choice.set(p.id, v); drawChips(); } }))
+      : [el('button', { class: 'chip', text: '📵 Number nahi – jodein', onclick: () => khPartyForm(p, () => khPublishFlow()) })]));
+    drawChips();
+    const ta = el('textarea', { class: 'kp-msg', rows: 5, style: 'display:none' });
+    const prev = el('button', { class: 'kp-link', text: 'Message dekhein / badlein ▾', onclick: () => {
+      if (ta.style.display === 'none') { if (!edited.has(p.id)) ta.value = khPreviewMsg(p, g, after); ta.style.display = ''; prev.textContent = 'Message chhupayein ▴'; } else { ta.style.display = 'none'; prev.textContent = 'Message dekhein / badlein ▾'; }
+    } });
+    ta.addEventListener('input', () => edited.set(p.id, ta.value));
+    box.append(el('div', { class: 'kp-card', 'data-pid': p.id },
+      el('div', { class: 'kp-head' }, khAvatar(p), el('div', { class: 'kp-nm' }, el('b', { text: p.name }), el('span', { class: 'kk-' + khCls(after), text: `Ab baaki: ${khMoney(after)} ${khWord(after)}` }))),
+      ...g.lines.map(x => el('div', { class: 'kp-line ' + x.kind }, el('span', { class: 'ic', text: x.kind === 'add' ? '＋' : x.kind === 'change' ? '✎' : '✕' }), el('span', { text: khEntryLine(x) }), x.dup ? el('small', { class: 'kp-dup', text: '⚠ shayad pehle se hai' }) : null)),
+      chips, prev, ta));
+  }
+  if (!G.length && !plan.unknown.length && !plan.errors.length) return;
+  const btn = el('button', { class: 'btn ok', id: 'khPublishGo', text: plan.count ? `✓ Publish (${plan.count})` : 'Theek hai', onclick: async () => {
+    if (!plan.count) { Sheet.close(); return; }
+    btn.disabled = true;
+    const done = await khApplyPlan(plan);
+    Sheet.onClose = null; Sheet.close();
+    const jobs = [];
+    for (const g of G) { const d = done.get(g.party.id); if (!d) continue; const text = edited.get(g.party.id) || khMessage(g.party, g.lines); jobs.push(...khJobsFor(g.party, text, d, choice.get(g.party.id))); }
+    toast(`✓ ${plan.count} badlav khata mein publish hue`);
+    if (jobs.length) setTimeout(() => khSendJobs(jobs, '📨 Messages bhejein'), 280);
+  } });
+  Sheet.show(el('div', { class: 'kp' }, el('h3', { text: '📤 Publish – khata mein bhejein' }),
+    el('p', { class: 'msg', text: plan.count ? `${plan.count} badlav ${G.length} khate mein jaayenge. Check karke Publish dabayein.` : 'Abhi publish karne ko kuch nahi hai.' }),
+    box, el('div', { class: 'sheet-actions kp-actions' }, el('button', { class: 'btn cancel', text: 'Cancel', onclick: () => Sheet.close() }), btn)));
+}
+function khPreviewMsg(p, g, after) {
+  const save = khMaps().bal.get(p.id); khMaps().bal.set(p.id, after);
+  try { return khMessage(p, g.lines); } finally { khMaps().bal.set(p.id, save); }
+}
+async function khApplyPlan(plan) {
+  const now = new Date().toISOString(); const touched = new Map();
+  const mark = (pid, id) => { let a = touched.get(pid); if (!a) touched.set(pid, a = []); a.push(id); };
+  const title = displayTitle();
+  const src = it => ({ fileId: plan.fileId, fileTitle: title, sheetId: it.sheetId, sheetName: it.sheetName, line: it.raw, pos: it.i, x: it.x, formula: it.formula });
+  for (const it of plan.adds) {
+    const e = { id: newId('ke_'), partyId: it.party.id, date: it.date, amount: it.amount, effect: it.effect, flip: !!it.flip, reason: it.reason, reasonName: it.reasonName, mode: '', note: '', src: src(it), createdAt: now, updatedAt: now, hist: [], msgs: [] };
+    KH.data.entries.push(e); mark(e.partyId, e.id);
+  }
+  for (const [it, e] of plan.changes) {
+    (e.hist = e.hist || []).push({ at: now, amount: e.amount, effect: e.effect, reasonName: e.reasonName, date: e.date, partyId: e.partyId });
+    Object.assign(e, { partyId: it.party.id, date: it.date, amount: it.amount, effect: it.effect, flip: !!it.flip, reason: it.reason, reasonName: it.reasonName, src: src(it), updatedAt: now });
+    mark(e.partyId, e.id);
+  }
+  for (const e of plan.removes) { (e.hist = e.hist || []).push({ at: now, kind: 'removed', amount: e.amount }); e.deleted = now; e.updatedAt = now; mark(e.partyId, e.id); }
+  KH.data.pub[plan.fileId] = now;
+  await khSave();
+  return touched;
+}
+
+/* =====================================================================
+   KHATA BOOK SCREENS (look & feel of a khata app)
+   ===================================================================== */
+const khCls = b => b > 0.5 ? 'get' : b < -0.5 ? 'give' : 'clear';
+const khWord = b => b > 0.5 ? 'lena hai' : b < -0.5 ? 'dena hai' : 'barabar';
+function khAvatar(p, big) { return el('span', { class: 'kk-av ' + (p.type === 'supplier' ? 'sup' : 'cus') + (big ? ' big' : ''), text: khInitials(p.name) }); }
+const KHU = (() => { let u = {}; try { u = JSON.parse(LS.get('cnf_khata_ui', '{}')) || {}; } catch (e) {} return Object.assign({ type: 'all', sort: 'recent', filter: 'all', q: '', pid: null, rep: { pid: null, period: 'month', from: '', to: '', q: '' } }, u, { q: '', pid: null }); })();
+const khSaveUi = () => LS.set('cnf_khata_ui', JSON.stringify({ type: KHU.type, sort: KHU.sort }));
+function khOpenParty(pid) { KHU.pid = pid; if (pageStack.includes('kparty')) { const pg = $('#pages .page[data-page="kparty"]'); if (pg) renderPage(pg, 'kparty'); } else openPage('kparty'); }
+async function openKhata() { closeSidebar(); if (document.activeElement === ED) ED.blur(); await khLoad(); if (pageStack.includes('khata')) return; openPage('khata'); }
+
+/* ---- list of all khata ---- */
+function khRenderList(body) {
+  const D = KH.data || khNormalize(null); const M = khMaps();
+  const wrap = el('div', { class: 'kk' });
+  if (!settings.khataOn) wrap.append(el('div', { class: 'kk-off' }, el('b', { text: 'Khata book band hai' }), el('span', { text: 'Chalu karne par note ki entries apne aap khate mein jaa sakti hain.' }), el('button', { class: 'btn ok', text: 'Chalu karein', onclick: () => { setSetting('khataOn', true); refreshKhataPages(); render(true); } })));
+  const hasSup = D.parties.some(p => p.type === 'supplier');
+  if (!hasSup && KHU.type === 'supplier') KHU.type = 'all';
+  if (hasSup) wrap.append(el('div', { class: 'kk-tabs' }, ...[['all', 'Sab'], ['customer', 'Grahak'], ['supplier', 'Supplier']].map(([v, l]) => el('button', { class: KHU.type === v ? 'on' : '', 'data-type': v, text: l, onclick: () => { KHU.type = v; khSaveUi(); refreshKhataPages(); } }))));
+  const pool = D.parties.filter(p => KHU.type === 'all' || p.type === KHU.type);
+  let get = 0, give = 0; for (const p of pool) { const b = M.bal.get(p.id) || 0; if (b > 0.5) get += b; else if (b < -0.5) give -= b; }
+  wrap.append(el('div', { class: 'kk-sum' },
+    el('div', { class: 'kk-sum-top' },
+      el('button', { class: 'half', onclick: () => { KHU.filter = KHU.filter === 'give' ? 'all' : 'give'; refreshKhataPages(); } }, el('span', { text: 'Aapko dene hain' }), el('b', { class: 'v give', text: khMoney(give) })),
+      el('span', { class: 'sep' }),
+      el('button', { class: 'half', onclick: () => { KHU.filter = KHU.filter === 'get' ? 'all' : 'get'; refreshKhataPages(); } }, el('span', { text: 'Aapko milenge' }), el('b', { class: 'v get', text: khMoney(get) }))),
+    el('button', { class: 'kk-sum-rep', text: '📄 Report dekhein ›', onclick: () => { KHU.rep.pid = null; openPage('kreport'); } })));
+  // unpublished changes in the open note
+  if (state.fileId && settings.khataOn) { try { const pl = khPlan(); if (pl.count || pl.unknown.length) wrap.append(el('button', { class: 'kk-pend', onclick: () => { closeAllPages(); setTimeout(khPublishFlow, 300); } }, el('span', { text: '📤' }), el('span', { class: 'm' }, el('b', { text: pl.count ? `"${displayTitle()}" mein ${pl.count} badlav publish baaki` : `"${displayTitle()}" mein naye naam hain` }), pl.unknown.length ? el('small', { text: `${new Set(pl.unknown.map(i => i.key)).size} naam ka khata nahi bana (⚠)` }) : null), el('span', { text: '›' }))); } catch (e) { console.error(e); } }
+  const q = el('input', { type: 'search', class: 'kk-q', placeholder: 'Naam ya number khojein', value: KHU.q, autocomplete: 'off' });
+  const listBox = el('div', { class: 'kk-list' });
+  const drawList = () => {
+    const s = khNorm(KHU.q); const sd = KHU.q.replace(/\D/g, '');
+    let arr = pool.filter(p => (!s || khNorm([p.name, ...(p.aliases || [])].join(' ')).includes(s) || (sd.length >= 3 && String(p.phone || '').replace(/\D/g, '').includes(sd))));
+    if (KHU.filter !== 'all') arr = arr.filter(p => khCls(M.bal.get(p.id) || 0) === KHU.filter);
+    const bal = p => M.bal.get(p.id) || 0;
+    const sorts = { recent: (a, b) => (M.last.get(b.id) || '').localeCompare(M.last.get(a.id) || ''), high: (a, b) => Math.abs(bal(b)) - Math.abs(bal(a)), low: (a, b) => Math.abs(bal(a)) - Math.abs(bal(b)), name: (a, b) => a.name.localeCompare(b.name), old: (a, b) => (M.last.get(a.id) || '').localeCompare(M.last.get(b.id) || '') };
+    arr.sort(sorts[KHU.sort] || sorts.recent);
+    if (!arr.length) { listBox.replaceChildren(el('div', { class: 'kk-empty' }, D.parties.length ? el('span', { text: 'Koi khata nahi mila.' }) : el('div', {}, el('b', { text: 'Abhi koi khata nahi hai' }), el('p', { text: 'Note mein naam ke saath entry likhein, jaise  gopi 12+7.  Answer ke aage ⚠ pe tap karke khata banayein, phir 📤 Publish dabayein.' })))); return; }
+    listBox.replaceChildren(...arr.slice(0, 500).map(p => {
+      const b = bal(p); const c = khCls(b);
+      return el('button', { class: 'kk-row', 'data-pid': p.id, onclick: () => khOpenParty(p.id) }, khAvatar(p),
+        el('span', { class: 'mid' }, el('b', { text: p.name }), el('span', { text: [p.type === 'supplier' ? 'Supplier' : '', khAgo(M.last.get(p.id))].filter(Boolean).join(' · ') })),
+        el('span', { class: 'kk-amt ' + c }, el('b', { text: khMoney(b) }), c === 'get' && khHasPhone(p.phone) ? el('span', { class: 'kk-rem', text: 'YAAD DILAYEIN ›', onclick: e => { e.stopPropagation(); khRemind(p); } }) : el('span', { text: khWord(b) })));
+    }));
+  };
+  q.addEventListener('input', () => { KHU.q = q.value; drawList(); });
+  const showing = KHU.filter !== 'all' ? el('div', { class: 'kk-showing' }, el('span', { text: 'Dikh rahe: ' + { get: 'Aapko milenge', give: 'Aapko dene hain', clear: 'Barabar' }[KHU.filter] }), el('button', { text: '✕', onclick: () => { KHU.filter = 'all'; refreshKhataPages(); } })) : null;
+  wrap.append(el('div', { class: 'kk-search' }, q, el('button', { class: 'kk-fbtn', text: '⚙ Filter', onclick: khFilterSheet })), showing || '', listBox);
+  wrap.append(el('button', { class: 'kk-fab', id: 'khAdd', text: '＋ Naya khata', onclick: () => khPartyForm(null, p => p && khOpenParty(p.id), { type: KHU.type === 'supplier' ? 'supplier' : 'customer' }) }));
+  body.replaceChildren(wrap); drawList();
+}
+function khFilterSheet() {
+  const f = el('div', { class: 'chips' }), s = el('div', { class: 'menu-list' });
+  const drawF = () => f.replaceChildren(...[['all', 'Sab'], ['get', 'Aapko milenge'], ['give', 'Aapko dene hain'], ['clear', 'Barabar']].map(([v, l]) => el('button', { class: 'chip' + (KHU.filter === v ? ' active' : ''), text: l, onclick: () => { KHU.filter = v; drawF(); } })));
+  const drawS = () => s.replaceChildren(...[['recent', 'Sabse naya pehle'], ['high', 'Sabse zyada rakam'], ['name', 'Naam se (A–Z)'], ['old', 'Sabse purana pehle'], ['low', 'Sabse kam rakam']].map(([v, l]) => el('button', { class: 'menu-item' + (KHU.sort === v ? ' on' : ''), onclick: () => { KHU.sort = v; khSaveUi(); drawS(); } }, el('span', { class: 'ic', text: KHU.sort === v ? '◉' : '○' }), el('span', { text: l }))));
+  drawF(); drawS();
+  Sheet.show(el('div', {}, el('h3', { text: 'Filter aur kram' }), el('label', { class: 'lbl', text: 'Dikhayein' }), f, el('label', { class: 'lbl', text: 'Kram' }), s,
+    el('div', { class: 'sheet-actions' }, el('button', { class: 'btn ok', text: 'Theek hai', onclick: () => Sheet.close() }))), () => refreshKhataPages());
+}
+
+/* ---- one party's khata ---- */
+function khRenderParty(body, pg) {
+  const p = khParty(KHU.pid);
+  if (!p) { body.replaceChildren(el('div', { class: 'kk-empty', text: 'Ye khata nahi mila.' })); return; }
+  const t = pg && pg.querySelector('.page-title'); if (t) t.textContent = p.name;
+  const b = khBalance(p.id), c = khCls(b);
+  const wrap = el('div', { class: 'kk' });
+  wrap.append(el('div', { class: 'kk-phead' },
+    el('div', { class: 'kk-pid' }, khAvatar(p, true), el('div', { class: 'mid' }, el('div', { class: 'nm' }, el('b', { text: p.name }), el('span', { class: 'kk-type', text: p.type === 'supplier' ? 'Supplier' : 'Grahak' })),
+      el('button', { class: 'kk-set', text: '⚙ Settings', onclick: () => khPartyMenu(p) })),
+      khHasPhone(p.phone) ? el('button', { class: 'kk-call', 'aria-label': 'Call', text: '📞', onclick: () => openLink('tel:' + String(p.phone).replace(/[^\d+]/g, '')) }) : null),
+    el('div', { class: 'kk-pbal ' + c }, el('span', { text: c === 'get' ? 'Aapko milenge' : c === 'give' ? 'Aapko dene hain' : 'Hisaab barabar' }), el('b', { text: khMoney(b) }))));
+  wrap.append(el('div', { class: 'kk-acts' },
+    el('button', { onclick: () => { KHU.rep.pid = p.id; openPage('kreport'); } }, el('span', { text: '📄' }), 'Report'),
+    el('button', { onclick: () => khRemind(p, 'wa') }, el('span', { text: '💬' }), 'WhatsApp'),
+    el('button', { onclick: () => khRemind(p, 'sms') }, el('span', { text: '✉️' }), 'SMS')));
+  const rows = khWithRunning(khPartyEntries(p.id), p.id);
+  if (Math.abs(+p.opening || 0) >= 0.5) wrap.append(el('div', { class: 'kk-open' }, `Shuru ka baaki: `, el('b', { class: 'kk-' + khCls(+p.opening), text: khMoney(+p.opening) + ' ' + khWord(+p.opening) })));
+  if (rows.length) {
+    wrap.append(el('div', { class: 'kk-cols' }, el('span', { text: 'ENTRY' }), el('span', { class: 'gave', text: 'AAPNE DIYE' }), el('span', { class: 'got', text: 'AAPKO MILE' })));
+    let day = '';
+    for (const r of rows.slice().reverse()) {
+      if (r.e.date !== day) { day = r.e.date; wrap.append(el('div', { class: 'kk-day', text: khDayHead(day) })); }
+      wrap.append(khEntryRow(r.e, r.run));
+    }
+  } else wrap.append(el('div', { class: 'kk-empty', text: 'Abhi koi entry nahi. Neeche button se entry daalein, ya note mein naam likh kar Publish karein.' }));
+  wrap.append(el('div', { class: 'kk-btns' },
+    el('button', { class: 'btn kk-gave', id: 'khGave', text: 'AAPNE DIYE ₹', onclick: () => khEntryForm({ pid: p.id, effect: 'gave' }) }),
+    el('button', { class: 'btn kk-got', id: 'khGot', text: 'AAPKO MILE ₹', onclick: () => khEntryForm({ pid: p.id, effect: 'got' }) })));
+  body.replaceChildren(wrap);
+}
+function khEntryRow(e, run, withName) {
+  const r = khReasonOf(e); const p = withName ? khParty(e.partyId) : null;
+  const desc = [r.name, e.mode === 'upi' ? 'UPI/Bank' : e.mode === 'cash' ? 'Cash' : '', e.note].filter(Boolean).join(' · ');
+  return el('button', { class: 'kk-e' + (e.effect === 'none' ? ' rec' : ''), 'data-eid': e.id, onclick: () => khEntryDetail(e) },
+    el('span', { class: 'l' },
+      el('span', { class: 'when', text: (withName ? khShortDate(e.date) + ' · ' : '') + khTime(e.createdAt) + (e.src ? ' · 📝' : '') + (e.msgs && e.msgs.some(m => m.ok) ? ' · ✓ msg' : '') }),
+      p ? el('b', { class: 'who', text: p.name }) : null,
+      el('span', { class: 'what' }, el('i', { class: 'dot', style: `background:${r.color}` }), desc),
+      e.effect === 'none' ? el('span', { class: 'kk-bal rec', text: 'Record: ' + khMoney(e.amount) }) : run != null ? el('span', { class: 'kk-bal ' + khCls(run), text: 'Baaki ' + khMoney(run) }) : null),
+    el('span', { class: 'c gave', text: e.effect === 'gave' ? khMoney(e.amount) : '' }),
+    el('span', { class: 'c got', text: e.effect === 'got' ? khMoney(e.amount) : '' }));
+}
+function khPartyMenu(p) {
+  dialogMenu('⚙ ' + p.name, [
+    { key: 'edit', icon: '✏️', label: 'Naam, number, purana baaki badlein' },
+    { key: 'remind', icon: '💬', label: 'Baaki ki yaad dilayein', sub: khBalanceLine(khBalance(p.id)) },
+    { key: 'report', icon: '📄', label: 'Report / statement' },
+    { key: 'del', icon: '🗑', label: 'Khata delete karein', danger: true }
+  ]).then(k => {
+    if (k === 'edit') khPartyForm(p);
+    else if (k === 'remind') khRemind(p);
+    else if (k === 'report') { KHU.rep.pid = p.id; openPage('kreport'); }
+    else if (k === 'del') khDeleteParty(p);
+  });
+}
+async function khDeleteParty(p) {
+  const n = khPartyEntries(p.id).length;
+  const ok = await dialogConfirm({ title: `"${p.name}" ka khata delete karein?`, message: n ? `${n} entry bhi hat jaayengi. Note mein ye naam phir se ⚠ dikhega.` : 'Ye khata hat jaayega.', okText: 'Delete', danger: true });
+  if (!ok) return;
+  const now = new Date().toISOString();
+  const removed = KH.data.entries.filter(e => e.partyId === p.id && !e.deleted);
+  for (const e of removed) { e.deleted = now; e.delParty = p.name; }
+  KH.data.parties = KH.data.parties.filter(x => x.id !== p.id);
+  await khSave();
+  if (pageStack.includes('kparty')) Overlays.remove('page:kparty');
+  toast(`"${p.name}" ka khata delete hua`, 5000, { label: 'Undo', run: async () => { KH.data.parties.push(p); for (const e of removed) { delete e.deleted; delete e.delParty; } await khSave(); toast('Wapas aa gaya ✓'); } });
+}
+function khRemind(p, ch) {
+  if (!khHasPhone(p.phone)) { toast('Pehle mobile number jodein'); khPartyForm(p); return; }
+  ch = ch || (khChannel(p) === 'sms' ? 'sms' : 'wa');
+  const ta = el('textarea', { class: 'kp-msg', rows: 5 }); ta.value = khReminder(p);
+  const send = c => { Sheet.onClose = null; Sheet.close(); setTimeout(() => khSendJobs([{ party: p, ch: c, text: ta.value, ids: [] }], '📨 ' + p.name, true), 260); };
+  Sheet.show(el('div', {}, el('h3', { text: `💬 ${p.name} ko yaad dilayein` }), ta,
+    el('div', { class: 'kf-send' }, el('button', { class: 'btn ' + (ch === 'sms' ? 'ok' : 'cancel'), id: 'khRemSms', text: '✉️ SMS bhejein', onclick: () => send('sms') }), el('button', { class: 'btn ' + (ch === 'wa' ? 'ok' : 'cancel'), id: 'khRemWa', text: '💬 WhatsApp', onclick: () => send('wa') })),
+    el('div', { class: 'sheet-actions' }, el('button', { class: 'btn cancel', text: 'Cancel', onclick: () => Sheet.close() }))));
+}
+
+/* ---- party form ---- */
+function khPartyForm(p, after, prefill = {}) {
+  const isNew = !p; const v = Object.assign({ name: '', phone: '', type: 'customer', aliases: [], opening: 0, channel: '', note: '' }, p || {}, isNew ? prefill : {});
+  const name = el('input', { type: 'text', placeholder: 'Jaise: Gopi Kumar', autocomplete: 'off', value: v.name });
+  const phone = el('input', { type: 'tel', inputmode: 'tel', placeholder: '10 ank ka mobile number', autocomplete: 'off', value: v.phone });
+  let type = v.type, ch = v.channel || '', side = (+v.opening || 0) < 0 ? 'give' : 'get';
+  const typeChips = el('div', { class: 'chips' }); const drawType = () => typeChips.replaceChildren(...[['customer', 'Grahak'], ['supplier', 'Supplier']].map(([k, l]) => el('button', { class: 'chip' + (type === k ? ' active' : ''), text: l, onclick: () => { type = k; drawType(); } }))); drawType();
+  const opening = el('input', { type: 'text', inputmode: 'decimal', placeholder: '0', value: Math.abs(+v.opening || 0) ? String(Math.abs(+v.opening)) : '' });
+  const sideChips = el('div', { class: 'chips' }); const drawSide = () => sideChips.replaceChildren(...[['get', 'Mujhe lena hai'], ['give', 'Mujhe dena hai']].map(([k, l]) => el('button', { class: 'chip' + (side === k ? ' active' : ''), text: l, onclick: () => { side = k; drawSide(); } }))); drawSide();
+  const chChips = el('div', { class: 'chips' }); const drawCh = () => chChips.replaceChildren(...[['', 'Default'], ['sms', 'SMS'], ['wa', 'WhatsApp'], ['both', 'Dono'], ['none', 'Koi nahi']].map(([k, l]) => el('button', { class: 'chip' + (ch === k ? ' active' : ''), text: l, onclick: () => { ch = k; drawCh(); } }))); drawCh();
+  const aliases = el('input', { type: 'text', placeholder: 'Jaise: gopi, gopi ji, GK', autocomplete: 'off', value: (v.aliases || []).join(', ') });
+  const note = el('input', { type: 'text', placeholder: 'Pata / note (zaroori nahi)', autocomplete: 'off', value: v.note || '' });
+  const err = el('p', { class: 'kf-err' });
+  const pick = khPlugin() ? el('button', { class: 'kf-pick', type: 'button', text: '📇 Contacts se', onclick: async () => { try { const r = await khPlugin().pickContact(); if (r && !r.cancelled) { if (r.phone) phone.value = r.phone; if (r.name && !name.value.trim()) name.value = r.name; } } catch (e) { toast('Contacts nahi khule'); } } }) : null;
+  const save = async () => {
+    const n = name.value.trim().replace(/\s+/g, ' ').slice(0, 60);
+    if (!n) { err.textContent = 'Naam likhein'; name.focus(); return; }
+    const al = aliases.value.split(',').map(s => s.trim()).filter(Boolean).filter(a => khNorm(a) !== khNorm(n)).slice(0, 20);
+    const clash = khNameTaken([n, ...al], p && p.id); if (clash) { err.textContent = `"${clash.name}" pehle se "${clash.party.name}" ke khate mein hai`; return; }
+    const ph = phone.value.trim(); if (ph && !khHasPhone(ph)) { err.textContent = 'Mobile number poora likhein (10 ank)'; phone.focus(); return; }
+    let ob = parseFloat(String(opening.value).replace(/[,₹\s]/g, '')) || 0; if (!Number.isFinite(ob)) ob = 0; ob = khRound(Math.abs(ob)) * (side === 'give' ? -1 : 1);
+    const saved = await khUpsertParty({ name: n, phone: ph, type, aliases: al, opening: ob, channel: ch, note: note.value.trim() }, p && p.id);
+    Sheet.onClose = null; Sheet.close();
+    toast(isNew ? `✓ "${n}" ka khata bana` : '✓ Khata update hua');
+    if (after) setTimeout(() => after(saved), 260);
+  };
+  Sheet.show(el('div', { class: 'kf' }, el('h3', { text: isNew ? '＋ Naya khata' : '✏️ Khata badlein' }),
+    el('label', { class: 'lbl', text: 'Naam' }), name,
+    el('div', { class: 'kf-row' }, el('label', { class: 'lbl', text: 'Mobile (SMS / WhatsApp ke liye)' }), pick), phone,
+    el('label', { class: 'lbl', text: 'Kaun hai' }), typeChips,
+    el('label', { class: 'lbl', text: 'Purana baaki (app se pehle ka)' }), opening, sideChips,
+    el('label', { class: 'lbl', text: 'Message kaise jaaye' }), chChips,
+    el('label', { class: 'lbl', text: 'Doosre naam (note mein aise bhi likhte hain) – comma se alag' }), aliases,
+    el('label', { class: 'lbl', text: 'Note' }), note, err,
+    el('div', { class: 'sheet-actions' }, el('button', { class: 'btn cancel', text: 'Cancel', onclick: () => Sheet.close() }), el('button', { class: 'btn ok', id: 'khPartySave', text: isNew ? 'Khata banayein' : 'Save', onclick: save }))));
+  if (isNew && !v.name) setTimeout(() => name.focus(), 80);
+}
+
+/* ---- add / edit a manual entry ---- */
+function khEvalAmount(s) {
+  s = String(s || '').replace(/[₹,\s]/g, '').replace(/[×x]/gi, '*').replace(/÷/g, '/').replace(/[−–]/g, '-');
+  if (!s) return NaN; if (!/^[\d.+\-*/()%]+$/.test(s)) return NaN;
+  try { const v = math.evaluate(s); return typeof v === 'number' ? v : NaN; } catch (e) { return NaN; }
+}
+function khEntryForm({ pid, effect = 'gave', entry = null }) {
+  const p = khParty(pid || (entry && entry.partyId)); if (!p) return;
+  const reasons = KH.data.reasons;
+  let reason = entry ? entry.reason : (reasons.find(r => r.effect === effect) || reasons[0]).id;
+  let mode = entry ? entry.mode || '' : 'cash';
+  const amt = el('input', { type: 'text', inputmode: 'decimal', placeholder: 'Rakam  (jaise 500 ya 12+7)', autocomplete: 'off', value: entry ? String(entry.amount) : '' });
+  const date = el('input', { type: 'date', value: entry ? entry.date : khToday() });
+  const note = el('input', { type: 'text', placeholder: 'Note (zaroori nahi)', autocomplete: 'off', value: entry ? entry.note || '' : '' });
+  const rChips = el('div', { class: 'chips' }), mChips = el('div', { class: 'chips' }), prev = el('div', { class: 'kf-prev' }), err = el('p', { class: 'kf-err' });
+  const cur = () => khReason(reason) || reasons[0];
+  const drawR = () => rChips.replaceChildren(...reasons.map(r => el('button', { class: 'chip kr-' + r.effect + (reason === r.id ? ' active' : ''), 'data-r': r.id, onclick: () => { reason = r.id; drawR(); upd(); } }, el('i', { class: 'dot', style: `background:${KH_COLORS[r.color] || '#616161'}` }), r.name)));
+  const drawM = () => mChips.replaceChildren(...[['cash', '💵 Cash'], ['upi', '📱 UPI / Bank'], ['', '—']].map(([k, l]) => el('button', { class: 'chip' + (mode === k ? ' active' : ''), text: l, onclick: () => { mode = k; drawM(); } })));
+  const upd = () => {
+    const v = khEvalAmount(amt.value); const r = cur(); let b = khBalance(p.id);
+    if (entry && !entry.deleted) b -= entry.effect === 'gave' ? entry.amount : entry.effect === 'got' ? -entry.amount : 0;
+    const after = Number.isFinite(v) ? b + (r.effect === 'gave' ? Math.abs(v) : r.effect === 'got' ? -Math.abs(v) : 0) : b;
+    prev.replaceChildren(el('span', { text: (/[+\-*/]/.test(amt.value.replace(/^-/, '')) && Number.isFinite(v) ? `= ${khMoney(v)} · ` : '') + 'Iske baad: ' }), el('b', { class: 'kk-' + khCls(after), text: `${khMoney(after)} ${khWord(after)}` }), el('small', { text: '  ' + KH_EFFECTS[r.effect] }));
+  };
+  amt.addEventListener('input', upd); drawR(); drawM(); upd();
+  const save = async () => {
+    const v = khEvalAmount(amt.value);
+    if (!Number.isFinite(v) || Math.abs(v) < 0.005) { err.textContent = 'Sahi rakam likhein'; amt.focus(); return; }
+    if (!date.value) { err.textContent = 'Tareekh chunein'; return; }
+    const r = cur(); const now = new Date().toISOString();
+    let eff = r.effect, a = khRound(v); if (a < 0) { a = -a; eff = eff === 'gave' ? 'got' : eff === 'got' ? 'gave' : 'none'; }
+    let e = entry;
+    if (e) { (e.hist = e.hist || []).push({ at: now, amount: e.amount, effect: e.effect, reasonName: e.reasonName, date: e.date }); Object.assign(e, { amount: a, effect: eff, flip: false, reason: r.id, reasonName: r.name, date: date.value, mode, note: note.value.trim(), updatedAt: now, src: null }); }
+    else { e = { id: newId('ke_'), partyId: p.id, date: date.value, amount: a, effect: eff, reason: r.id, reasonName: r.name, mode, note: note.value.trim(), src: null, createdAt: now, updatedAt: now, hist: [], msgs: [] }; KH.data.entries.push(e); }
+    await khSave();
+    Sheet.onClose = null; Sheet.close();
+    toast(`✓ ${r.name} ${khMoney(a)} · ab ${khMoney(khBalance(p.id))} ${khWord(khBalance(p.id))}`, 3000);
+    if (khHasPhone(p.phone) && khChannel(p) !== 'none') setTimeout(() => khOfferSend(p, [e], entry ? 'change' : 'add'), 300);
+  };
+  Sheet.show(el('div', { class: 'kf' }, el('h3', { text: (entry ? '✏️ Entry badlein · ' : (effect === 'got' ? '⬇️ Aapko mile · ' : '⬆️ Aapne diye · ')) + p.name }),
+    el('label', { class: 'lbl', text: 'Reason' }), rChips,
+    el('div', { class: 'kf-2' }, el('div', {}, el('label', { class: 'lbl', text: 'Rakam (₹)' }), amt), el('div', {}, el('label', { class: 'lbl', text: 'Tareekh' }), date)),
+    prev, el('label', { class: 'lbl', text: 'Kaise' }), mChips, el('label', { class: 'lbl', text: 'Note' }), note, err,
+    el('div', { class: 'sheet-actions' }, el('button', { class: 'btn cancel', text: 'Cancel', onclick: () => Sheet.close() }), el('button', { class: 'btn ok', id: 'khEntrySave', text: 'Save', onclick: save }))));
+  if (!entry) setTimeout(() => amt.focus(), 80);
+}
+function khOfferSend(p, entries, kind) {
+  const lines = entries.map(e => ({ kind, date: e.date, reasonName: e.reasonName, amount: e.amount, old: e.hist && e.hist.length ? e.hist[e.hist.length - 1].amount : 0 }));
+  const text = khMessage(p, lines); const ids = entries.map(e => e.id);
+  const ta = el('textarea', { class: 'kp-msg', rows: 5 }); ta.value = text;
+  const send = ch => { Sheet.onClose = null; Sheet.close(); setTimeout(() => khSendJobs(khJobsFor(p, ta.value, ids, ch), '📨 ' + p.name, true), 260); };
+  const def = khChannel(p);
+  Sheet.show(el('div', {}, el('h3', { text: `📨 ${p.name} ko message bhejein?` }), ta,
+    el('div', { class: 'kf-send' }, el('button', { class: 'btn ' + (def === 'sms' ? 'ok' : 'cancel'), text: '✉️ SMS', onclick: () => send('sms') }), el('button', { class: 'btn ' + (def !== 'sms' ? 'ok' : 'cancel'), text: '💬 WhatsApp', onclick: () => send('wa') })),
+    el('div', { class: 'sheet-actions' }, el('button', { class: 'btn cancel', text: 'Nahi', onclick: () => Sheet.close() }), el('button', { class: 'btn cancel', text: 'Dono', onclick: () => send('both') }))));
+}
+function khEntryDetail(e) {
+  const p = khParty(e.partyId); const r = khReasonOf(e);
+  const kv = (k, v) => v ? el('div', { class: 'kd-kv' }, el('span', { text: k }), el('b', { text: v })) : null;
+  const hist = (e.hist || []).slice(-6).reverse().map(h => el('div', { class: 'kd-h', text: `${khLongDate(String(h.at).slice(0, 10))} ${khTime(h.at)}: ` + (h.kind === 'removed' ? 'hataya gaya' : `pehle ${khMoney(h.amount)} (${h.reasonName || ''}, ${khShortDate(h.date)})`) }));
+  const msgs = (e.msgs || []).slice(-6).reverse().map(m => el('div', { class: 'kd-h', text: `${m.ch === 'sms' ? '✉️ SMS' : '💬 WhatsApp'} · ${khLongDate(String(m.at).slice(0, 10))} ${khTime(m.at)} ${m.ok ? '✓' : '✗'}` }));
+  const btns = [];
+  const orphan = e.src && !state.files.some(f => f.id === e.src.fileId);
+  if (e.src && !orphan) btns.push(el('button', { class: 'btn ok', text: '📝 Note kholein', onclick: () => { Sheet.close(); khOpenNote(e); } }));
+  else {
+    btns.push(el('button', { class: 'btn cancel', text: '✏️ Badlein', onclick: () => { Sheet.onClose = null; Sheet.close(); setTimeout(() => khEntryForm({ entry: e }), 250); } }));
+    btns.push(el('button', { class: 'btn danger', text: '🗑 Delete', onclick: async () => {
+      Sheet.onClose = null; Sheet.close(); const src = e.src; e.deleted = new Date().toISOString(); e.src = null; await khSave();
+      toast('Entry delete hui', 5000, { label: 'Undo', run: async () => { delete e.deleted; e.src = src; await khSave(); } });
+    } }));
+  }
+  Sheet.show(el('div', { class: 'kd' }, el('h3', { text: p ? p.name : 'Entry' }),
+    el('div', { class: 'kd-big ' + e.effect }, el('span', { text: e.effect === 'gave' ? 'Aapne diye' : e.effect === 'got' ? 'Aapko mile' : 'Record' }), el('b', { text: khMoney(e.amount) })),
+    kv('Tareekh', khLongDate(e.date)), kv('Reason', r.name), kv('Kaise', e.mode === 'upi' ? 'UPI / Bank' : e.mode === 'cash' ? 'Cash' : ''), kv('Note', e.note),
+    e.src ? kv('Note se', `${e.src.fileTitle || 'Note'} · ${e.src.sheetName || ''}`) : null, e.src ? kv('Line', e.src.line) : null,
+    e.src ? el('p', { class: 'msg', text: orphan ? 'Ye entry jis note se aayi thi wo ab nahi hai – yahin se badal ya hata sakte hain.' : 'Ye entry note se aayi hai. Badalne ke liye note ki line badlein aur phir Publish dabayein.' }) : null,
+    hist.length ? el('label', { class: 'lbl', text: 'Badlav' }) : null, ...hist, msgs.length ? el('label', { class: 'lbl', text: 'Messages' }) : null, ...msgs,
+    p && khHasPhone(p.phone) ? el('button', { class: 'kp-link', text: '📨 Is entry ka message bhejein', onclick: () => { Sheet.onClose = null; Sheet.close(); setTimeout(() => khOfferSend(p, [e], 'add'), 260); } }) : null,
+    el('div', { class: 'sheet-actions' }, el('button', { class: 'btn cancel', text: 'Band', onclick: () => Sheet.close() }), ...btns)));
+}
+async function khOpenNote(e) {
+  const src = e.src; if (!src) return;
+  if (!state.files.some(f => f.id === src.fileId)) { toast('Ye note ab nahi hai (delete ho gaya)'); return; }
+  closeAllPages();
+  setTimeout(async () => {
+    if (state.fileId !== src.fileId) await openFile(src.fileId);
+    const i = state.sheets.findIndex(s => s.id === src.sheetId); if (i >= 0 && i !== state.sheetIdx) await switchSheet(i, { animate: false });
+    const lines = getTexts(); let li = lines.findIndex(t => t.trim() === String(src.line || '').trim());
+    if (li < 0 && src.pos != null && src.pos < lines.length) li = src.pos;
+    if (li >= 0) { const [s, en] = lineBounds(li); ED.focus({ preventScroll: true }); ED.setSelectionRange(en, en); updateCurLine(); requestAnimationFrame(caretVisible); }
+  }, 300);
+}
+
+/* ---- report ---- */
+function khPeriodRange(per, from, to) {
+  const t = khToday(); const d = new Date();
+  if (per === 'today') return [t, t];
+  if (per === 'week') { const a = new Date(); a.setDate(a.getDate() - 6); return [khISODay(a), t]; }
+  if (per === 'month') return [khISODay(new Date(d.getFullYear(), d.getMonth(), 1)), t];
+  if (per === 'last') return [khISODay(new Date(d.getFullYear(), d.getMonth() - 1, 1)), khISODay(new Date(d.getFullYear(), d.getMonth(), 0))];
+  if (per === 'range') return [from || '0000-00-00', to || '9999-99-99'];
+  return ['0000-00-00', '9999-99-99'];
+}
+function khReportData() {
+  const R = KHU.rep; const [a, b] = khPeriodRange(R.period, R.from, R.to); const s = khNorm(R.q);
+  const all = (KH.data ? KH.data.entries : []).filter(e => !e.deleted && (!R.pid || e.partyId === R.pid));
+  let rows;
+  if (R.pid) rows = khWithRunning(all.sort((x, y) => (x.date + (x.createdAt || '')).localeCompare(y.date + (y.createdAt || ''))), R.pid);
+  else rows = all.sort((x, y) => (x.date + (x.createdAt || '')).localeCompare(y.date + (y.createdAt || ''))).map(e => ({ e, run: null }));
+  const opening = R.pid ? (() => { const before = rows.filter(r => r.e.date < a); return before.length ? before[before.length - 1].run : khRound(+(khParty(R.pid) || {}).opening || 0); })() : null;
+  rows = rows.filter(r => r.e.date >= a && r.e.date <= b && (!s || khNorm([khReasonOf(r.e).name, r.e.note, (khParty(r.e.partyId) || {}).name, r.e.src && r.e.src.line].join(' ')).includes(s)));
+  let gave = 0, got = 0, rec = 0; for (const r of rows) { if (r.e.effect === 'gave') gave += r.e.amount; else if (r.e.effect === 'got') got += r.e.amount; else rec += r.e.amount; }
+  const label = { all: 'Poora', today: 'Aaj', week: 'Pichhle 7 din', month: 'Is mahine', last: 'Pichhle mahine', range: `${a > '0000' ? khLongDate(a) : '…'} – ${b < '9999' ? khLongDate(b) : '…'}` }[R.period] || '';
+  return { rows, gave: khRound(gave), got: khRound(got), rec: khRound(rec), opening, a, b, label: label + (s ? ` · "${R.q.trim()}"` : ''), filtered: !!s };
+}
+function khRenderReport(body, pg) {
+  const R = KHU.rep; const p = R.pid ? khParty(R.pid) : null;
+  const t = pg && pg.querySelector('.page-title'); if (t) t.textContent = p ? 'Report · ' + p.name : 'Report · Sab khate';
+  const D = khReportData();
+  const wrap = el('div', { class: 'kk' });
+  const from = el('input', { type: 'date', value: R.from }), to = el('input', { type: 'date', value: R.to });
+  from.addEventListener('change', () => { R.from = from.value; refreshKhataPages(); }); to.addEventListener('change', () => { R.to = to.value; refreshKhataPages(); });
+  wrap.append(el('div', { class: 'chips kk-per' }, ...[['all', 'Sab'], ['today', 'Aaj'], ['week', '7 din'], ['month', 'Is mahine'], ['last', 'Pichhla mahina'], ['range', 'Tareekh se']].map(([v, l]) => el('button', { class: 'chip' + (R.period === v ? ' active' : ''), 'data-per': v, text: l, onclick: () => { R.period = v; refreshKhataPages(); } }))));
+  if (R.period === 'range') wrap.append(el('div', { class: 'kf-2 kk-range' }, from, to));
+  const q = el('input', { type: 'search', class: 'kk-q', placeholder: 'Entry khojein', value: R.q }); q.addEventListener('change', () => { R.q = q.value; refreshKhataPages(); });
+  wrap.append(q);
+  const net = D.gave - D.got;
+  wrap.append(el('div', { class: 'kk-rsum' },
+    p ? el('div', { class: 'r1' }, el('span', { text: 'Shuru ka baaki' }), el('b', { class: 'kk-' + khCls(D.opening), text: khMoney(D.opening) + ' ' + khWord(D.opening) })) : null,
+    el('div', { class: 'r2' }, el('div', {}, el('span', { text: `${D.rows.length} entry` }), el('small', { text: D.label })), el('div', { class: 'gave' }, el('span', { text: 'Aapne diye' }), el('b', { text: khMoney(D.gave) })), el('div', { class: 'got' }, el('span', { text: 'Aapko mile' }), el('b', { text: khMoney(D.got) }))),
+    D.filtered ? el('div', { class: 'r1' }, el('span', { text: 'Khoj ke hisaab se – baaki poore khate mein dekhein' }), el('b', { text: '' })) : p ? el('div', { class: 'r1' }, el('span', { text: 'Aakhri baaki' }), el('b', { class: 'kk-' + khCls(D.opening + net), text: khMoney(D.opening + net) + ' ' + khWord(D.opening + net) })) : el('div', { class: 'r1' }, el('span', { text: 'Fark (diye − mile)' }), el('b', { class: 'kk-' + khCls(net), text: khMoney(net) })),
+    D.rec ? el('div', { class: 'r1' }, el('span', { text: 'Sirf record (nagad / cash sale…)' }), el('b', { text: khMoney(D.rec) })) : null));
+  if (D.rows.length) {
+    wrap.append(el('div', { class: 'kk-cols' }, el('span', { text: 'ENTRY' }), el('span', { class: 'gave', text: 'AAPNE DIYE' }), el('span', { class: 'got', text: 'AAPKO MILE' })));
+    D.rows.slice().reverse().slice(0, 800).forEach(r => wrap.append(khEntryRow(r.e, r.run, !p)));
+  } else wrap.append(el('div', { class: 'kk-empty', text: 'Is samay mein koi entry nahi.' }));
+  wrap.append(el('div', { class: 'kk-btns' }, el('button', { class: 'btn cancel', text: '📝 Text share', onclick: () => khShareReportText(p, D) }), el('button', { class: 'btn ok', id: 'khRepImg', text: '🖼️ Image share', onclick: () => khShareReportImage(p, D) })));
+  body.replaceChildren(wrap);
+}
+function khReportText(p, D) {
+  const out = [`*${settings.khataShop || APP.name}* — ${p ? p.name : 'Sab khate'}`, D.label, ''];
+  if (p && !D.filtered) out.push(`Shuru ka baaki: ${khMoney(D.opening)} ${khWord(D.opening)}`);
+  for (const r of D.rows.slice(-80)) { const n = p ? '' : ((khParty(r.e.partyId) || {}).name || '') + ' · '; out.push(`${khShortDate(r.e.date)} ${n}${khReasonOf(r.e).name}: ${r.e.effect === 'got' ? '−' : r.e.effect === 'gave' ? '+' : ''}${khMoney(r.e.amount)}`); }
+  if (D.rows.length > 80) out.push(`…aur ${D.rows.length - 80} entry`);
+  out.push('', `Aapne diye: ${khMoney(D.gave)} · Aapko mile: ${khMoney(D.got)}`);
+  if (p && !D.filtered) out.push(khBalanceLine(D.opening + D.gave - D.got));
+  return out.join('\n');
+}
+async function khShareReportText(p, D) {
+  const text = khReportText(p, D);
+  if (Native.on) { try { await Native.shareText('Khata report', text); return; } catch (e) { return; } }
+  if (navigator.share) { try { await navigator.share({ title: 'Khata report', text }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
+  toast((await copyText(text)) ? 'Report copy hui ✓' : 'Copy nahi hua');
+}
+function khDrawStatement(p, D) {
+  const W = 1080, PAD = 40, ROW = 66, HEAD = p ? 250 : 210, rows = D.rows.slice(-300);
+  const H = HEAD + 70 + rows.length * ROW + 250;
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d');
+  const FONT = 'system-ui, "Segoe UI", Roboto, sans-serif';
+  x.fillStyle = '#FFFFFF'; x.fillRect(0, 0, W, H);
+  x.fillStyle = '#2E7D32'; x.fillRect(0, 0, W, 120);
+  x.fillStyle = '#fff'; x.font = `800 44px ${FONT}`; x.textAlign = 'left'; x.fillText(settings.khataShop || APP.name, PAD, 72);
+  x.font = `600 26px ${FONT}`; x.textAlign = 'right'; x.fillText(D.label, W - PAD, 72);
+  x.fillStyle = '#111'; x.textAlign = 'left'; x.font = `800 40px ${FONT}`; x.fillText(p ? p.name : 'Sab khate – report', PAD, 178);
+  if (p && !D.filtered) { x.font = `600 28px ${FONT}`; x.fillStyle = '#555'; x.fillText(`Shuru ka baaki: ${khMoney(D.opening)} ${khWord(D.opening)}`, PAD, 225); }
+  let y = HEAD; const cD = PAD, cX = 210, cG = W - PAD - 420, cR = W - PAD - 220, cB = W - PAD;
+  x.fillStyle = '#ECEFF1'; x.fillRect(PAD - 10, y, W - PAD * 2 + 20, 56);
+  x.fillStyle = '#37474F'; x.font = `800 24px ${FONT}`; x.textAlign = 'left'; x.fillText('TAREEKH', cD, y + 37); x.fillText(p ? 'DETAIL' : 'NAAM · DETAIL', cX, y + 37);
+  x.textAlign = 'right'; x.fillText('DIYE', cG + 180, y + 37); x.fillText('MILE', cR + 180, y + 37); if (p) x.fillText('BAAKI', cB, y + 37);
+  y += 70;
+  const fit = (s, w) => { if (x.measureText(s).width <= w) return s; while (s.length > 1 && x.measureText(s + '…').width > w) s = s.slice(0, -1); return s + '…'; };
+  rows.forEach((r, i) => {
+    if (i % 2) { x.fillStyle = '#F7F9F7'; x.fillRect(PAD - 10, y - 8, W - PAD * 2 + 20, ROW); }
+    x.font = `700 28px ${FONT}`; x.fillStyle = '#333'; x.textAlign = 'left'; x.fillText(khShortDate(r.e.date), cD, y + 36);
+    const nm = p ? '' : ((khParty(r.e.partyId) || {}).name || '') + ' · ';
+    x.font = `600 27px ${FONT}`; x.fillText(fit(nm + [khReasonOf(r.e).name, r.e.note].filter(Boolean).join(' · '), (p ? cG : cG + 40) - cX - 20), cX, y + 36);
+    x.textAlign = 'right'; x.font = `800 30px ${FONT}`;
+    if (r.e.effect === 'gave') { x.fillStyle = '#C62828'; x.fillText(khMoney(r.e.amount), cG + 180, y + 36); }
+    else if (r.e.effect === 'got') { x.fillStyle = '#1B7F4B'; x.fillText(khMoney(r.e.amount), cR + 180, y + 36); }
+    else { x.fillStyle = '#757575'; x.font = `700 24px ${FONT}`; x.fillText('(' + khMoney(r.e.amount) + ')', cG + 180, y + 36); }
+    if (p && r.run != null) { x.fillStyle = r.run > 0.5 ? '#C62828' : r.run < -0.5 ? '#1B7F4B' : '#555'; x.font = `700 26px ${FONT}`; x.fillText(khMoney(r.run), cB, y + 36); }
+    y += ROW;
+  });
+  y += 20; x.fillStyle = '#2E7D32'; x.fillRect(PAD - 10, y, W - PAD * 2 + 20, 4); y += 60;
+  x.textAlign = 'left'; x.fillStyle = '#C62828'; x.font = `800 32px ${FONT}`; x.fillText(`Aapne diye: ${khMoney(D.gave)}`, PAD, y);
+  x.fillStyle = '#1B7F4B'; x.textAlign = 'right'; x.fillText(`Aapko mile: ${khMoney(D.got)}`, W - PAD, y);
+  y += 70; const bal = p ? D.opening + D.gave - D.got : D.gave - D.got;
+  x.textAlign = 'center'; x.fillStyle = '#111'; x.font = `900 40px ${FONT}`; if (!D.filtered) x.fillText(p ? khBalanceLine(bal) : `Fark: ${khMoney(bal)}`, W / 2, y);
+  x.fillStyle = '#9A9A9A'; x.font = `600 22px ${FONT}`; x.fillText('Made with ' + APP.name, W / 2, H - 30);
+  return c;
+}
+async function khShareReportImage(p, D) {
+  try {
+    const c = khDrawStatement(p, D); const blob = await new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error('toBlob')), 'image/png'));
+    const name = safeName('Khata ' + (p ? p.name : 'report') + ' ' + khToday()) + '.png';
+    if (Native.on) { await Native.shareFile(name, blob, name); return; }
+    const file = new File([blob], name, { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: name }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
+    await saveBlob(blob, name); toast('Image save hui ✓');
+  } catch (e) { if (!/cancel/i.test(String(e && e.message))) toast('Image nahi bani'); }
+}
+
+/* ---- reasons (Udhaar, Jama, Nagad…) ---- */
+function khRenderReasons(body) {
+  const D = KH.data || khNormalize(null);
+  const used = new Map(); for (const e of D.entries) if (!e.deleted) used.set(e.reason, (used.get(e.reason) || 0) + 1);
+  body.replaceChildren(el('div', { class: 'kk' },
+    el('p', { class: 'kk-note', text: 'Har entry ka reason aap khud tay karein. Reason batata hai ki baaki badhega, ghatega ya sirf record rahega. Note mein kisi line ke aakhir mein #reason likhkar us line ka reason badal sakte hain (jaise  gopi 500 #jama).' }),
+    el('div', { class: 'kk-list' }, ...D.reasons.map(r => el('button', { class: 'kk-row', 'data-rid': r.id, onclick: () => khReasonForm(r) },
+      el('span', { class: 'kk-av', style: `background:${KH_COLORS[r.color] || '#616161'};color:#fff`, text: r.name[0].toUpperCase() }),
+      el('span', { class: 'mid' }, el('b', { text: r.name }), el('span', { text: KH_EFFECTS[r.effect] + ' · #' + khNorm(r.name).replace(/ /g, '') })),
+      el('span', { class: 'kk-amt' }, el('span', { text: (used.get(r.id) || 0) + ' entry' }))))),
+    el('button', { class: 'kk-fab', text: '＋ Naya reason', onclick: () => khReasonForm(null) })));
+}
+function khReasonForm(r) {
+  const isNew = !r; let effect = r ? r.effect : 'gave', color = r ? r.color : 'purple';
+  const name = el('input', { type: 'text', placeholder: 'Jaise: Advance, Return, Commission', value: r ? r.name : '', autocomplete: 'off' });
+  const eff = el('div', { class: 'menu-list' }); const drawE = () => eff.replaceChildren(...Object.entries(KH_EFFECTS).map(([k, l]) => el('button', { class: 'menu-item' + (effect === k ? ' on' : ''), onclick: () => { effect = k; drawE(); } }, el('span', { class: 'ic', text: effect === k ? '◉' : '○' }), el('span', { text: l })))); drawE();
+  const sw = el('div', { class: 'kf-sw' }); const drawC = () => sw.replaceChildren(...Object.entries(KH_COLORS).map(([k, v]) => el('button', { class: 'swatch' + (color === k ? ' active' : ''), style: `background:${v}`, 'aria-label': k, onclick: () => { color = k; drawC(); } }))); drawC();
+  const err = el('p', { class: 'kf-err' });
+  const n = r ? KH.data.entries.filter(e => e.reason === r.id && !e.deleted).length : 0;
+  Sheet.show(el('div', { class: 'kf' }, el('h3', { text: isNew ? '＋ Naya reason' : '✏️ Reason badlein' }),
+    el('label', { class: 'lbl', text: 'Naam' }), name, el('label', { class: 'lbl', text: 'Khate par asar' }), eff, el('label', { class: 'lbl', text: 'Rang' }), sw,
+    !isNew && n ? el('p', { class: 'hint', text: `${n} purani entry is reason ki hain – unka hisaab waisa hi rahega, naya asar aage ki entries par lagega.` }) : null, err,
+    el('div', { class: 'sheet-actions' },
+      !isNew && KH.data.reasons.length > 1 ? el('button', { class: 'btn danger', text: 'Delete', onclick: async () => {
+        if (n) { err.textContent = `${n} entry is reason ki hain – pehle unhe badlein`; return; }
+        KH.data.reasons = KH.data.reasons.filter(x => x.id !== r.id); if (settings.khataReason === r.id) setSetting('khataReason', KH.data.reasons[0].id);
+        await khSave(); Sheet.close(); toast('Reason delete hua');
+      } }) : null,
+      el('button', { class: 'btn ok', id: 'khReasonSave', text: 'Save', onclick: async () => {
+        const nm = name.value.trim().slice(0, 30); if (!nm) { err.textContent = 'Naam likhein'; return; }
+        if (KH.data.reasons.some(x => x !== r && khNorm(x.name) === khNorm(nm))) { err.textContent = 'Ye reason pehle se hai'; return; }
+        if (r) Object.assign(r, { name: nm, effect, color }); else KH.data.reasons.push({ id: newId('kr_'), name: nm, effect, color });
+        await khSave(); Sheet.close(); toast('✓ Reason save hua');
+      } }))));
+}
+
+/* ---- ⚠ new name / tap on a line mark ---- */
+function khTitleCase(s) { return String(s).replace(/\s+/g, ' ').trim().replace(/(^|\s)(\S)/g, (m, a, b) => a + b.toUpperCase()); }
+function khUnknownSheet(it, after) {
+  const sug = khSuggest(it.label);
+  const done = () => { Sheet.onClose = null; Sheet.close(); render(true); khScheduleCount(); if (after) setTimeout(after, 280); };
+  Sheet.show(el('div', { class: 'kf' }, el('h3', { text: `⚠ "${it.label}" ka khata nahi hai` }),
+    el('p', { class: 'msg', text: `Line: ${it.raw}\nRakam: ${khMoney(it.amount || 0)} · ${it.reasonName || ''}` }),
+    el('button', { class: 'btn ok kf-wide', id: 'khMakeParty', text: `＋ "${khTitleCase(it.label)}" ka naya khata banayein`, onclick: () => { Sheet.onClose = null; Sheet.close(); setTimeout(() => khPartyForm(null, () => { render(true); khScheduleCount(); if (after) after(); }, { name: khTitleCase(it.label) }), 260); } }),
+    sug.length ? el('label', { class: 'lbl', text: 'Ya kya ye inme se koi hai? (doosra naam jud jaayega)' }) : null,
+    ...sug.map(p => el('button', { class: 'menu-item', 'data-pid': p.id, onclick: async () => { p.aliases = [...(p.aliases || []), it.label]; p.updatedAt = new Date().toISOString(); await khSave(); toast(`✓ "${it.label}" ab ${p.name} ka doosra naam hai`); done(); } }, khAvatar(p), el('span', {}, p.name, el('span', { class: 'sub', text: khBalanceLine(khBalance(p.id)) })))),
+    el('button', { class: 'kp-link', id: 'khIgnore', text: 'Ye naam kisi khate ka nahi hai – chhod dein', onclick: async () => { const k = khNorm(it.label); if (!KH.data.ignore.includes(k)) KH.data.ignore.push(k); await khSave(); toast(`"${it.label}" ko khata mein nahi bheja jaayega`); done(); } }),
+    el('div', { class: 'sheet-actions' }, el('button', { class: 'btn cancel', text: 'Band', onclick: () => Sheet.close() }))));
+}
+function khLineSheet(i) {
+  const it = KH.last && KH.last.items.find(x => x.i === i); if (!it) return;
+  if (it.unknown && !it.err) { khUnknownSheet(it); return; }
+  const p = it.party;
+  const status = it.err ? ['err', '✗ ' + it.err] : it.zero ? ['zero', 'Rakam 0 hai – khate mein nahi jaayegi'] : it.status === 'ok' ? ['ok', '✓ Khate mein publish ho chuki hai'] : it.status === 'changed' ? ['chg', `✎ Badli hai: ${khMoney(it.entry.amount)} ➜ ${khMoney(it.amount)} – Publish baaki`] : ['new', '↑ Nayi entry – Publish baaki'];
+  const kv = (k, v) => el('div', { class: 'kd-kv' }, el('span', { text: k }), el('b', { text: v }));
+  const f = khCfg(state.sheets[state.sheetIdx]).formula;
+  Sheet.show(el('div', { class: 'kd' }, el('h3', { text: '📒 ' + (p ? p.name : it.label) }),
+    el('div', { class: 'kd-st ' + status[0], text: status[1] }),
+    kv('Line', it.raw), kv('Line ka total', fmtNum(it.x)), f && f !== 'x' ? kv('Formula', `${f}  →  ${khMoney(it.amount)}`) : kv('Rakam', khMoney(it.amount || 0)),
+    kv('Reason', it.reasonName || ''), kv('Tareekh', khLongDate(it.date)), p ? kv('Abhi ka baaki', `${khMoney(khBalance(p.id))} ${khWord(khBalance(p.id))}`) : null,
+    el('button', { class: 'kp-link', text: '⚙ Is tab ki khata setting (reason / formula)', onclick: () => { Sheet.onClose = null; Sheet.close(); setTimeout(() => khTabSettings(state.sheetIdx), 260); } }),
+    el('div', { class: 'sheet-actions' },
+      p ? el('button', { class: 'btn cancel', text: '📒 Khata', onclick: () => { Sheet.close(); setTimeout(async () => { await openKhata(); khOpenParty(p.id); }, 260); } }) : null,
+      el('button', { class: 'btn ok', text: '📤 Publish', onclick: () => { Sheet.onClose = null; Sheet.close(); setTimeout(khPublishFlow, 260); } }))));
+}
+
+/* ---- khata setting of one tab: on/off, reason, formula ---- */
+function khTabSettings(idx = state.sheetIdx) {
+  const sh = state.sheets[idx]; if (!sh) return;
+  const c = khCfg(sh); let reason = c.reason;
+  const on = el('input', { type: 'checkbox' }); on.checked = !!c.on;
+  const formula = el('input', { type: 'text', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', placeholder: 'x', value: c.formula || 'x' });
+  const num = el('input', { type: 'text', inputmode: 'decimal', placeholder: 'Number', autocomplete: 'off' });
+  const round = el('input', { type: 'checkbox' }); round.checked = !!c.round;
+  const rChips = el('div', { class: 'chips' }); const drawR = () => rChips.replaceChildren(...KH.data.reasons.map(r => el('button', { class: 'chip kr-' + r.effect + (reason === r.id ? ' active' : ''), 'data-r': r.id, onclick: () => { reason = r.id; drawR(); } }, el('i', { class: 'dot', style: `background:${KH_COLORS[r.color] || '#616161'}` }), r.name)), el('button', { class: 'chip', text: '＋ Naya', onclick: () => { Sheet.onClose = null; Sheet.close(); setTimeout(() => khReasonForm(null), 260); } })); drawR();
+  // example value: the first entry line of this tab
+  const texts = (idx === state.sheetIdx ? ED.value : sh.text).split('\n'); const calc = idx === state.sheetIdx ? state.calc : khCalc(sh.text);
+  const ex = calc ? calc.lines.findIndex(l => l.kind === 'num' && l.label && !l.agg && !l.assign) : -1;
+  const exX = ex >= 0 ? calc.lines[ex].value : 100, exText = ex >= 0 ? texts[ex].trim() : 'naam 100';
+  const prev = el('div', { class: 'kf-prev' });
+  const upd = () => { const f = formula.value.trim() || 'x'; let v = khApplyFormula(f, exX); if (round.checked && Number.isFinite(v)) v = Math.round(v); prev.className = 'kf-prev' + (Number.isFinite(v) ? '' : ' bad'); prev.textContent = Number.isFinite(v) ? `Jaise: "${exText}" = ${fmtNum(exX)}  →  khate mein ${khMoney(v)}${v < 0 ? ' (ulta: mile/diye badal jaayega)' : ''}` : 'Formula samajh nahi aaya – x ka use karein, jaise x*120'; };
+  const ops = el('div', { class: 'chips' }, ...[['=', 'Jaisa hai'], ['*', '× Guna'], ['/', '÷ Bhaag'], ['+', '+ Jodo'], ['-', '− Ghatao']].map(([o, l]) => el('button', { class: 'chip', 'data-op': o, text: l, onclick: () => { if (o === '=') formula.value = 'x'; else { const n = parseFloat(num.value); formula.value = `x ${o} ${Number.isFinite(n) ? n : (o === '*' || o === '/' ? 2 : 10)}`; } upd(); } })));
+  formula.addEventListener('input', upd); round.addEventListener('change', upd); num.addEventListener('input', () => { const m = formula.value.match(/^x\s*([*/+\-])\s*[\d.]+$/); if (m && num.value) { formula.value = `x ${m[1]} ${num.value}`; upd(); } }); upd();
+  const err = el('p', { class: 'kf-err' });
+  Sheet.show(el('div', { class: 'kf' }, el('h3', { text: `📒 Khata setting · tab "${sh.name}"` }),
+    el('label', { class: 'kf-sw-row' }, el('span', { text: 'Is tab ki entries khate mein jaayen' }), el('span', { class: 'switch' }, on, el('span', { class: 'slider' }))),
+    el('label', { class: 'lbl', text: 'Entry ka reason (is tab ki har line ka)' }), rChips,
+    el('label', { class: 'lbl', text: 'Line ke total ko khate mein kaise jodein' }), ops, el('div', { class: 'kf-2' }, num, formula), prev,
+    el('label', { class: 'kf-sw-row' }, el('span', { text: 'Poore rupaye mein round karein' }), el('span', { class: 'switch' }, round, el('span', { class: 'slider' }))),
+    el('p', { class: 'hint', text: 'x = line ka total. Jaise  x*120 (rate),  x/2,  x+10,  x-5,  (x*120)+50.  Kisi ek line ka reason alag chahiye to line ke aakhir mein #jama jaisa likhein.' }), err,
+    el('div', { class: 'sheet-actions' }, el('button', { class: 'btn cancel', text: 'Cancel', onclick: () => Sheet.close() }), el('button', { class: 'btn ok', id: 'khTabSave', text: 'Save', onclick: () => {
+      const f = formula.value.trim() || 'x'; if (!khFormulaOk(f)) { err.textContent = 'Formula galat hai'; return; }
+      sh.khata = { on: on.checked, reason, formula: f, round: round.checked };
+      Sheet.close(); scheduleSave(); render(true); khScheduleCount(); toast('✓ Tab ki khata setting save hui');
+    } }))));
+}
+
+/* ---- settings page helpers ---- */
+function khIgnoreSheet() {
+  const box = el('div', {});
+  const draw = () => box.replaceChildren(...(KH.data.ignore.length ? KH.data.ignore.map(k => el('div', { class: 'menu-item' }, el('span', { class: 'ic', text: '🚫' }), el('span', { style: 'flex:1', text: k }), el('button', { class: 'chip', text: 'Hatayein', onclick: async () => { KH.data.ignore = KH.data.ignore.filter(x => x !== k); await khSave(); draw(); } }))) : [el('p', { class: 'msg', text: 'Koi naam chhoda nahi gaya hai.' })]));
+  draw();
+  Sheet.show(el('div', {}, el('h3', { text: 'Chhode gaye naam' }), el('p', { class: 'msg', text: 'In naamon ki lines khate mein nahi jaati (jaise rent, total, kiraya).' }), box, el('div', { class: 'sheet-actions' }, el('button', { class: 'btn ok', text: 'Theek hai', onclick: () => Sheet.close() }))));
+}
+
+/* ---------------- backup ---------------- */
+async function khMergeBackup(k) {
+  await khLoad(); const inc = khNormalize(k); const D = KH.data; let n = 0;
+  const idMap = new Map();
+  for (const r of inc.reasons) if (!D.reasons.some(x => x.id === r.id)) { if (D.reasons.some(x => khNorm(x.name) === khNorm(r.name))) continue; D.reasons.push(r); }
+  for (const p of inc.parties) {
+    if (D.parties.some(x => x.id === p.id)) { idMap.set(p.id, p.id); continue; }
+    const same = khMaps().names.get(khNorm(p.name));
+    if (same) { idMap.set(p.id, same.id); continue; }
+    D.parties.push(p); idMap.set(p.id, p.id); n++; KH.ver++;
+  }
+  const have = new Set(D.entries.map(e => e.id));
+  for (const e of inc.entries) if (!have.has(e.id)) D.entries.push(Object.assign({}, e, { partyId: idMap.get(e.partyId) || e.partyId }));
+  for (const x of inc.ignore) if (!D.ignore.includes(x)) D.ignore.push(x);
+  for (const [f, t] of Object.entries(inc.pub)) if (!D.pub[f] || D.pub[f] < t) D.pub[f] = t;
+  await khSave(); return n;
+}
+
+/* ---------------- pages & settings ---------------- */
+Object.assign(SETTINGS_PAGES, {
+  khata: { title: '📒 Khata book', cls: 'kpage', actions: () => [{ icon: 'publish', label: 'Publish', run: () => { closeAllPages(); setTimeout(khPublishFlow, 300); } }, { icon: 'settings', label: 'Khata settings', run: () => openPage('khataset') }], render: body => khRenderList(body) },
+  kparty: { title: () => (khParty(KHU.pid) || {}).name || 'Khata', cls: 'kpage', render: (body, pg) => khRenderParty(body, pg) },
+  kreport: { title: 'Report', cls: 'kpage', render: (body, pg) => khRenderReport(body, pg) },
+  kreasons: { title: 'Reasons', cls: 'kpage', render: body => khRenderReasons(body) },
+  khataset: { title: 'Khata book', items: [
+    { t: 'switch', key: 'khataOn', icon: '📒', label: 'Khata book chalu', sub: 'Note ki naam wali entries khate mein jaa sakti hain' },
+    { t: 'switch', key: 'khataMarks', icon: '✓', label: 'Note mein ✓ / ↑ / ⚠ nishan', sub: '✓ khate mein hai · ↑ publish baaki · ⚠ naya naam' },
+    { t: 'action', icon: 'book', label: 'Khata book kholein', run: () => openKhata() },
+    { t: 'section', label: 'Message' },
+    { t: 'chips', key: 'khataChannel', icon: '📨', label: 'Message kaise jaaye (default)', sub: 'Har khate mein alag bhi chun sakte hain', options: [opt('sms', 'SMS'), opt('wa', 'WhatsApp'), opt('both', 'Dono'), opt('none', 'Koi nahi')] },
+    { t: 'chips', key: 'khataWaApp', icon: '💬', label: 'WhatsApp app', options: [opt('auto', 'Apne aap'), opt('wa', 'WhatsApp'), opt('biz', 'WA Business')] },
+    { t: 'text', key: 'khataShop', icon: '🏪', label: 'Dukaan / aapka naam', sub: 'Message aur report mein dikhega', placeholder: 'Jaise: Mahi Traders' },
+    { t: 'text', key: 'khataShopPhone', icon: '📞', label: 'Aapka mobile number', sub: 'Message mein {phone} ki jagah', placeholder: '98xxxxxxxx' },
+    { t: 'chips', key: 'khataLang', icon: '🔤', label: 'Message ki bhasha', options: [opt('hinglish', 'Hinglish'), opt('hindi', 'हिंदी'), opt('english', 'English')] },
+    { t: 'note', text: 'Apna message format (khali chhodein to bhasha wala format lagega). Jagah: {naam} {entries} {baaki} {dukaan} {phone} {date}' },
+    { t: 'textarea', key: 'khataMsg', rows: 6 },
+    { t: 'action', icon: '👁', label: 'Message ka namoona dekhein', run: () => { const p = { name: 'Gopi', id: '_demo' }; const t = khFill(settings.khataMsg || khWords().tpl, { naam: 'Gopi', entries: [khEntryLine({ kind: 'add', date: khToday(), reasonName: 'Udhaar', amount: 19 }), khEntryLine({ kind: 'change', date: khToday(), reasonName: 'Udhaar', amount: 15, old: 11 })].join('\n'), baaki: khBalanceLine(2340), dukaan: settings.khataShop, phone: settings.khataShopPhone, date: khShortDate(khToday()) }); void p; docSheet('Message ka namoona', t); } },
+    { t: 'section', label: 'Entry' },
+    { t: 'nav', page: 'kreasons', icon: '🏷', label: 'Reasons (Udhaar, Jama, Nagad, Kharcha…)', sub: 'Apne reason banayein – baaki badhe, ghate ya sirf record' },
+    { t: 'chips', key: 'khataReason', icon: '＋', label: 'Naye tab ka reason', options: () => (KH.data ? KH.data.reasons : KH_DEFAULT_REASONS).map(r => opt(r.id, r.name)) },
+    { t: 'action', icon: '🚫', label: 'Chhode gaye naam', sub: 'Jo naam khate mein nahi jaate', run: () => khLoad().then(khIgnoreSheet) },
+    { t: 'note', text: 'Kaise kaam karta hai:\n1. Note mein naam ke saath entry likhein – jaise  gopi 12+7\n2. Answer ke aage ⚠ dikhe to tap karke khata banayein\n3. Tab ka reason aur formula tab ke menu (tab pe tap) → Khata setting mein\n4. 📤 Publish dabayein – entries khate mein jaayengi aur SMS / WhatsApp chala jaayega\nEdit karte rehne se kuch nahi jaata – sirf Publish par.' }
+  ] }
+});
+
 
 /* ---------------- Wire up UI ---------------- */
 $('#btnMenu').addEventListener('click', openSidebar);
@@ -2678,7 +3944,7 @@ function nativeBack() {
 async function init() {
   applySettings(); updateKbSwitch();
   if (settings.lock && settings.pinHash) await Lock.unlock();
-  await loadLists();
+  await loadLists(); await khLoad();
   const last = await Store.get('lastFileId'); let opened = false;
   if (last && state.files.some(f => f.id === last)) opened = await openFile(last);
   while (!opened && state.files.length) opened = await openFile(sortedFiles()[0].id);

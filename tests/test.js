@@ -27,7 +27,7 @@ async function setup(ctx) {
   });
 }
 const texts = p => p.$eval('#ed', e => e.value.split('\n'));
-const results = p => p.$$eval('#rescol .r', rs => rs.map(r => r.textContent));
+const results = p => p.$$eval('#rescol .r', rs => rs.map(r => { const c = r.cloneNode(true); c.querySelectorAll('.kb-b').forEach(x => x.remove()); return c.textContent; }));
 const total = p => p.textContent('#totalValue');
 const ready = p => p.waitForFunction(() => window.__cnfReady);
 const today = () => { const d = new Date(); const M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; const D = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']; return `${d.getDate()} ${M[d.getMonth()]} ${d.getFullYear()}, ${D[d.getDay()]}`; };
@@ -134,7 +134,7 @@ const aligned = p => p.evaluate(() => { const m = [...document.querySelectorAll(
 
   // 8. Save dialog with folders, sidebar, pin, trash
   await newFile(p, ['x 1', 'y 2', '']);
-  await p.click('#tb-save'); await p.waitForSelector('.sheet.open input');
+  await p.evaluate(() => { saveFlow(); }); await p.waitForSelector('.sheet.open input');
   ok(await p.textContent('.sheet h3') === 'Save file', 'Save shows "Save file" dialog');
   await p.fill('.sheet input[type=text]', 'Gopi hisab');
   await p.click('.sheet .chip:has-text("New folder")'); await p.fill('.sheet .chips input', 'Customers'); await p.click('.sheet .chips .chip:has-text("Add")');
@@ -372,6 +372,255 @@ const aligned = p => p.evaluate(() => { const m = [...document.querySelectorAll(
   await t.screenshot({ path: path.join(OUT, 'tabs30.png') });
   ok(errs3.length === 0, 'No JS errors (tabs)', errs3);
   await tc.close();
+
+  // 15. Khata book: names → khata, publish, SMS / WhatsApp, formula per tab, reasons, report, backup
+  const kc = await mk(); const k = await kc.newPage(); k.setDefaultTimeout(6000); const errs4 = [];
+  k.on('pageerror', e => errs4.push(e.message)); k.on('console', m => { if (m.type() === 'error' && !/fetching the script/.test(m.text())) errs4.push(m.text()); });
+  await k.goto('https://app.local/'); await ready(k);
+  await k.evaluate(() => { window.__links = []; window.openLink = u => window.__links.push(u); });
+  const marks = () => k.$$eval('#rescol .r', rs => rs.map(r => { const b = r.querySelector('.kb-b'); return b ? b.className.replace('kb-b ', '') : ''; }));
+  const kstate = () => k.evaluate(() => ({ parties: KH.data.parties.map(p => [p.name, khBalance(p.id)]), entries: KH.data.entries.filter(e => !e.deleted).map(e => [khParty(e.partyId).name, e.date, e.amount, e.effect, e.reasonName]), count: khPlan().count }));
+  const closeSheet = async () => { await k.evaluate(() => Sheet.close()); await k.waitForTimeout(300); };
+  await newFile(k, ['7 Oct 2026, Wed', 'gopi 12+7', 'suri 34+40+7', 'rent 700', 'gopi 500 #jama', 'total', '']);
+  await k.waitForTimeout(500);
+  ok(await k.isVisible('#tb-publish') && await k.isVisible('#tb-khata'), 'Publish and Khata buttons in the toolbar');
+  let mk1 = await marks();
+  ok(mk1[1] === 'unk' && mk1[2] === 'unk' && mk1[3] === 'unk' && mk1[4] === 'unk' && !mk1[5], 'New names show ⚠, total line has no mark', mk1);
+  ok((await results(k))[4].endsWith('500') && (await total(k)) === '1,300', '#jama tag is ignored by the calculator', [await results(k), await total(k)]);
+  // ⚠ → create khata
+  await k.click('#rescol .r[data-i="1"] .kb-b'); await k.waitForSelector('#khMakeParty');
+  await k.waitForTimeout(350); await k.screenshot({ path: path.join(OUT, 'khata-unknown.png') });
+  await k.click('#khMakeParty'); await k.waitForSelector('#khPartySave'); await k.waitForTimeout(300);
+  ok(await k.inputValue('.sheet.open input[type=text]') === 'Gopi', 'New khata form takes the name from the line');
+  await k.fill('.sheet.open input[type=tel]', '98765 43210'); await k.click('#khPartySave'); await k.waitForTimeout(700);
+  mk1 = await marks();
+  ok(mk1[1] === 'new' && mk1[4] === 'new' && mk1[2] === 'unk', 'After creating the khata the lines show ↑ (publish pending)', mk1);
+  // suggestions → alias
+  await k.evaluate(() => khUpsertParty({ name: 'Suri Lal', phone: '9811122233', channel: 'sms' })); await k.waitForTimeout(400);
+  await k.click('#rescol .r[data-i="2"] .kb-b'); await k.waitForSelector('.sheet.open .menu-item[data-pid]');
+  await k.click('.sheet.open .menu-item[data-pid]'); await k.waitForTimeout(600);
+  ok((await marks())[2] === 'new' && await k.evaluate(() => KH.data.parties.find(p => p.name === 'Suri Lal').aliases.includes('suri')), 'Similar name suggestion adds "suri" as a second name of Suri Lal');
+  // ignore
+  await k.click('#rescol .r[data-i="3"] .kb-b'); await k.waitForSelector('#khIgnore'); await k.click('#khIgnore'); await k.waitForTimeout(600);
+  ok(!(await marks())[3] && (await k.evaluate(() => khPlan().unknown.length)) === 0, '"rent" can be ignored');
+  // publish
+  ok(await k.textContent('#tb-publish .tb-count') === '3', 'Toolbar shows 3 changes to publish', await k.textContent('#tb-publish .tb-count').catch(() => ''));
+  await k.click('#tb-publish'); await k.waitForSelector('#khPublishGo'); await k.waitForTimeout(350);
+  await k.screenshot({ path: path.join(OUT, 'khata-publish.png') });
+  ok((await k.textContent('.sheet.open')).includes('07 Oct · Udhaar: ₹19') && (await k.textContent('.sheet.open')).includes('07 Oct · Jama: ₹500'), 'Publish screen lists the entries');
+  ok(await k.$eval('.kp-card[data-pid] .chip.active[data-ch]', b => b.dataset.ch) === 'wa' && await k.evaluate(() => document.querySelectorAll('.kp-card')[1].querySelector('.chip.active').dataset.ch) === 'sms', 'Channel per khata: default WhatsApp, Suri Lal SMS');
+  await k.click('.kp-card .kp-link'); const msg = await k.inputValue('.kp-card .kp-msg');
+  ok(msg.includes('Namaste Gopi ji') && msg.includes('Udhaar: ₹19') && msg.includes('Humein aapko dene hain: ₹481'), 'Message preview with new balance', msg);
+  await k.click('#khPublishGo'); await k.waitForTimeout(900);
+  let ks = await kstate();
+  ok(ks.entries.length === 3 && ks.count === 0 && JSON.stringify(ks.parties) === JSON.stringify([['Gopi', -481], ['Suri Lal', 81]]), 'Publish posts the entries, balances right', ks);
+  ok((await marks()).filter(Boolean).every(m => m === 'ok'), 'All lines show ✓ after publish', await marks());
+  ok(await k.isVisible('.kq-list') && (await k.$$('.kq-row')).length === 2, 'Message list opens after publish');
+  await k.screenshot({ path: path.join(OUT, 'khata-send.png') });
+  await k.click('.kq-row >> nth=0 >> .kq-btn'); await k.waitForTimeout(250); await k.click('.kq-row >> nth=1 >> .kq-btn'); await k.waitForTimeout(250);
+  const links = await k.evaluate(() => window.__links);
+  ok(links[0].startsWith('https://wa.me/919876543210?text=Namaste%20Gopi%20ji') && links[1].startsWith('sms:9811122233?body='), 'WhatsApp opens the party chat (91 added), SMS link on web', links);
+  ok(await k.evaluate(() => KH.data.entries.every(e => e.msgs && e.msgs.length === 1 && e.msgs[0].ok)), 'Sent messages are logged on the entries');
+  await closeSheet();
+  // edit after publish → ✎, publish sends only the change
+  await k.evaluate(() => { const v = ED.value.replace('gopi 12+7', 'gopi 12+13'); setValue(v); });
+  await k.waitForTimeout(500);
+  ok((await marks())[1] === 'chg' && await k.evaluate(() => khPlan().count) === 1, 'Editing a published line shows ✎ and 1 change');
+  await k.click('#tb-publish'); await k.waitForSelector('#khPublishGo');
+  ok((await k.textContent('.sheet.open')).includes('₹19 ➜ ₹25 (badla)') && (await k.$$('.kp-card')).length === 1, 'Only the changed entry is shown', await k.textContent('.sheet.open'));
+  await k.click('#khPublishGo'); await k.waitForTimeout(700); await closeSheet();
+  ks = await kstate();
+  ok(ks.parties[0][1] === -475 && ks.entries.length === 3 && await k.evaluate(() => KH.data.entries.find(e => e.amount === 25).hist[0].amount === 19), 'Change updates the entry, keeps history', ks);
+  // date line change = change (not cancel + new)
+  await k.evaluate(() => setValue(ED.value.replace('7 Oct 2026, Wed', '8 Oct 2026, Thu'))); await k.waitForTimeout(400);
+  let pl = await k.evaluate(() => { const p = khPlan(); return [p.adds.length, p.changes.length, p.removes.length]; });
+  ok(JSON.stringify(pl) === '[0,3,0]', 'Changing the date line = 3 changes, nothing cancelled', pl);
+  await k.evaluate(() => setValue(ED.value.replace('8 Oct 2026, Thu', '7 Oct 2026, Wed'))); await k.waitForTimeout(400);
+  // delete a line → cancel
+  await k.evaluate(() => setValue(ED.value.replace('suri 34+40+7\n', ''))); await k.waitForTimeout(400);
+  await k.click('#tb-publish'); await k.waitForSelector('#khPublishGo');
+  ok((await k.textContent('.sheet.open')).includes('₹81 (cancel)'), 'Removed line is shown as cancel');
+  await k.click('#khPublishGo'); await k.waitForTimeout(700); await closeSheet();
+  ks = await kstate();
+  ok(ks.parties[1][1] === 0 && ks.entries.length === 2, 'Cancel removes it from the khata', ks);
+  // per-tab formula + reason (tab menu → khata setting)
+  await k.evaluate(() => addSheet({ name: 'Maal', text: '7 Oct 2026, Wed\ngopi 3\nsuri 2.5\n' })); await k.waitForTimeout(500);
+  ok((await marks())[1] === 'new', 'New tab lines also go to the khata');
+  await k.click('#tabs .tab.active'); await k.waitForSelector('.menu-item[data-key="khata"]'); await k.click('.menu-item[data-key="khata"]');
+  await k.waitForSelector('#khTabSave'); await k.fill('.sheet.open .kf-2 input[inputmode=decimal]', '120'); await k.click('.sheet.open .chip[data-op="*"]');
+  ok(await k.inputValue('.sheet.open .kf-2 input[spellcheck=false]') === 'x * 120' && (await k.textContent('.kf-prev')).includes('₹360'), 'Formula builder: × 120 with live example', await k.textContent('.kf-prev'));
+  await k.waitForTimeout(300); await k.screenshot({ path: path.join(OUT, 'khata-tab-setting.png') });
+  await k.click('.sheet.open .chip[data-r="nagad"]'); await k.click('#khTabSave'); await k.waitForTimeout(500);
+  pl = await k.evaluate(() => khPlan().adds.map(i => [i.party.name, i.amount, i.effect, i.reasonName]));
+  ok(JSON.stringify(pl) === '[["Gopi",360,"none","Nagad"],["Suri Lal",300,"none","Nagad"]]', 'Tab formula x*120 and reason Nagad (record only)', pl);
+  await k.evaluate(() => { state.sheets[state.sheetIdx].khata = { on: true, reason: 'udhaar', formula: '(x*120)/7', round: true }; render(true); });
+  pl = await k.evaluate(() => khPlan().adds.map(i => i.amount));
+  ok(JSON.stringify(pl) === '[51,43]', 'Free formula with round off', pl);
+  await k.evaluate(() => { state.sheets[state.sheetIdx].khata = { on: true, reason: 'udhaar', formula: 'x - 5', round: false }; render(true); });
+  pl = await k.evaluate(() => khPlan().adds.map(i => [i.amount, i.effect]));
+  ok(JSON.stringify(pl) === '[[2,"got"],[2.5,"got"]]', 'Negative result flips gave → got', pl);
+  await k.evaluate(() => { state.sheets[state.sheetIdx].khata = { on: false }; render(true); });
+  ok(!(await marks()).some(Boolean) && await k.evaluate(() => khPlan().count) === 0, 'Khata can be turned off for one tab');
+  await k.evaluate(() => { state.sheets[state.sheetIdx].khata = { on: true, reason: 'udhaar', formula: 'x * 100', round: false }; render(true); });
+  await k.click('#tb-publish'); await k.waitForSelector('#khPublishGo'); await k.click('#khPublishGo'); await k.waitForTimeout(700); await closeSheet();
+  ks = await kstate();
+  ok(ks.parties[0][1] === -175 && ks.parties[1][1] === 250, 'Publishing a second tab adds to the same khata', ks);
+  // custom reason via tag
+  await k.evaluate(async () => { KH.data.reasons.push({ id: 'kr_adv', name: 'Advance', effect: 'got', color: 'purple' }); await khSave(); setValue(ED.value + 'gopi 1 #adv\n'); });
+  await k.waitForTimeout(400);
+  pl = await k.evaluate(() => khPlan().adds.map(i => [i.amount, i.reasonName, i.effect]));
+  ok(JSON.stringify(pl) === '[[100,"Advance","got"]]', 'Own reason picked with a #tag (prefix)', pl);
+  await k.evaluate(() => setValue(ED.value + 'gopi 1 #xyz\n')); await k.waitForTimeout(400);
+  ok((await marks()).includes('err') && await k.evaluate(() => khPlan().errors.length) === 1, 'Unknown #tag shows an error mark');
+  await k.evaluate(() => setValue(ED.value.replace('gopi 1 #adv\ngopi 1 #xyz\n', ''))); await k.waitForTimeout(300);
+  // khata book screens
+  await k.click('#tb-khata'); await k.waitForSelector('.page.kpage .kk-row'); await k.waitForTimeout(350);
+  await k.screenshot({ path: path.join(OUT, 'khata-list.png') });
+  const sum = await k.$$eval('.kk-sum .v', v => v.map(x => x.textContent));
+  ok(JSON.stringify(sum) === '["₹175","₹250"]', 'Summary: give ₹175, get ₹250', sum);
+  await k.fill('.kk-q', 'sur'); await k.waitForTimeout(150);
+  ok((await k.$$('.kk-row')).length === 1, 'Search khata by name / second name');
+  await k.fill('.kk-q', ''); await k.click('.kk-row:has-text("Gopi")'); await k.waitForSelector('.page[data-page="kparty"].open'); await k.waitForTimeout(350);
+  ok(await k.textContent('.page[data-page="kparty"] .page-title') === 'Gopi' && (await k.$$('.page[data-page="kparty"] .kk-e')).length === 3, 'Party page with entries', (await k.$$('.page[data-page="kparty"] .kk-e')).length);
+  await k.screenshot({ path: path.join(OUT, 'khata-party.png') });
+  // manual entry
+  await k.click('#khGot'); await k.waitForSelector('#khEntrySave');
+  await k.fill('.sheet.open input[inputmode=decimal]', '100+75'); await k.waitForTimeout(100);
+  ok((await k.textContent('.kf-prev')).includes('= ₹175') && (await k.textContent('.kf-prev')).includes('₹350 dena hai'), 'Entry form: sum in amount, preview of new balance', await k.textContent('.kf-prev'));
+  await k.click('.sheet.open .chip[data-r="udhaar"]'); await k.waitForTimeout(80);
+  ok((await k.textContent('.kf-prev')).includes('₹0 barabar'), 'Changing reason updates the preview', await k.textContent('.kf-prev'));
+  await k.click('#khEntrySave'); await k.waitForTimeout(600);
+  ok(await k.evaluate(() => Math.abs(khBalance(KH.data.parties[0].id)) < 0.01) && (await k.textContent('.page[data-page="kparty"] .kk-pbal')).includes('barabar'), 'Manual entry saved, balance settled');
+  ok((await k.textContent('.sheet.open h3')).includes('message bhejein'), 'Offer to send a message after a manual entry');
+  await closeSheet();
+  await k.click('.page[data-page="kparty"] .kk-e >> nth=0'); await k.waitForSelector('.kd .btn.danger'); await k.click('.kd .btn.danger'); await k.waitForTimeout(500);
+  ok(await k.evaluate(() => khBalance(KH.data.parties[0].id)) === -175, 'Delete a manual entry');
+  await k.click('#toast .tact'); await k.waitForTimeout(500);
+  ok(await k.evaluate(() => Math.abs(khBalance(KH.data.parties[0].id))) < 0.01, 'Undo brings it back');
+  // report
+  await k.click('.kk-acts button >> nth=0'); await k.waitForSelector('.page[data-page="kreport"].open'); await k.click('.chip[data-per="all"]'); await k.waitForTimeout(350);
+  ok((await k.textContent('.kk-rsum')).includes('Aakhri baaki') && (await k.$$('.page[data-page="kreport"] .kk-e')).length === 4, 'Report of one khata');
+  await k.screenshot({ path: path.join(OUT, 'khata-report.png') });
+  const rep = await k.evaluate(() => { const D = khReportData(); const c = khDrawStatement(khParty(KHU.rep.pid), D); return { w: c.width, h: c.height, t: khReportText(khParty(KHU.rep.pid), D) }; });
+  ok(rep.w === 1080 && rep.h > 800 && rep.t.includes('Hisaab barabar'), 'Statement picture + text', rep.t);
+  await k.evaluate(() => closeAllPages()); await k.waitForTimeout(400);
+  // validation
+  await k.evaluate(() => khPartyForm(null)); await k.waitForSelector('#khPartySave');
+  await k.fill('.sheet.open input[type=text] >> nth=0', 'SURI'); await k.click('#khPartySave'); await k.waitForTimeout(150);
+  ok((await k.textContent('.kf-err')).includes('Suri Lal'), 'Same name in two khata is blocked', await k.textContent('.kf-err'));
+  await k.fill('.sheet.open input[type=text] >> nth=0', 'Ramesh'); await k.fill('.sheet.open input[type=tel]', '123'); await k.click('#khPartySave'); await k.waitForTimeout(150);
+  ok((await k.textContent('.kf-err')).includes('10 ank'), 'Short phone number is blocked');
+  await k.fill('.sheet.open input[type=tel]', ''); await k.click('#khPartySave'); await k.waitForTimeout(500);
+  // Hindi name
+  await k.evaluate(() => khUpsertParty({ name: 'गोपाल' })); await k.evaluate(() => setValue(ED.value + 'गोपाल 50\n')); await k.waitForTimeout(400);
+  ok(await k.evaluate(() => khPlan().adds.some(i => i.party.name === 'गोपाल' && i.amount === 5000)), 'Hindi names work', await k.evaluate(() => JSON.stringify(KH.last.items.map(i => [i.label, i.unknown]))));
+  // native: SMS by itself, WhatsApp opens chat
+  const nat = await k.evaluate(async () => {
+    const calls = []; const mock = { apps: async () => ({ wa: true, biz: false, smsPermission: false }), requestSms: async () => { calls.push('perm'); return { granted: true }; }, sendSms: async o => { calls.push(['sms', o.phone, o.text.slice(0, 12)]); return { ok: true, status: 'sent' }; }, whatsapp: async o => { calls.push(['wa', o.phone]); return { opened: true }; } };
+    const oldP = Native.p; Object.defineProperty(Native, 'on', { get: () => true, configurable: true }); Native.p = n => n === 'KhataSender' ? mock : null;
+    try {
+      const p = KH.data.parties.find(x => x.name === 'Suri Lal'); khSendJobs(khJobsFor(p, 'Namaste Suri', ['x'], 'both'));
+      await new Promise(r => setTimeout(r, 300)); document.querySelectorAll('.kq-row')[1].querySelector('.kq-btn').click(); await new Promise(r => setTimeout(r, 200));
+      return { calls, st: [...document.querySelectorAll('.kq-st')].map(x => x.textContent) };
+    } finally { Sheet.close(); await new Promise(r => setTimeout(r, 300)); delete Native.on; Object.defineProperty(Native, 'on', { get() { try { return !!(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform()); } catch (e) { return false; } }, configurable: true }); Native.p = oldP; }
+  });
+  ok(JSON.stringify(nat.calls) === '["perm",["sms","9811122233","Namaste Suri"],["wa","919811122233"]]' && nat.st[0] === '✓ Gaya', 'Phone app: asks SMS permission once, SMS goes by itself, WhatsApp opens chat', nat);
+  // persistence + backup
+  await k.evaluate(() => { scheduleSave(); return flushSave(); }); await k.waitForTimeout(300);
+  await k.reload(); await ready(k); await k.waitForTimeout(500);
+  ks = await kstate();
+  ok(ks.parties.length === 4 && Math.abs(ks.parties[0][1]) < 0.01 && ks.parties[1][1] === 250 && ks.count === 1, 'Khata survives restart (only the unpublished Hindi line is pending)', ks);
+  ok(await k.evaluate(() => state.sheets.find(s => s.name === 'Maal').khata.formula === 'x * 100'), 'Tab khata setting is saved with the file');
+  const kbk = await k.evaluate(async () => { await flushSave(); await khSaving; const files = []; for (const m of state.files) files.push(await Store.get(m.id)); return JSON.stringify({ app: 'CalcNote', folders: state.folders, files, khata: KH.data }); });
+  const k2c = await mk(); const k2 = await k2c.newPage(); await k2.goto('https://app.local/'); await ready(k2);
+  k2.evaluate(t => importBackupText(t), kbk); await k2.waitForSelector('.sheet.open .btn.ok'); await k2.click('.sheet .btn.ok'); await k2.waitForTimeout(900);
+  const rest = await k2.evaluate(() => ({ p: KH.data.parties.length, e: KH.data.entries.filter(e => !e.deleted).length, b: khBalance(KH.data.parties.find(p => p.name === 'Suri Lal').id) }));
+  ok(rest.p === 4 && rest.e === ks.entries.length && rest.b === 250, 'Backup restore brings back all khata', rest);
+  await k2c.close();
+  // delete khata with undo
+  await k.evaluate(async () => { await openKhata(); khOpenParty(KH.data.parties.find(p => p.name === 'गोपाल').id); }); await k.waitForTimeout(500);
+  await k.evaluate(() => { khDeleteParty(khParty(KHU.pid)); }); await k.waitForSelector('.sheet.open .btn.danger'); await k.click('.sheet .btn.danger'); await k.waitForTimeout(500);
+  ok(await k.evaluate(() => KH.data.parties.length) === 3, 'Delete a khata');
+  await k.click('#toast .tact'); await k.waitForTimeout(400);
+  ok(await k.evaluate(() => KH.data.parties.length) === 4, 'Undo delete khata');
+  await k.evaluate(() => closeAllPages()); await k.waitForTimeout(400);
+  // settings page + marks off
+  await openSettingsPage(k, 'khataset'); await k.waitForTimeout(200);
+  ok((await k.textContent('.page[data-page="khataset"]')).includes('Message kaise jaaye'), 'Khata settings page');
+  await k.screenshot({ path: path.join(OUT, 'khata-settings.png') });
+  await closePages(k);
+  await k.evaluate(() => { setSetting('khataMsg', '{naam}: {entries} | {baaki} | {dukaan}'); setSetting('khataShop', 'Mahi Store'); });
+  ok(await k.evaluate(() => khMessage(KH.data.parties[1], [{ kind: 'add', date: '2026-10-07', reasonName: 'Udhaar', amount: 5 }])) === 'Suri Lal: 07 Oct · Udhaar: ₹5 | Aapka baaki: ₹250 | Mahi Store', 'Own message format');
+  await k.evaluate(() => setSetting('khataMarks', false)); await k.waitForTimeout(200);
+  ok(!(await marks()).some(Boolean), 'Marks can be hidden');
+  await k.evaluate(() => setSetting('khataMarks', true));
+  // speed: 1000 lines with names
+  const sp = await k.evaluate(async () => {
+    await createFile('', Array.from({ length: 1000 }, (_, i) => (i % 3 ? 'gopi ' : 'suri ') + (i % 50 + 1)).concat(['']));
+    const t = s => { const a = performance.now(); for (let j = 0; j < 5; j++) render(); return (performance.now() - a) / 5; };
+    const on = t(); setSetting('khataOn', false); const off = t(); setSetting('khataOn', true); return { on: +on.toFixed(1), off: +off.toFixed(1) };
+  });
+  ok(sp.on - sp.off < 40, 'Khata marks add little time on 1000 lines', sp);
+  console.log(`   khata 1000 lines render: on ${sp.on}ms, off ${sp.off}ms`);
+  ok(errs4.length === 0, 'No JS errors (khata)', errs4);
+  await kc.close();
+
+  // 16. Khata safety (audit fixes): typos never cancel, copies don't double-post, renames keep working
+  const ac = await mk(); const a = await ac.newPage(); a.setDefaultTimeout(8000); const errs5 = [];
+  a.on('pageerror', e => errs5.push(e.message)); a.on('console', m => { if (m.type() === 'error' && !/fetching the script/.test(m.text())) errs5.push(m.text()); });
+  await a.goto('https://app.local/'); await ready(a);
+  await a.evaluate(() => { window.__links = []; window.openLink = u => window.__links.push(u); });
+  const publishAll = async () => { await a.evaluate(async () => { const p = khPlan(); await khApplyPlan(p); }); await a.waitForTimeout(300); };
+  const plan3 = () => a.evaluate(() => { const p = khPlan(); return [p.adds.length, p.changes.length, p.removes.length]; });
+  await a.evaluate(async () => { await khUpsertParty({ name: 'Gopi', phone: '9876543210' }); await khUpsertParty({ name: 'Ram' }); await createFile('', ['7 Oct 2026, Wed', 'gopi 500 #jama', 'ram 20', 'gopi 10 // #jama note', '']); });
+  await a.waitForTimeout(400);
+  ok(await a.evaluate(() => KH.last.items.find(i => i.raw.startsWith('gopi 10')).reasonName) === 'Udhaar', '#tag inside a // comment is not a reason');
+  await publishAll();
+  await a.evaluate(() => setValue(ED.value.replace('#jama', '#jma'))); await a.waitForTimeout(300);
+  ok(JSON.stringify(await plan3()) === '[0,0,0]' && (await a.evaluate(() => khPlan().errors.length)) === 1, 'A #tag typo keeps the published entry (no cancel)', await plan3());
+  await a.evaluate(() => setValue(ED.value.replace('#jma', '#jama'))); await a.waitForTimeout(200);
+  await a.evaluate(() => khUpsertParty({ name: 'Gopi Kumar' }, KH.data.parties[0].id)); await a.waitForTimeout(300);
+  ok(JSON.stringify(await plan3()) === '[0,0,0]' && await a.evaluate(() => KH.data.parties[0].aliases.includes('Gopi')), 'Renaming a khata keeps the old name working', await plan3());
+  await a.evaluate(() => { KH.data.parties[0].aliases = []; KH.ver++; render(true); }); await a.waitForTimeout(200);
+  ok(JSON.stringify(await plan3()) === '[0,0,0]' && (await a.evaluate(() => khPlan().unknown.length)) === 2, 'Name that stops matching shows ⚠ but does not cancel', await plan3());
+  await a.evaluate(() => { KH.data.parties[0].aliases = ['Gopi']; KH.ver++; render(true); });
+  await a.evaluate(async () => { const r = KH.data.reasons.find(x => x.id === 'udhaar'); r.effect = 'got'; await khSave(); render(true); }); await a.waitForTimeout(200);
+  ok(JSON.stringify(await plan3()) === '[0,0,0]', 'Changing a reason’s effect does not rewrite old entries', await plan3());
+  await a.evaluate(async () => { KH.data.reasons.find(x => x.id === 'udhaar').effect = 'gave'; await khSave(); });
+  await a.evaluate(() => duplicateSheet(0)); await a.waitForTimeout(600);
+  ok(await a.evaluate(() => state.sheets.length === 2 && khCfg(state.sheets[1]).on === false) && JSON.stringify(await plan3()) === '[0,0,0]', 'A duplicated tab has khata off – nothing posted twice', await plan3());
+  await a.evaluate(() => { state.sheets[1].khata.on = true; render(true); }); await a.waitForTimeout(300);
+  await a.evaluate(() => khPublishFlow()); await a.waitForSelector('#khPublishGo');
+  ok((await a.$$('.kp-dup')).length === 3, 'If turned on, the copy is flagged “shayad pehle se hai”', (await a.$$('.kp-dup')).length);
+  await a.evaluate(() => Sheet.close()); await a.waitForTimeout(300);
+  await a.evaluate(() => { state.sheets[1].khata.on = false; render(true); });
+  await a.evaluate(() => duplicateFlow(state.fileId)); await a.waitForTimeout(700);
+  ok(await a.evaluate(() => state.title.includes('(copy)') && state.sheets.every(s => khCfg(s).on === false) && khPlan().count === 0), 'A duplicated file has khata off');
+  // orphan entries become editable
+  const orphan = await a.evaluate(() => { const e = KH.data.entries.find(x => x.src); e.src.fileId = 'gone'; KH.ver++; khEntryDetail(e); return [...document.querySelectorAll('.sheet.open .btn')].map(b => b.textContent); });
+  ok(orphan.some(t => t.includes('Badlein')) && orphan.some(t => t.includes('Delete')), 'Entry from a deleted note can be edited / deleted', orphan);
+  await a.evaluate(() => Sheet.close()); await a.waitForTimeout(300);
+  // deleted khata re-created → duplicate warning
+  await a.evaluate(async () => { const g = KH.data.parties.find(p => p.name === 'Ram'); khDeleteParty(g); }); await a.waitForSelector('.sheet.open .btn.danger'); await a.click('.sheet .btn.danger'); await a.waitForTimeout(400);
+  await a.evaluate(async () => { await openFile(state.files.find(f => !f.title.includes('copy') && f.tabs === 2).id); await khUpsertParty({ name: 'Ram' }); }); await a.waitForTimeout(500);
+  await a.evaluate(() => khPublishFlow()); await a.waitForSelector('#khPublishGo');
+  ok((await a.textContent('.sheet.open')).includes('shayad pehle se hai'), 'Re-created khata warns before posting old lines again');
+  await a.evaluate(() => Sheet.close()); await a.waitForTimeout(300);
+  // reminder shows the message first; report search hides the closing balance
+  await a.evaluate(() => khRemind(KH.data.parties[0], 'sms')); await a.waitForSelector('#khRemSms');
+  ok((await a.inputValue('.sheet.open .kp-msg')).includes('Namaste Gopi Kumar ji') && (await a.evaluate(() => window.__links.length)) === 0, 'Reminder opens a preview, nothing sent yet');
+  await a.click('#khRemSms'); await a.waitForTimeout(500);
+  ok((await a.evaluate(() => window.__links[0] || '')).startsWith('sms:9876543210?body=Namaste'), 'Reminder SMS after confirming');
+  await a.evaluate(() => Sheet.close()); await a.waitForTimeout(300);
+  const filt = await a.evaluate(() => { KHU.rep = { pid: KH.data.parties[0].id, period: 'all', from: '', to: '', q: 'jama' }; const D = khReportData(); return { f: D.filtered, n: D.rows.length, t: khReportText(khParty(KHU.rep.pid), D) }; });
+  ok(filt.f && filt.n === 2 && !/baaki:/i.test(filt.t), 'Report search does not show a wrong closing balance', filt);
+  await a.evaluate(() => { KHU.rep.q = ''; });
+  // marks never hide the amount
+  await a.evaluate(async () => { await switchSheet(0, { animate: false }); setValue(ED.value + 'gopi 1234567.5\n'); }); await a.waitForTimeout(300);
+  const fit = await a.evaluate(() => { const r = [...document.querySelectorAll('#rescol .r.has-kb')].pop(); const b = r.querySelector('.kb-b').getBoundingClientRect(); const range = document.createRange(); range.selectNodeContents(r.lastChild); const t = range.getBoundingClientRect(); const clipped = r.scrollWidth > r.clientWidth + 1; setSetting('khataMarks', false); const r2 = [...document.querySelectorAll('#rescol .r')].filter(x => x.textContent).pop(); const clip0 = r2.scrollWidth > r2.clientWidth + 1; setSetting('khataMarks', true); return { overlap: b.right > t.left + 0.5, clipped, clip0 }; });
+  ok(!fit.overlap && fit.clipped === fit.clip0, 'Mark sits left of the amount and never hides digits', fit);
+  ok(errs5.length === 0, 'No JS errors (khata safety)', errs5);
+  await ac.close();
 
   await browser.close();
   console.log(`\nPASS ${pass}  FAIL ${fail}`); fails.forEach(f => console.log('  ✗ ' + f));
