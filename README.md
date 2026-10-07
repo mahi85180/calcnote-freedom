@@ -13,6 +13,8 @@ Every push to `main` builds a new APK automatically (see the **Actions** tab).
 
 ## ✨ Features
 
+- **Google Drive backup** – choose "Drive" once in Android's Save screen; the app rewrites that backup file automatically (every few hours when changed, and when you leave the app). Notes, tabs and khata are all in it. New phone: install → "Wapas laayein" → pick the file. An empty phone never overwrites a good backup.
+
 - **Khata book** – names in your notes (`gopi 12+7`) go into each person's khata. New names show ⚠ with one-tap "create khata". Nothing is posted until you press **📤 Publish**; then only the changes go in and an SMS (straight from your SIM) or WhatsApp message goes to each person. Every tab has its own reason (Udhaar, Jama, Nagad, Cash sale, Kharcha or your own) and formula (`x*120`, `x/2`, `x+10`…); `#jama` at the end of a line changes one line's reason. Khatabook-style screens: balances, entries with running balance, reports with picture / text share, reminders.
 - **One-tap publish for everybody** – "Sabko: SMS / WhatsApp", all new names get a khata in one go, undo the last publish, notes with unpublished entries are listed in the khata book, remind everybody who owes money, UPI ID in messages, daily automatic backup on the phone (last 7 days).
 

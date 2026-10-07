@@ -566,6 +566,8 @@ html[data-theme="dark"],html[data-theme="black"]{--kk-get:#FF8A80;--kk-get-soft:
 .kb-rrow .nm{flex:1;font-weight:700}
 .kb-prev{white-space:pre-wrap;font:14px/1.45 inherit;background:var(--surface-2);border-radius:10px;padding:10px;margin:8px 0}
 .sg.kh{background:color-mix(in srgb,var(--primary) 16%,var(--surface));font-weight:700}
+.kk-cloud{border-color:#1565C0;background:color-mix(in srgb,#1565C0 8%,var(--kk-card))}
+.kk-cloud small{color:#1565C0}
 
 </style>
 <style id="userCss"></style>
@@ -682,7 +684,7 @@ var capacitorExports=function(e){"use strict";var t;e.ExceptionCode=void 0,(t=e.
 /* =====================================================================
    CalcNote Freedom – notepad calculator
    ===================================================================== */
-const APP = { name: 'CalcNote Freedom', version: '3.6.0', build: 0, repo: 'https://github.com/mahi85180/calcnote-freedom', api: 'https://api.github.com/repos/mahi85180/calcnote-freedom/releases/latest' };
+const APP = { name: 'CalcNote Freedom', version: '3.7.0', build: 0, repo: 'https://github.com/mahi85180/calcnote-freedom', api: 'https://api.github.com/repos/mahi85180/calcnote-freedom/releases/latest' };
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 const el = (tag, props = {}, ...kids) => {
@@ -831,7 +833,7 @@ const DEFAULTS = {
   sortBy: 'updated', tabsEnabled: true, tabTotals: true, swipeTabs: true, hideTabsTyping: true, newTabName: 'date',
   imgCols: 'auto', imgSize: 'L', imgSno: true, imgSkipBlank: true, imgDate: true, textStyle: 'table',
   autoUpdate: true,
-  khataOn: true, khataMarks: true, khataChannel: 'wa', khataWaApp: 'auto', khataShop: '', khataShopPhone: '', khataLang: 'hinglish', khataMsg: '', khataReason: 'udhaar', khataUpi: '', autoBackup: true,
+  khataOn: true, khataMarks: true, khataChannel: 'wa', khataWaApp: 'auto', khataShop: '', khataShopPhone: '', khataLang: 'hinglish', khataMsg: '', khataReason: 'udhaar', khataUpi: '', autoBackup: true, cloudUri: '', cloudName: '', cloudWhere: '', cloudAt: '', cloudErr: '', cloudCount: 0,
   lock: false, lockDelay: 0, pinHash: '', pinSalt: '',
   extensions: '// Your own functions & constants – available in every note\n// gst(x) = x * 1.18\n// usd = 83.5\n',
   customCss: ''
@@ -2461,7 +2463,7 @@ async function importBackupText(text) {
 }
 $('#importInput').addEventListener('change', async e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return; if (f.size > 20 * 1024 * 1024) { toast('File is too large'); return; } importBackupText(await f.text()); });
 function exportSettings() {
-  const s = Object.assign({}, settings); delete s.pinHash; delete s.pinSalt; delete s.lock;
+  const s = Object.assign({}, settings); delete s.pinHash; delete s.pinSalt; delete s.lock; CLOUD_KEYS.forEach(k => delete s[k]);
   saveBlob(new Blob([JSON.stringify({ app: 'CalcNote', edition: 'Freedom', type: 'settings', version: 31, settings: s }, null, 2)], { type: 'application/json' }), 'CalcNoteFreedom_Settings.json');
   if (!Native.on) toast('Settings exported ✓');
 }
@@ -2469,7 +2471,7 @@ $('#importSettingsInput').addEventListener('change', async e => {
   const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;
   try {
     const data = JSON.parse(await f.text()); const s = data && data.settings; if (!s || typeof s !== 'object') throw new Error();
-    for (const k of Object.keys(DEFAULTS)) if (k in s && !['pinHash', 'pinSalt', 'lock'].includes(k) && typeof s[k] === typeof DEFAULTS[k]) settings[k] = s[k];
+    for (const k of Object.keys(DEFAULTS)) if (k in s && !['pinHash', 'pinSalt', 'lock', ...CLOUD_KEYS].includes(k) && typeof s[k] === typeof DEFAULTS[k]) settings[k] = s[k];
     persistSettings(); fmtCache.clear(); applySettings(); render(true); refreshOpenPage(); toast('Settings imported ✓');
   } catch (err) { toast('That is not a settings file'); }
 });
@@ -2594,7 +2596,7 @@ const SETTINGS_PAGES = {
     { t: 'nav', page: 'security', icon: 'shield', label: 'Security', sub: 'App lock with PIN' },
     { t: 'sep' }, { t: 'section', label: 'Backup/Restore Settings' },
     { t: 'nav', page: 'impexp', icon: 'import', label: 'Import/Export Settings', sub: 'Copy your setup to another phone' },
-    { t: 'nav', page: 'backup', icon: 'file', label: 'File backup/restore', sub: 'Save or restore all files' },
+    { t: 'nav', page: 'backup', icon: 'file', label: 'Backup / restore', sub: () => Native.on ? Cloud.status() : 'Save or restore all files' },
     { t: 'sep' }, { t: 'section', label: 'Others' },
     { t: 'action', icon: 'update', label: 'Check for update', sub: 'Download & install the newest version inside the app', run: () => Updater.check(false) },
     { t: 'action', icon: 'share', label: `Share ${APP.name} with friends`, run: () => shareApp() },
@@ -2750,6 +2752,13 @@ const SETTINGS_PAGES = {
   ] },
   backup: { title: 'File backup/restore', items: [
     { t: 'action', icon: 'send', label: 'Backup all files', sub: 'Creates a .json file with every file and folder', run: () => exportBackup() },
+    { t: 'section', label: '☁️ Google Drive backup', when: () => Native.on },
+    { t: 'info', icon: '☁️', label: 'Drive backup', sub: () => Cloud.status(), when: () => Native.on },
+    { t: 'action', icon: '☁️', label: 'Google Drive backup chalu karein', sub: 'Ek baar jagah chunein – phir roz apne aap', run: () => Cloud.setup(), when: () => Native.on && (!Cloud.on || settings.cloudErr === 'lost') },
+    { t: 'action', icon: 'send', label: 'Abhi Drive pe backup karein', run: () => Cloud.run(true), when: () => Native.on && Cloud.on },
+    { t: 'action', icon: 'import', label: 'Drive / file se data wapas laayein', sub: 'Naye phone mein – backup file chunein', run: () => Cloud.restore(), when: () => Native.on },
+    { t: 'action', icon: '✕', label: 'Drive backup band karein', run: () => Cloud.off(), when: () => Native.on && Cloud.on },
+    { t: 'section', label: 'File', when: () => Native.on },
     { t: 'action', icon: 'import', label: 'Restore from backup', sub: 'Also reads backups from older CalcNote versions', run: () => $('#importInput').click() },
     { t: 'info', icon: 'file', label: 'Storage', sub: () => `${state.files.length} files · ${state.folders.length} folders · ${state.trash.length} in recycle bin` }
   ] }
@@ -2845,7 +2854,7 @@ function listEditor({ all, key, max, label, sub, icon }) {
 }
 async function resetSettings() {
   const ok = await dialogConfirm({ title: 'Reset all settings?', message: 'Theme, keypad, toolbar, extensions etc. go back to default. Files and app lock are kept.', okText: 'Reset', danger: true }); if (!ok) return;
-  const keep = { lock: settings.lock, pinHash: settings.pinHash, pinSalt: settings.pinSalt, _v: 34 };
+  const keep = { lock: settings.lock, pinHash: settings.pinHash, pinSalt: settings.pinSalt, _v: 34 }; CLOUD_KEYS.forEach(k => { keep[k] = settings[k]; });
   Object.keys(settings).forEach(k => delete settings[k]); Object.assign(settings, JSON.parse(JSON.stringify(DEFAULTS)), keep);
   persistSettings(); fmtCache.clear(); applySettings(); render(true); refreshOpenPage(); toast('Settings reset ✓');
 }
@@ -3408,6 +3417,7 @@ async function khPublishFlow() {
     const jobs = [];
     for (const g of G) { const d = done.get(g.party.id); if (!d) continue; const text = edited.get(g.party.id) || khMessage(g.party, g.lines); jobs.push(...khJobsFor(g.party, text, d, choice.get(g.party.id))); }
     toast(`✓ ${plan.count} badlav ${done.size} khate mein jud gaye`, 5000, { label: 'Wapas lo', run: () => khUndoPublish() });
+    setTimeout(() => Cloud.auto(0.25), 9000);
     // SMS go out by themselves; WhatsApp opens one chat after another
     jobs.sort((x, y) => (x.ch === 'sms' ? 0 : 1) - (y.ch === 'sms' ? 0 : 1));
     if (jobs.length) setTimeout(() => khSendJobs(jobs, '📨 Messages', true), 280);
@@ -3493,6 +3503,8 @@ function khRenderList(body) {
     else khScanNotes().then(drawPend).catch(e => console.error(e));
   }
   wrap.append(pend);
+  if (Native.on && !Cloud.on) wrap.append(el('button', { class: 'kk-pend kk-cloud', id: 'khCloud', onclick: () => Cloud.setup() }, el('span', { text: '☁️' }), el('span', { class: 'm' }, el('b', { text: 'Backup sirf is phone mein hai' }), el('small', { text: 'Google Drive backup chalu karein – phone kho jaaye tab bhi data bachega' })), el('span', { text: '›' })));
+  else if (Native.on && settings.cloudErr === 'lost') wrap.append(el('button', { class: 'kk-pend kk-cloud', onclick: () => Cloud.setup() }, el('span', { text: '⚠' }), el('span', { class: 'm' }, el('b', { text: 'Drive backup ruk gaya hai' }), el('small', { text: 'Tap karke jagah dobara chunein' })), el('span', { text: '›' })));
   const q = el('input', { type: 'search', class: 'kk-q', placeholder: 'Naam ya number khojein', value: KHU.q, autocomplete: 'off' });
   const listBox = el('div', { class: 'kk-list' });
   const drawList = () => {
@@ -4067,9 +4079,7 @@ async function khAutoBackup(force) {
   if (!Native.on || (!settings.autoBackup && !force)) return null;
   const today = khToday(); if (!force && LS.get('cnf_autobk', '') === today) return null;
   try {
-    await flushSave(); await khLoad(); await khSaving;
-    const files = []; for (const m of state.files) { const r = await Store.get(m.id); if (r) files.push(Object.assign({}, r, { folder: m.folder, pinned: m.pinned })); }
-    const data = { app: 'CalcNote', edition: 'Freedom', version: 35, exportedAt: new Date().toISOString(), auto: true, folders: state.folders, files, khata: KH.data };
+    const data = await backupData(true);
     const name = `Auto-backup/CalcNote-${today}.json`;
     await Native.write(name, new Blob([JSON.stringify(data)], { type: 'application/json' }), 'DOCUMENTS');
     LS.set('cnf_autobk', today);
@@ -4116,6 +4126,108 @@ function khMoreMenu() {
   });
 }
 
+/* =====================================================================
+   GOOGLE DRIVE BACKUP – the user picks a place once (Google Drive → My Drive)
+   through Android's own "Save to" screen; the app keeps rewriting that one
+   file. The Google Drive app on the phone uploads it, so the data is safe
+   even if the phone is lost. On a new phone: "Wapas laayein" → pick the file.
+   ===================================================================== */
+const CLOUD_KEYS = ['cloudUri', 'cloudName', 'cloudWhere', 'cloudAt', 'cloudErr', 'cloudCount'];
+async function backupData(auto) {
+  removeEmptyPendingDate(); await flushSave(); await khLoad(); await khSaving;
+  const files = []; for (const m of state.files) { const r = await Store.get(m.id); if (r) files.push(Object.assign({}, r, { folder: m.folder, pinned: m.pinned })); }
+  return { app: 'CalcNote', edition: 'Freedom', version: 35, exportedAt: new Date().toISOString(), auto: !!auto, folders: state.folders, files, trash: state.trash.length, khata: KH.data };
+}
+const backupCount = d => (d.files || []).filter(f => (f.rows || []).some(r => String(r.text || '').trim()) || (f.sheets || []).some(sh => (sh.rows || []).some(r => String(r.text || '').trim()))).length + ((d.khata && d.khata.parties) || []).length;
+function setQuiet(k, v) { settings[k] = v; persistSettings(); }
+function cloudPlace() {
+  const w = String(settings.cloudWhere || '');
+  return /google\.android\.apps\.docs/.test(w) ? 'Google Drive' : /onedrive|microsoft/i.test(w) ? 'OneDrive' : /dropbox/i.test(w) ? 'Dropbox' : /externalstorage|media|downloads/i.test(w) ? 'phone ka folder' : (w ? 'cloud' : '');
+}
+const Cloud = {
+  busy: null,
+  plugin() { return Native.on ? Native.p('BackupFile') : null; },
+  get on() { return !!settings.cloudUri; },
+  status() {
+    if (!Native.on) return 'Sirf phone app mein (web mein "Backup all files" use karein)';
+    if (!settings.cloudUri) return 'Band – abhi data sirf is phone mein hai';
+    if (settings.cloudErr === 'lost') return '⚠ Ruk gaya – jagah dobara chunein';
+    const at = settings.cloudAt ? khAgo(settings.cloudAt) : 'abhi nahi';
+    return `✓ Chalu · ${cloudPlace() || 'cloud'} · ${settings.cloudName || ''} · aakhri backup: ${at}${settings.cloudErr ? ' · ⚠ pichhli baar fail' : ''}`;
+  },
+  async setup() {
+    const p = this.plugin(); if (!p) { toast('Ye phone app mein hi chalta hai'); return false; }
+    if (!(await new Promise(r => docSheetOnce(() => r(true), () => r(false))))) return false;
+    let r; try { r = await p.create({ name: 'CalcNote-Freedom-Backup.json' }); } catch (e) { toast('Jagah chunne ki screen nahi khuli'); return false; }
+    if (!r || r.cancelled || !r.uri) return false;
+    if (settings.cloudUri && settings.cloudUri !== r.uri) { try { await p.release({ uri: settings.cloudUri }); } catch (e) {} }
+    setQuiet('cloudUri', r.uri); setQuiet('cloudName', r.name || 'CalcNote-Freedom-Backup.json'); setQuiet('cloudWhere', r.where || ''); setQuiet('cloudErr', ''); setQuiet('cloudCount', 0);
+    const ok = await this.run(true);
+    if (ok && !/Google Drive/.test(cloudPlace())) toast('Backup chalu ✓ – behtar hai Google Drive chunein taaki phone kho jaane par bhi data bache', 5000);
+    refreshOpenPage(); refreshKhataPages();
+    return ok;
+  },
+  async run(manual) {
+    const p = this.plugin(); if (!p || !settings.cloudUri) return false;
+    if (this.busy) return this.busy;
+    this.busy = (async () => {
+      try {
+        const d = await backupData(true); const n = backupCount(d);
+        // never replace a good backup with an (almost) empty one – e.g. right after a reinstall
+        if (!manual && settings.cloudCount >= 3 && n <= 1) { setQuiet('cloudErr', 'empty'); return false; }
+        await p.write({ uri: settings.cloudUri, data: JSON.stringify(d) });
+        setQuiet('cloudAt', new Date().toISOString()); setQuiet('cloudErr', ''); setQuiet('cloudCount', n);
+        if (manual) toast(`✓ Backup ho gaya (${cloudPlace() || 'cloud'})`);
+        return true;
+      } catch (e) {
+        const lost = e && (e.code === 'LOST' || e.code === 'NO_FILE' || /Permission lost/i.test(e.message || ''));
+        setQuiet('cloudErr', lost ? 'lost' : String((e && e.message) || 'fail').slice(0, 80));
+        if (manual || lost) toast(lost ? '⚠ Drive backup ruk gaya – Settings → Backup mein jagah dobara chunein' : 'Backup nahi hua – internet / Drive app check karein', 4500);
+        return false;
+      } finally { setTimeout(() => { this.busy = null; refreshOpenPage(); }, 0); }
+    })();
+    return this.busy;
+  },
+  auto(minHours) {                                                // called on start, resume, leaving the app, after publish
+    if (!this.on || settings.cloudErr === 'lost') return;
+    const last = settings.cloudAt ? Date.parse(settings.cloudAt) : 0;
+    if (Date.now() - last >= minHours * 3600e3) this.run(false);
+  },
+  async restore() {
+    const p = this.plugin();
+    if (!p) { $('#importInput').click(); return; }
+    let r; try { r = await p.open(); } catch (e) { toast('File nahi khuli'); return; }
+    if (!r || r.cancelled || !r.text) return;
+    const n = await importBackupText(r.text);
+    if (n && !this.on) setTimeout(() => dialogConfirm({ title: '☁️ Google Drive backup chalu karein?', message: 'Taaki aage bhi data roz Drive pe surakshit rahe.', okText: 'Chalu karein' }).then(ok => ok && this.setup()), 3200);
+  },
+  async off() {
+    const ok = await dialogConfirm({ title: 'Drive backup band karein?', message: 'Drive pe pehle se bani file wahin rahegi. Aage ke badlav uspar nahi jaayenge.', okText: 'Band karein', danger: true });
+    if (!ok) return;
+    const p = this.plugin(); if (p && settings.cloudUri) { try { await p.release({ uri: settings.cloudUri }); } catch (e) {} }
+    CLOUD_KEYS.forEach(k => setQuiet(k, k === 'cloudCount' ? 0 : '')); refreshOpenPage(); refreshKhataPages(); toast('Drive backup band');
+  }
+};
+/* short how-to before the system "Save to" screen opens */
+function docSheetOnce(done, cancel) {
+  Sheet.show(el('div', {}, el('h3', { text: '☁️ Google Drive backup' }),
+    el('p', { class: 'msg', text: 'Agli screen mein:\n1. Upar ☰ menu se "Drive" (Google Drive) chunein\n2. "My Drive" ya koi folder kholein\n3. Neeche "SAVE" dabayein\n\nBas – iske baad app roz apne aap usi file mein backup karega. Naye phone mein: Settings → Backup → "Drive se wapas laayein".' }),
+    el('div', { class: 'sheet-actions' }, el('button', { class: 'btn ok', id: 'cloudGo', text: 'Theek hai, chunein', onclick: () => { Sheet.onClose = null; Sheet.close(); setTimeout(done, 280); } }))), cancel);
+}
+/* first start with no data: offer to bring the old data back */
+function welcomeRestore() {
+  if (!Native.on || LS.get('cnf_welcome', '')) return;
+  LS.set('cnf_welcome', '1');
+  const empty = !state.files.some(f => f.lines > 0) && !(KH.data && KH.data.parties.length);
+  if (empty) {
+    Sheet.show(el('div', {}, el('h3', { text: '👋 Swagat hai!' }), el('p', { class: 'msg', text: 'Naya phone hai? Purana saara hisaab aur khate Google Drive ya backup file se wapas laa sakte hain.' }),
+      el('div', { class: 'sheet-actions' }, el('button', { class: 'btn cancel', text: 'Naya shuru karein', onclick: () => Sheet.close() }), el('button', { class: 'btn ok', text: '☁️ Wapas laayein', onclick: () => { Sheet.onClose = null; Sheet.close(); setTimeout(() => Cloud.restore(), 280); } }))));
+  } else if (!Cloud.on) {
+    Sheet.show(el('div', {}, el('h3', { text: '☁️ Naya: Google Drive backup' }), el('p', { class: 'msg', text: 'Abhi aapka saara hisaab sirf is phone mein hai. Phone kho gaya ya badla to data chala jaayega.\nGoogle Drive backup chalu karein – roz apne aap surakshit, naye phone mein ek tap mein wapas.' }),
+      el('div', { class: 'sheet-actions' }, el('button', { class: 'btn cancel', text: 'Baad mein', onclick: () => Sheet.close() }), el('button', { class: 'btn ok', text: 'Chalu karein', onclick: () => { Sheet.onClose = null; Sheet.close(); setTimeout(() => Cloud.setup(), 280); } }))));
+  }
+}
+
 
 /* ---------------- Wire up UI ---------------- */
 $('#btnMenu').addEventListener('click', openSidebar);
@@ -4152,8 +4264,8 @@ document.addEventListener('touchend', e => {
   else if (open && dx < -70 && Math.abs(dy) < 50) closeSidebar();
 }, { passive: true });
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') { flushSave(); Lock.hiddenAt = Date.now(); }
-  else { applyWakeLock(); setTimeout(() => khAutoBackup(), 4000); if (settings.lock && settings.lockDelay >= 0 && Lock.hiddenAt && (Date.now() - Lock.hiddenAt) / 1000 >= settings.lockDelay && !$('#lock').classList.contains('open')) Lock.unlock(); }
+  if (document.visibilityState === 'hidden') { flushSave(); Lock.hiddenAt = Date.now(); Cloud.auto(1); }
+  else { applyWakeLock(); setTimeout(() => { khAutoBackup(); Cloud.auto(6); }, 4000); if (settings.lock && settings.lockDelay >= 0 && Lock.hiddenAt && (Date.now() - Lock.hiddenAt) / 1000 >= settings.lockDelay && !$('#lock').classList.contains('open')) Lock.unlock(); }
 });
 window.addEventListener('pagehide', () => flushSave());
 if (window.visualViewport) { const vv = window.visualViewport; vv.addEventListener('resize', () => { document.body.style.height = vv.height + 'px'; document.body.classList.toggle('kbd-open', vv.height < window.innerHeight - 140 && document.activeElement === ED); if (document.activeElement === ED) requestAnimationFrame(caretVisible); }); }
@@ -4178,7 +4290,8 @@ async function init() {
   const app = Native.p('App'); if (app) { try { app.addListener('backButton', nativeBack); } catch (e) {} }
   if (!Native.on && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
   Updater.auto();
-  setTimeout(() => khAutoBackup(), 8000);
+  setTimeout(() => { khAutoBackup(); Cloud.auto(6); }, 8000);
+  setTimeout(() => { try { welcomeRestore(); } catch (e) {} }, 1500);
   window.__cnfReady = true;
 }
 init().catch(err => { console.error(err); toast('Something went wrong while starting'); });

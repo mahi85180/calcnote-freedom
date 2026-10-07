@@ -631,7 +631,7 @@ const DEFAULTS = {
   sortBy: 'updated', tabsEnabled: true, tabTotals: true, swipeTabs: true, hideTabsTyping: true, newTabName: 'date',
   imgCols: 'auto', imgSize: 'L', imgSno: true, imgSkipBlank: true, imgDate: true, textStyle: 'table',
   autoUpdate: true,
-  khataOn: true, khataMarks: true, khataChannel: 'wa', khataWaApp: 'auto', khataShop: '', khataShopPhone: '', khataLang: 'hinglish', khataMsg: '', khataReason: 'udhaar', khataUpi: '', autoBackup: true,
+  khataOn: true, khataMarks: true, khataChannel: 'wa', khataWaApp: 'auto', khataShop: '', khataShopPhone: '', khataLang: 'hinglish', khataMsg: '', khataReason: 'udhaar', khataUpi: '', autoBackup: true, cloudUri: '', cloudName: '', cloudWhere: '', cloudAt: '', cloudErr: '', cloudCount: 0,
   lock: false, lockDelay: 0, pinHash: '', pinSalt: '',
   extensions: '// Your own functions & constants – available in every note\n// gst(x) = x * 1.18\n// usd = 83.5\n',
   customCss: ''
@@ -2261,7 +2261,7 @@ async function importBackupText(text) {
 }
 $('#importInput').addEventListener('change', async e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return; if (f.size > 20 * 1024 * 1024) { toast('File is too large'); return; } importBackupText(await f.text()); });
 function exportSettings() {
-  const s = Object.assign({}, settings); delete s.pinHash; delete s.pinSalt; delete s.lock;
+  const s = Object.assign({}, settings); delete s.pinHash; delete s.pinSalt; delete s.lock; CLOUD_KEYS.forEach(k => delete s[k]);
   saveBlob(new Blob([JSON.stringify({ app: 'CalcNote', edition: 'Freedom', type: 'settings', version: 31, settings: s }, null, 2)], { type: 'application/json' }), 'CalcNoteFreedom_Settings.json');
   if (!Native.on) toast('Settings exported ✓');
 }
@@ -2269,7 +2269,7 @@ $('#importSettingsInput').addEventListener('change', async e => {
   const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;
   try {
     const data = JSON.parse(await f.text()); const s = data && data.settings; if (!s || typeof s !== 'object') throw new Error();
-    for (const k of Object.keys(DEFAULTS)) if (k in s && !['pinHash', 'pinSalt', 'lock'].includes(k) && typeof s[k] === typeof DEFAULTS[k]) settings[k] = s[k];
+    for (const k of Object.keys(DEFAULTS)) if (k in s && !['pinHash', 'pinSalt', 'lock', ...CLOUD_KEYS].includes(k) && typeof s[k] === typeof DEFAULTS[k]) settings[k] = s[k];
     persistSettings(); fmtCache.clear(); applySettings(); render(true); refreshOpenPage(); toast('Settings imported ✓');
   } catch (err) { toast('That is not a settings file'); }
 });
@@ -2394,7 +2394,7 @@ const SETTINGS_PAGES = {
     { t: 'nav', page: 'security', icon: 'shield', label: 'Security', sub: 'App lock with PIN' },
     { t: 'sep' }, { t: 'section', label: 'Backup/Restore Settings' },
     { t: 'nav', page: 'impexp', icon: 'import', label: 'Import/Export Settings', sub: 'Copy your setup to another phone' },
-    { t: 'nav', page: 'backup', icon: 'file', label: 'File backup/restore', sub: 'Save or restore all files' },
+    { t: 'nav', page: 'backup', icon: 'file', label: 'Backup / restore', sub: () => Native.on ? Cloud.status() : 'Save or restore all files' },
     { t: 'sep' }, { t: 'section', label: 'Others' },
     { t: 'action', icon: 'update', label: 'Check for update', sub: 'Download & install the newest version inside the app', run: () => Updater.check(false) },
     { t: 'action', icon: 'share', label: `Share ${APP.name} with friends`, run: () => shareApp() },
@@ -2550,6 +2550,13 @@ const SETTINGS_PAGES = {
   ] },
   backup: { title: 'File backup/restore', items: [
     { t: 'action', icon: 'send', label: 'Backup all files', sub: 'Creates a .json file with every file and folder', run: () => exportBackup() },
+    { t: 'section', label: '☁️ Google Drive backup', when: () => Native.on },
+    { t: 'info', icon: '☁️', label: 'Drive backup', sub: () => Cloud.status(), when: () => Native.on },
+    { t: 'action', icon: '☁️', label: 'Google Drive backup chalu karein', sub: 'Ek baar jagah chunein – phir roz apne aap', run: () => Cloud.setup(), when: () => Native.on && (!Cloud.on || settings.cloudErr === 'lost') },
+    { t: 'action', icon: 'send', label: 'Abhi Drive pe backup karein', run: () => Cloud.run(true), when: () => Native.on && Cloud.on },
+    { t: 'action', icon: 'import', label: 'Drive / file se data wapas laayein', sub: 'Naye phone mein – backup file chunein', run: () => Cloud.restore(), when: () => Native.on },
+    { t: 'action', icon: '✕', label: 'Drive backup band karein', run: () => Cloud.off(), when: () => Native.on && Cloud.on },
+    { t: 'section', label: 'File', when: () => Native.on },
     { t: 'action', icon: 'import', label: 'Restore from backup', sub: 'Also reads backups from older CalcNote versions', run: () => $('#importInput').click() },
     { t: 'info', icon: 'file', label: 'Storage', sub: () => `${state.files.length} files · ${state.folders.length} folders · ${state.trash.length} in recycle bin` }
   ] }
@@ -2645,7 +2652,7 @@ function listEditor({ all, key, max, label, sub, icon }) {
 }
 async function resetSettings() {
   const ok = await dialogConfirm({ title: 'Reset all settings?', message: 'Theme, keypad, toolbar, extensions etc. go back to default. Files and app lock are kept.', okText: 'Reset', danger: true }); if (!ok) return;
-  const keep = { lock: settings.lock, pinHash: settings.pinHash, pinSalt: settings.pinSalt, _v: 34 };
+  const keep = { lock: settings.lock, pinHash: settings.pinHash, pinSalt: settings.pinSalt, _v: 34 }; CLOUD_KEYS.forEach(k => { keep[k] = settings[k]; });
   Object.keys(settings).forEach(k => delete settings[k]); Object.assign(settings, JSON.parse(JSON.stringify(DEFAULTS)), keep);
   persistSettings(); fmtCache.clear(); applySettings(); render(true); refreshOpenPage(); toast('Settings reset ✓');
 }
@@ -2694,8 +2701,8 @@ document.addEventListener('touchend', e => {
   else if (open && dx < -70 && Math.abs(dy) < 50) closeSidebar();
 }, { passive: true });
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') { flushSave(); Lock.hiddenAt = Date.now(); }
-  else { applyWakeLock(); setTimeout(() => khAutoBackup(), 4000); if (settings.lock && settings.lockDelay >= 0 && Lock.hiddenAt && (Date.now() - Lock.hiddenAt) / 1000 >= settings.lockDelay && !$('#lock').classList.contains('open')) Lock.unlock(); }
+  if (document.visibilityState === 'hidden') { flushSave(); Lock.hiddenAt = Date.now(); Cloud.auto(1); }
+  else { applyWakeLock(); setTimeout(() => { khAutoBackup(); Cloud.auto(6); }, 4000); if (settings.lock && settings.lockDelay >= 0 && Lock.hiddenAt && (Date.now() - Lock.hiddenAt) / 1000 >= settings.lockDelay && !$('#lock').classList.contains('open')) Lock.unlock(); }
 });
 window.addEventListener('pagehide', () => flushSave());
 if (window.visualViewport) { const vv = window.visualViewport; vv.addEventListener('resize', () => { document.body.style.height = vv.height + 'px'; document.body.classList.toggle('kbd-open', vv.height < window.innerHeight - 140 && document.activeElement === ED); if (document.activeElement === ED) requestAnimationFrame(caretVisible); }); }
@@ -2720,7 +2727,8 @@ async function init() {
   const app = Native.p('App'); if (app) { try { app.addListener('backButton', nativeBack); } catch (e) {} }
   if (!Native.on && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
   Updater.auto();
-  setTimeout(() => khAutoBackup(), 8000);
+  setTimeout(() => { khAutoBackup(); Cloud.auto(6); }, 8000);
+  setTimeout(() => { try { welcomeRestore(); } catch (e) {} }, 1500);
   window.__cnfReady = true;
 }
 init().catch(err => { console.error(err); toast('Something went wrong while starting'); });

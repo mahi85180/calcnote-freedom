@@ -192,3 +192,5 @@ html[data-theme="dark"],html[data-theme="black"]{--kk-get:#FF8A80;--kk-get-soft:
 .kb-rrow .nm{flex:1;font-weight:700}
 .kb-prev{white-space:pre-wrap;font:14px/1.45 inherit;background:var(--surface-2);border-radius:10px;padding:10px;margin:8px 0}
 .sg.kh{background:color-mix(in srgb,var(--primary) 16%,var(--surface));font-weight:700}
+.kk-cloud{border-color:#1565C0;background:color-mix(in srgb,#1565C0 8%,var(--kk-card))}
+.kk-cloud small{color:#1565C0}

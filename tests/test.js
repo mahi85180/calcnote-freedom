@@ -690,6 +690,77 @@ const aligned = p => p.evaluate(() => { const m = [...document.querySelectorAll(
   ok(errs5.length === 0, 'No JS errors (khata safety)', errs5);
   await ac.close();
 
+  // 17. Google Drive backup (phone app; Android "Save to" screen mocked)
+  const dc = await mk(); const d = await dc.newPage(); d.setDefaultTimeout(8000); const errs6 = [];
+  d.on('pageerror', e => errs6.push(e.message)); d.on('console', m => { if (m.type() === 'error' && !/fetching the script/.test(m.text())) errs6.push(m.text()); });
+  await d.goto('https://app.local/'); await ready(d);
+  await d.evaluate(() => {
+    window.__bk = { writes: [], released: [], fail: null, openText: null }; LS.set('cnf_welcome', '1');
+    const mock = {
+      create: async () => ({ uri: 'content://com.google.android.apps.docs.storage/document/acc%3D1%3Bdoc%3Dabc', name: 'CalcNote-Freedom-Backup.json', where: 'com.google.android.apps.docs.storage' }),
+      write: async o => { if (__bk.fail) { const e = new Error(__bk.fail === 'LOST' ? 'Permission lost' : 'Could not write backup'); e.code = __bk.fail; throw e; } __bk.writes.push(o); return { ok: true, bytes: o.data.length }; },
+      release: async o => { __bk.released.push(o.uri); },
+      open: async () => ({ text: __bk.openText, name: 'CalcNote-Freedom-Backup.json' }),
+      check: async () => ({ kept: true })
+    };
+    Object.defineProperty(Native, 'on', { get: () => true, configurable: true });
+    const oldP = Native.p.bind(Native); Native.p = n => n === 'BackupFile' ? mock : n === 'Filesystem' ? { writeFile: async () => ({ uri: 'x' }), readdir: async () => ({ files: [] }), deleteFile: async () => {} } : null;
+  });
+  await newFile(d, ['7 Oct 2026, Wed', 'gopi 500', 'ram 20', '']);
+  await d.evaluate(() => khUpsertParty({ name: 'Gopi', phone: '9876543210' })); await d.waitForTimeout(300);
+  await openSettingsPage(d, 'backup'); await d.waitForTimeout(200);
+  ok((await d.textContent('.page[data-page="backup"]')).includes('Band – abhi data sirf is phone mein hai'), 'Backup page shows Drive backup is off');
+  await d.screenshot({ path: path.join(OUT, 'drive-off.png') });
+  await closePages(d);
+  await d.evaluate(() => { Cloud.setup(); }); await d.waitForSelector('#cloudGo');
+  ok((await d.textContent('.sheet.open')).includes('"Drive" (Google Drive) chunein'), 'Short how-to before the Save-to screen');
+  await d.click('#cloudGo'); await d.waitForTimeout(900);
+  let dbk = await d.evaluate(() => ({ n: __bk.writes.length, json: __bk.writes[0] && JSON.parse(__bk.writes[0].data), s: Cloud.status(), uri: settings.cloudUri }));
+  ok(dbk.n === 1 && dbk.json.files.length >= 1 && dbk.json.khata.parties[0].name === 'Gopi' && dbk.s.startsWith('✓ Chalu · Google Drive'), 'Setup writes a full backup (notes + khata) to Drive at once', { n: dbk.n, s: dbk.s });
+  await d.evaluate(() => Cloud.auto(6)); await d.waitForTimeout(400);
+  ok(await d.evaluate(() => __bk.writes.length) === 1, 'No second backup within 6 hours');
+  await d.evaluate(() => { setQuiet('cloudAt', new Date(Date.now() - 7 * 3600e3).toISOString()); Cloud.auto(6); }); await d.waitForTimeout(700);
+  ok(await d.evaluate(() => __bk.writes.length) === 2, 'Automatic backup after 6 hours');
+  await d.evaluate(() => { setQuiet('cloudAt', new Date(Date.now() - 2 * 3600e3).toISOString()); document.dispatchEvent(new Event('visibilitychange')); }); await d.waitForTimeout(100);
+  // empty data never overwrites a good backup
+  const safe = await d.evaluate(async () => { setQuiet('cloudCount', 9); const real = window.backupData; window.backupData = async () => ({ files: [], khata: { parties: [] } }); try { const r = await Cloud.run(false); return { r, w: __bk.writes.length, err: settings.cloudErr }; } finally { window.backupData = real; } });
+  ok(safe.r === false && safe.err === 'empty', 'An empty phone never overwrites a good Drive backup', safe);
+  await d.evaluate(() => setQuiet('cloudErr', ''));
+  // permission lost → warning + banner
+  await d.evaluate(async () => { __bk.fail = 'LOST'; await Cloud.run(true); __bk.fail = null; });
+  ok(await d.evaluate(() => settings.cloudErr) === 'lost' && (await d.textContent('#toast')).includes('dobara chunein'), 'Lost permission is reported clearly');
+  await d.evaluate(() => openKhata()); await d.waitForSelector('.kk-cloud');
+  ok((await d.textContent('.kk-cloud')).includes('ruk gaya'), 'Khata book shows the backup warning');
+  await d.evaluate(() => closeAllPages()); await d.waitForTimeout(400);
+  await d.evaluate(() => { Cloud.setup(); }); await d.waitForSelector('#cloudGo'); await d.click('#cloudGo'); await d.waitForTimeout(900);
+  ok(await d.evaluate(() => settings.cloudErr === '' && __bk.writes.length >= 3), 'Choosing the place again fixes it');
+  const backupText = await d.evaluate(() => __bk.writes[__bk.writes.length - 1].data);
+  // settings export does not carry the Drive link
+  ok(await d.evaluate(() => { const s = Object.assign({}, settings); CLOUD_KEYS.forEach(k => delete s[k]); return !('cloudUri' in s); }), 'Drive link stays on this phone (not in settings export)');
+  ok(errs6.length === 0, 'No JS errors (Drive backup)', errs6);
+  await dc.close();
+  // new phone: welcome → restore from Drive
+  const nc = await mk(); const np = await nc.newPage(); np.setDefaultTimeout(8000); const errs7 = [];
+  np.on('pageerror', e => errs7.push(e.message));
+  await np.goto('https://app.local/'); await ready(np);
+  await np.evaluate(t => {
+    window.__bk = { openText: t };
+    Object.defineProperty(Native, 'on', { get: () => true, configurable: true });
+    Native.p = n => n === 'BackupFile' ? { open: async () => ({ text: __bk.openText }), create: async () => ({ cancelled: true }), write: async () => ({}) } : null;
+    LS.del('cnf_welcome'); welcomeRestore();
+  }, backupText);
+  await np.waitForSelector('.sheet.open'); await np.waitForTimeout(300);
+  ok((await np.textContent('.sheet.open')).includes('Naya phone hai?'), 'New phone: first start offers to bring the old data back');
+  await np.screenshot({ path: path.join(OUT, 'drive-welcome.png') });
+  await np.click('.sheet.open .btn.ok'); await np.waitForSelector('.sheet.open .btn.ok'); await np.waitForTimeout(300);
+  ok((await np.textContent('.sheet.open')).includes('1 khata'), 'Restore screen counts files and khata', await np.textContent('.sheet.open'));
+  await np.click('.sheet.open .btn.ok'); await np.waitForTimeout(900);
+  ok(await np.evaluate(() => KH.data.parties.some(p => p.name === 'Gopi') && state.files.length >= 2), 'Notes and khata are back on the new phone');
+  await np.waitForTimeout(2800);
+  ok((await np.textContent('.sheet.open')).includes('Google Drive backup chalu karein?'), 'After restore it offers to turn on Drive backup here too');
+  ok(errs7.length === 0, 'No JS errors (restore)', errs7);
+  await nc.close();
+
   await browser.close();
   console.log(`\nPASS ${pass}  FAIL ${fail}`); fails.forEach(f => console.log('  ✗ ' + f));
   process.exit(fail ? 1 : 0);

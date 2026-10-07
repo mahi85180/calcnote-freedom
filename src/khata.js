@@ -549,6 +549,7 @@ async function khPublishFlow() {
     const jobs = [];
     for (const g of G) { const d = done.get(g.party.id); if (!d) continue; const text = edited.get(g.party.id) || khMessage(g.party, g.lines); jobs.push(...khJobsFor(g.party, text, d, choice.get(g.party.id))); }
     toast(`✓ ${plan.count} badlav ${done.size} khate mein jud gaye`, 5000, { label: 'Wapas lo', run: () => khUndoPublish() });
+    setTimeout(() => Cloud.auto(0.25), 9000);
     // SMS go out by themselves; WhatsApp opens one chat after another
     jobs.sort((x, y) => (x.ch === 'sms' ? 0 : 1) - (y.ch === 'sms' ? 0 : 1));
     if (jobs.length) setTimeout(() => khSendJobs(jobs, '📨 Messages', true), 280);
@@ -634,6 +635,8 @@ function khRenderList(body) {
     else khScanNotes().then(drawPend).catch(e => console.error(e));
   }
   wrap.append(pend);
+  if (Native.on && !Cloud.on) wrap.append(el('button', { class: 'kk-pend kk-cloud', id: 'khCloud', onclick: () => Cloud.setup() }, el('span', { text: '☁️' }), el('span', { class: 'm' }, el('b', { text: 'Backup sirf is phone mein hai' }), el('small', { text: 'Google Drive backup chalu karein – phone kho jaaye tab bhi data bachega' })), el('span', { text: '›' })));
+  else if (Native.on && settings.cloudErr === 'lost') wrap.append(el('button', { class: 'kk-pend kk-cloud', onclick: () => Cloud.setup() }, el('span', { text: '⚠' }), el('span', { class: 'm' }, el('b', { text: 'Drive backup ruk gaya hai' }), el('small', { text: 'Tap karke jagah dobara chunein' })), el('span', { text: '›' })));
   const q = el('input', { type: 'search', class: 'kk-q', placeholder: 'Naam ya number khojein', value: KHU.q, autocomplete: 'off' });
   const listBox = el('div', { class: 'kk-list' });
   const drawList = () => {
@@ -1208,9 +1211,7 @@ async function khAutoBackup(force) {
   if (!Native.on || (!settings.autoBackup && !force)) return null;
   const today = khToday(); if (!force && LS.get('cnf_autobk', '') === today) return null;
   try {
-    await flushSave(); await khLoad(); await khSaving;
-    const files = []; for (const m of state.files) { const r = await Store.get(m.id); if (r) files.push(Object.assign({}, r, { folder: m.folder, pinned: m.pinned })); }
-    const data = { app: 'CalcNote', edition: 'Freedom', version: 35, exportedAt: new Date().toISOString(), auto: true, folders: state.folders, files, khata: KH.data };
+    const data = await backupData(true);
     const name = `Auto-backup/CalcNote-${today}.json`;
     await Native.write(name, new Blob([JSON.stringify(data)], { type: 'application/json' }), 'DOCUMENTS');
     LS.set('cnf_autobk', today);
