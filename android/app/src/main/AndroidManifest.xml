@@ -36,6 +36,12 @@
         </provider>
     </application>
 
+    <!-- Khata book: open WhatsApp / WhatsApp Business chats -->
+    <queries>
+        <package android:name="com.whatsapp" />
+        <package android:name="com.whatsapp.w4b" />
+    </queries>
+
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -45,4 +51,7 @@
     <!-- Needed only on Android 9/10 to save backups into Documents -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <!-- Khata book: send entry messages by SMS from your own SIM (asked only when you turn SMS on) -->
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
 </manifest>
