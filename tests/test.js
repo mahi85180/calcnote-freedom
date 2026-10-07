@@ -14,7 +14,7 @@ async function setup(ctx) {
     const u = new URL(r.request().url());
     if (u.host === 'app.local') {
       if (u.pathname === '/old') return r.fulfill({ body: OLD, contentType: 'text/html' });
-      const f = path.join(DOCS, u.pathname === '/' ? 'index.html' : u.pathname);
+      const f = path.join(DOCS, u.pathname.endsWith('/') ? u.pathname + 'index.html' : u.pathname);
       return fs.existsSync(f) ? r.fulfill({ path: f }) : r.fulfill({ status: 404, body: '' });
     }
     if (u.host === 'api.github.com') return r.fulfill({ body: JSON.stringify(fakeRelease), contentType: 'application/json', headers: { 'access-control-allow-origin': '*' } });
@@ -375,7 +375,7 @@ const aligned = p => p.evaluate(() => { const m = [...document.querySelectorAll(
 
   // 15. Khata book: names → khata, publish, SMS / WhatsApp, formula per tab, reasons, report, backup
   const kc = await mk(); const k = await kc.newPage(); k.setDefaultTimeout(6000); const errs4 = [];
-  k.on('pageerror', e => errs4.push(e.message)); k.on('console', m => { if (m.type() === 'error' && !/fetching the script/.test(m.text())) errs4.push(m.text()); });
+  k.on('pageerror', e => errs4.push(e.message)); k.on('console', m => { if (m.type() === 'error' && !/fetching the script|Failed to load resource/.test(m.text())) errs4.push(m.text()); });
   await k.goto('https://app.local/'); await ready(k);
   await k.evaluate(() => { window.__links = []; window.openLink = u => window.__links.push(u); });
   const marks = () => k.$$eval('#rescol .r', rs => rs.map(r => { const b = r.querySelector('.kb-b'); return b ? b.className.replace('kb-b ', '') : ''; }));
@@ -577,7 +577,7 @@ const aligned = p => p.evaluate(() => { const m = [...document.querySelectorAll(
 
   // 16. Khata safety (audit fixes): typos never cancel, copies don't double-post, renames keep working
   const ac = await mk(); const a = await ac.newPage(); a.setDefaultTimeout(8000); const errs5 = [];
-  a.on('pageerror', e => errs5.push(e.message)); a.on('console', m => { if (m.type() === 'error' && !/fetching the script/.test(m.text())) errs5.push(m.text()); });
+  a.on('pageerror', e => errs5.push(e.message)); a.on('console', m => { if (m.type() === 'error' && !/fetching the script|Failed to load resource/.test(m.text())) errs5.push(m.text()); });
   await a.goto('https://app.local/'); await ready(a);
   await a.evaluate(() => { window.__links = []; window.openLink = u => window.__links.push(u); });
   const publishAll = async () => { await a.evaluate(async () => { const p = khPlan(); await khApplyPlan(p); }); await a.waitForTimeout(300); };
@@ -761,6 +761,80 @@ const aligned = p => p.evaluate(() => { const m = [...document.querySelectorAll(
   ok(errs7.length === 0, 'No JS errors (restore)', errs7);
   await nc.close();
 
+  {
+  // 18. PDF everywhere, fast khata picture, customer link with pay button + QR
+  const pc = await mk(); const q = await pc.newPage(); q.setDefaultTimeout(8000); const errs8 = [];
+  q.on('pageerror', e => errs8.push(e.message)); q.on('console', m => { if (m.type() === 'error' && !/fetching the script|404/.test(m.text())) errs8.push(m.text()); });
+  await q.goto('https://app.local/'); await ready(q);
+  await q.evaluate(() => { window.__links = []; window.openLink = u => window.__links.push(u); });
+  await q.evaluate(async () => {
+    await createFile('Bill', ['7 Oct 2026, Wed', ...Array.from({ length: 45 }, (_, i) => `gopi ${i + 1}`), 'ram 500 #jama', '']);
+    setSetting('khataUpi', 'mahi@okaxis'); setSetting('khataShop', 'Mahi Traders'); setSetting('khataShopPhone', '9876500000'); setSetting('khataLinkBase', 'https://app.local/k/');
+    await khUpsertParty({ name: 'Gopi', phone: '9876543210' }); await khUpsertParty({ name: 'Ram', phone: '9811122233' });
+    await khApplyPlan(khPlan());
+  });
+  await q.waitForTimeout(300);
+  // note PDF from the share screen
+  await q.evaluate(() => shareImage()); await q.waitForSelector('#btnPdf', { state: 'visible' });
+  await q.screenshot({ path: path.join(OUT, 'share-pdf-button.png') });
+  const [dl] = await Promise.all([q.waitForEvent('download'), q.click('#btnPdf')]);
+  const pdfPath = path.join(OUT, 'note.pdf'); await dl.saveAs(pdfPath); const pdfBuf = fs.readFileSync(pdfPath);
+  ok(pdfBuf.slice(0, 5).toString() === '%PDF-' && pdfBuf.slice(-6).toString().includes('%%EOF') && dl.suggestedFilename() === 'Bill.pdf', 'PDF button makes a real PDF file', dl.suggestedFilename());
+  const pg = await q.evaluate(() => notePdfPages(false).length);
+  ok(pg === 2, '47 lines → 2 A4 pages', pg);
+  await q.evaluate(() => addSheet({ name: 'Maal', text: '7 Oct 2026, Wed\nsuri 5\n' })); await q.waitForTimeout(500);
+  await q.evaluate(() => { pdfMenu(); }); await q.waitForSelector('.menu-item[data-key="all"]');
+  ok((await q.textContent('.sheet.open')).includes('Sab 2 tabs ek PDF mein'), 'With tabs: PDF of this tab or of all tabs');
+  await q.evaluate(() => Sheet.close()); await q.waitForTimeout(300);
+  ok(await q.evaluate(() => { const b = pdfFromCanvases(notePdfPages(true)); return b.type === 'application/pdf' && b.size > 20000; }), 'All-tabs PDF');
+  await q.evaluate(() => switchSheet(0, { animate: false })); await q.waitForTimeout(200);
+  // khata: PDF + QR + prepared picture
+  const kk = await q.evaluate(async () => {
+    const P = KH.data.parties.find(p => p.name === 'Gopi'); KHU.rep = { pid: P.id, period: 'all', from: '', to: '', q: '' }; const D = khReportData();
+    const pages = khReportPdfPages(P, D); const pdf = pdfFromCanvases(pages);
+    const a = performance.now(); const j1 = await khPrepareImage(P, D); const t1 = performance.now() - a;
+    const b = performance.now(); const j2 = await khPrepareImage(P, D); const t2 = performance.now() - b;
+    return { pages: pages.length, pdf: pdf.size, jpg: j1.blob.type, same: j1 === j2, t2: Math.round(t2), qr: !!qrCanvas(upiLink(100, 'x')) };
+  });
+  ok(kk.pages >= 1 && kk.pdf > 10000 && kk.jpg === 'image/jpeg' && kk.same && kk.t2 < 20 && kk.qr, 'Khata PDF with UPI QR; picture is ready before you tap share', kk);
+  await q.evaluate(async () => { await openKhata(); khOpenParty(KH.data.parties.find(p => p.name === 'Gopi').id); }); await q.waitForTimeout(500);
+  await q.click('.kk-acts button >> nth=0'); await q.waitForSelector('#khRepPdf'); await q.waitForTimeout(300);
+  await q.screenshot({ path: path.join(OUT, 'khata-report-pdf.png') });
+  const [dl2] = await Promise.all([q.waitForEvent('download'), q.click('#khRepPdf')]);
+  ok(/^Khata Gopi .*\.pdf$/.test(dl2.suggestedFilename()), 'Khata report → PDF', dl2.suggestedFilename());
+  await q.evaluate(() => closeAllPages()); await q.waitForTimeout(400);
+  // customer link
+  const link = await q.evaluate(() => khLink(KH.data.parties.find(p => p.name === 'Gopi')));
+  ok(link.startsWith('https://app.local/k/#1') && link.length < 1500, 'Short link with the hisaab inside (no server)', link.length);
+  const v = await pc.newPage(); const verr = []; v.on('pageerror', e => verr.push(e.message));
+  await v.goto(link); await v.waitForSelector('#pay');
+  const vv = await v.evaluate(() => ({ bal: document.querySelector('.bal b').textContent, href: document.querySelector('#pay').getAttribute('href'), qr: !!document.querySelector('#qr canvas'), rows: document.querySelectorAll('.e').length, more: (document.querySelector('.more') || {}).textContent || '' }));
+  ok(vv.bal === '₹1,035' && vv.href === 'upi://pay?pa=mahi%40okaxis&pn=Mahi%20Traders&am=1035.00&cu=INR&tn=Khata%20Gopi' && vv.qr && vv.rows === 30 && vv.more.includes('15'), 'Customer page: balance, Pay button (any UPI app), QR, last 30 entries', vv);
+  await v.screenshot({ path: path.join(OUT, 'khata-link-page.png') });
+  await v.goto('https://app.local/k/#1rXXXX'); await v.waitForTimeout(300);
+  ok((await v.textContent('body')).includes('link poora nahi'), 'Broken link shows a clear message');
+  await q.evaluate(() => setSetting('khataLang', 'hindi'));
+  const linkHi = await q.evaluate(() => khLink(KH.data.parties.find(p => p.name === 'Ram')));
+  await v.goto('about:blank'); await v.goto(linkHi); await v.waitForTimeout(400);
+  ok((await v.textContent('body')).includes('आपके जमा हैं') && !(await v.$('#pay')), 'Hindi page; no pay button when nothing is due', await v.textContent('.bal'));
+  ok(verr.length === 0, 'No JS errors on the customer page', verr);
+  await q.evaluate(() => setSetting('khataLang', 'hinglish'));
+  // link goes into messages (and can be left out of SMS)
+  const m1 = await q.evaluate(async () => { const P = KH.data.parties.find(p => p.name === 'Gopi'); return khResolveLink(khReminder(P), P); });
+  ok(/📒 Poora hisaab \/ pay: https:\/\/app\.local\/k\/#1/.test(m1) && m1.includes('UPI: mahi@okaxis'), 'Reminder carries the link and UPI', m1);
+  await q.evaluate(() => setSetting('khataLinkSms', false));
+  await q.evaluate(() => { const P = KH.data.parties.find(p => p.name === 'Gopi'); khSendJobs(khJobsFor(P, khReminder(P), [], 'both'), 'x', false); }); await q.waitForTimeout(300);
+  await q.click('.kq-row >> nth=0 >> .kq-btn'); await q.waitForTimeout(400); await q.click('.kq-row >> nth=1 >> .kq-btn'); await q.waitForTimeout(400);
+  const sent = await q.evaluate(() => window.__links.slice(-2).map(decodeURIComponent));
+  ok(!sent[0].includes('/k/#') && sent[1].includes('/k/#1'), 'SMS without link (setting), WhatsApp with link', sent.map(s => s.slice(0, 60)));
+  await q.evaluate(() => Sheet.close()); await q.waitForTimeout(300);
+  await q.evaluate(() => { setSetting('khataLinkSms', true); setSetting('khataLinkBase', 'https://app.local/nope/'); });
+  const m2 = await q.evaluate(async () => { await khCheckLinkPage(true); const P = KH.data.parties[0]; return khResolveLink(khReminder(P), P); });
+  ok(!m2.includes('Poora hisaab') && m2.includes('Aapka baaki'), 'If the link page is not online, the link line is left out', m2);
+  ok(errs8.length === 0, 'No JS errors (PDF / link)', errs8);
+  await pc.close();
+
+  }
   await browser.close();
   console.log(`\nPASS ${pass}  FAIL ${fail}`); fails.forEach(f => console.log('  ✗ ' + f));
   process.exit(fail ? 1 : 0);

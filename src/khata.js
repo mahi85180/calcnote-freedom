@@ -18,19 +18,19 @@ const KH_COLORS = { red: '#C62828', green: '#1B7F4B', blue: '#1565C0', teal: '#0
 const KH_EFFECTS = { gave: 'Baaki badhe (aapne diye)', got: 'Baaki ghate (aapko mile)', none: 'Sirf record (baaki par asar nahi)' };
 const KH_LANG = {
   hinglish: {
-    tpl: 'Namaste {naam} ji,\n{entries}\n{baaki}\n{upi}\n– {dukaan}',
+    tpl: 'Namaste {naam} ji,\n{entries}\n{baaki}\n{upi}\n📒 Poora hisaab / pay: {link}\n– {dukaan}',
     get: 'Aapka baaki: {amt}', give: 'Humein aapko dene hain: {amt}', clear: 'Hisaab barabar ✓',
-    changed: 'badla', removed: 'cancel', remind: 'Namaste {naam} ji,\n{baaki}\nKripya jaldi jama karein 🙏\n{upi}\n– {dukaan}'
+    changed: 'badla', removed: 'cancel', remind: 'Namaste {naam} ji,\n{baaki}\nKripya jaldi jama karein 🙏\n{upi}\n📒 Poora hisaab / pay: {link}\n– {dukaan}'
   },
   hindi: {
-    tpl: 'नमस्ते {naam} जी,\n{entries}\n{baaki}\n{upi}\n– {dukaan}',
+    tpl: 'नमस्ते {naam} जी,\n{entries}\n{baaki}\n{upi}\n📒 पूरा हिसाब / पेमेंट: {link}\n– {dukaan}',
     get: 'आपका बाकी: {amt}', give: 'हमें आपको देने हैं: {amt}', clear: 'हिसाब बराबर ✓',
-    changed: 'बदला', removed: 'रद्द', remind: 'नमस्ते {naam} जी,\n{baaki}\nकृपया जल्द जमा करें 🙏\n{upi}\n– {dukaan}'
+    changed: 'बदला', removed: 'रद्द', remind: 'नमस्ते {naam} जी,\n{baaki}\nकृपया जल्द जमा करें 🙏\n{upi}\n📒 पूरा हिसाब / पेमेंट: {link}\n– {dukaan}'
   },
   english: {
-    tpl: 'Hello {naam},\n{entries}\n{baaki}\n{upi}\n– {dukaan}',
+    tpl: 'Hello {naam},\n{entries}\n{baaki}\n{upi}\n📒 Full statement / pay: {link}\n– {dukaan}',
     get: 'Your balance: {amt}', give: 'We owe you: {amt}', clear: 'All settled ✓',
-    changed: 'changed', removed: 'cancelled', remind: 'Hello {naam},\n{baaki}\nPlease pay at the earliest 🙏\n{upi}\n– {dukaan}'
+    changed: 'changed', removed: 'cancelled', remind: 'Hello {naam},\n{baaki}\nPlease pay at the earliest 🙏\n{upi}\n📒 Full statement / pay: {link}\n– {dukaan}'
   }
 };
 
@@ -351,7 +351,7 @@ function khEntryLine(x) {
   return head + khMoney(x.amount);
 }
 function khFill(tpl, vars) {
-  const RE = /\{(naam|name|entries|baaki|dukaan|shop|phone|date|upi)\}/g;
+  const RE = /\{(naam|name|entries|baaki|dukaan|shop|phone|date|upi|link)\}/g;
   const out = [];
   for (const line of String(tpl || '').split('\n')) {
     const had = RE.test(line); RE.lastIndex = 0;
@@ -364,9 +364,9 @@ function khFill(tpl, vars) {
 const khUpiLine = bal => settings.khataUpi && bal > 0.5 ? `UPI: ${settings.khataUpi}` : '';
 function khMessage(party, lines) {
   const bal = khBalance(party.id);
-  return khFill(settings.khataMsg || khWords().tpl, { naam: party.name, entries: lines.map(khEntryLine).join('\n'), baaki: khBalanceLine(bal), dukaan: settings.khataShop, phone: settings.khataShopPhone, date: khShortDate(khToday()), upi: khUpiLine(bal) });
+  return khFill(settings.khataMsg || khWords().tpl, { naam: party.name, entries: lines.map(khEntryLine).join('\n'), baaki: khBalanceLine(bal), dukaan: settings.khataShop, phone: settings.khataShopPhone, date: khShortDate(khToday()), upi: khUpiLine(bal), link: settings.khataLink ? '{link}' : '' });
 }
-function khReminder(party) { const bal = khBalance(party.id); return khFill(khWords().remind, { naam: party.name, baaki: khBalanceLine(bal), dukaan: settings.khataShop, phone: settings.khataShopPhone, upi: khUpiLine(bal) }); }
+function khReminder(party) { const bal = khBalance(party.id); return khFill(khWords().remind, { naam: party.name, baaki: khBalanceLine(bal), dukaan: settings.khataShop, phone: settings.khataShopPhone, upi: khUpiLine(bal), link: settings.khataLink ? '{link}' : '' }); }
 const khDupKey = (name, date, amount) => `${khNorm(name)}|${date}|${khRound(amount)}`;
 const khChannel = p => (p && p.channel) || settings.khataChannel || 'wa';
 
@@ -425,7 +425,9 @@ function khSendJobs(jobs, title = '📨 Messages', auto = false) {
   const go = async j => {
     if (j.status === 'busy') return;
     j.status = 'busy'; draw();
-    const r = j.ch === 'sms' ? await khSms(j.party.phone, j.text) : await khWa(j.party.phone, j.text);
+    let text = j.text;
+    if (/\{link\}/.test(text)) text = await khResolveLink(j.ch === 'sms' && !settings.khataLinkSms ? text.replace(/^.*\{link\}.*$/gm, '') .replace(/\n{2,}/g, '\n') : text, j.party);
+    const r = j.ch === 'sms' ? await khSms(j.party.phone, text) : await khWa(j.party.phone, text);
     j.status = !r.ok ? 'fail' : r.opened ? 'opened' : 'sent'; j.why = r.why;
     if (j.ids && j.ids.length) { khLogMsg(j.ids, j.ch, r.ok); khSave(); }
     if (r.opened) waiting = j;
@@ -684,7 +686,8 @@ function khRenderParty(body, pg) {
   wrap.append(el('div', { class: 'kk-acts' },
     el('button', { onclick: () => { KHU.rep.pid = p.id; openPage('kreport'); } }, el('span', { text: '📄' }), 'Report'),
     el('button', { onclick: () => khRemind(p, 'wa') }, el('span', { text: '💬' }), 'WhatsApp'),
-    el('button', { onclick: () => khRemind(p, 'sms') }, el('span', { text: '✉️' }), 'SMS')));
+    el('button', { onclick: () => khRemind(p, 'sms') }, el('span', { text: '✉️' }), 'SMS'),
+    el('button', { id: 'khLinkBtn', onclick: () => khLinkMenu(p) }, el('span', { text: '🔗' }), 'Link')));
   const rows = khWithRunning(khPartyEntries(p.id), p.id);
   if (Math.abs(+p.opening || 0) >= 0.5) wrap.append(el('div', { class: 'kk-open' }, `Shuru ka baaki: `, el('b', { class: 'kk-' + khCls(+p.opening), text: khMoney(+p.opening) + ' ' + khWord(+p.opening) })));
   if (rows.length) {
@@ -921,7 +924,8 @@ function khRenderReport(body, pg) {
     wrap.append(el('div', { class: 'kk-cols' }, el('span', { text: 'ENTRY' }), el('span', { class: 'gave', text: 'AAPNE DIYE' }), el('span', { class: 'got', text: 'AAPKO MILE' })));
     D.rows.slice().reverse().slice(0, 800).forEach(r => wrap.append(khEntryRow(r.e, r.run, !p)));
   } else wrap.append(el('div', { class: 'kk-empty', text: 'Is samay mein koi entry nahi.' }));
-  wrap.append(el('div', { class: 'kk-btns' }, el('button', { class: 'btn cancel', text: '📝 Text share', onclick: () => khShareReportText(p, D) }), el('button', { class: 'btn ok', id: 'khRepImg', text: '🖼️ Image share', onclick: () => khShareReportImage(p, D) })));
+  wrap.append(el('div', { class: 'kk-btns three' }, el('button', { class: 'btn cancel', text: '📝 Text', onclick: () => khShareReportText(p, D) }), el('button', { class: 'btn cancel', id: 'khRepPdf', text: '📄 PDF', onclick: () => khReportPdf(p, D) }), el('button', { class: 'btn ok', id: 'khRepImg', text: '🖼️ Image', onclick: () => khShareReportImage(p, D) })));
+  if (D.rows.length) setTimeout(() => { if (pageStack.includes('kreport')) khPrepareImage(p, D).catch(() => {}); }, 250);
   body.replaceChildren(wrap);
 }
 function khReportText(p, D) {
@@ -941,7 +945,9 @@ async function khShareReportText(p, D) {
 }
 function khDrawStatement(p, D) {
   const W = 1080, PAD = 40, ROW = 66, HEAD = p ? 250 : 210, rows = D.rows.slice(-300);
-  const H = HEAD + 70 + rows.length * ROW + 250;
+  const balAll = p ? D.opening + D.gave - D.got : 0;
+  const qr = p && !D.filtered && balAll > 0.5 && settings.khataUpi ? qrCanvas(upiLink(balAll, p.name), 300) : null;
+  const H = HEAD + 70 + rows.length * ROW + 250 + (qr ? 330 : 0);
   const c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d');
   const FONT = 'system-ui, "Segoe UI", Roboto, sans-serif';
   x.fillStyle = '#FFFFFF'; x.fillRect(0, 0, W, H);
@@ -973,15 +979,35 @@ function khDrawStatement(p, D) {
   x.fillStyle = '#1B7F4B'; x.textAlign = 'right'; x.fillText(`Aapko mile: ${khMoney(D.got)}`, W - PAD, y);
   y += 70; const bal = p ? D.opening + D.gave - D.got : D.gave - D.got;
   x.textAlign = 'center'; x.fillStyle = '#111'; x.font = `900 40px ${FONT}`; if (!D.filtered) x.fillText(p ? khBalanceLine(bal) : `Fark: ${khMoney(bal)}`, W / 2, y);
-  x.fillStyle = '#9A9A9A'; x.font = `600 22px ${FONT}`; x.fillText('Made with ' + APP.name, W / 2, H - 30);
+  if (qr) {
+    y += 40; x.drawImage(qr, PAD, y, 270, 270);
+    x.textAlign = 'left'; x.fillStyle = '#111'; x.font = `800 34px ${FONT}`; x.fillText(`Scan karke ${khMoney(balAll)} pay karein`, PAD + 300, y + 90);
+    x.font = `600 26px ${FONT}`; x.fillStyle = '#555'; x.fillText('PhonePe · Google Pay · Paytm · koi bhi UPI', PAD + 300, y + 140); x.fillText('UPI: ' + settings.khataUpi, PAD + 300, y + 184);
+  }
+  x.textAlign = 'center'; x.fillStyle = '#9A9A9A'; x.font = `600 22px ${FONT}`; x.fillText('Made with ' + APP.name, W / 2, H - 30);
   return c;
+}
+const khImgCache = { sig: '', job: null };
+const khRepSig = (p, D) => [p ? p.id : '', KH.ver, D.rows.length, D.gave, D.got, D.label, settings.khataUpi, settings.khataShop].join('|');
+function khPrepareImage(p, D) {                                    // drawn + saved right after the report opens → sharing is instant
+  const sig = khRepSig(p, D); if (khImgCache.sig === sig && khImgCache.job) return khImgCache.job;
+  khImgCache.sig = sig;
+  khImgCache.job = (async () => {
+    await new Promise(r => setTimeout(r, 60));
+    const c = khDrawStatement(p, D);
+    const blob = await new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error('toBlob')), 'image/jpeg', 0.9));
+    const name = safeName('Khata ' + (p ? p.name : 'report') + ' ' + khToday()) + '.jpg';
+    const uri = Native.on ? Native.write(name, blob, 'CACHE').catch(() => null) : null;
+    return { blob, name, uri };
+  })();
+  khImgCache.job.catch(() => { khImgCache.sig = ''; khImgCache.job = null; });
+  return khImgCache.job;
 }
 async function khShareReportImage(p, D) {
   try {
-    const c = khDrawStatement(p, D); const blob = await new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error('toBlob')), 'image/png'));
-    const name = safeName('Khata ' + (p ? p.name : 'report') + ' ' + khToday()) + '.png';
-    if (Native.on) { await Native.shareFile(name, blob, name); return; }
-    const file = new File([blob], name, { type: 'image/png' });
+    const { blob, name, uri } = await khPrepareImage(p, D);
+    if (Native.on) { const u = uri && await uri; if (u) await Native.p('Share').share({ title: name, files: [u], dialogTitle: name }); else await Native.shareFile(name, blob, name); return; }
+    const file = new File([blob], name, { type: 'image/jpeg' });
     if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: name }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
     await saveBlob(blob, name); toast('Image save hui ✓');
   } catch (e) { if (!/cancel/i.test(String(e && e.message))) toast('Image nahi bani'); }
@@ -1126,6 +1152,10 @@ Object.assign(SETTINGS_PAGES, {
     { t: 'text', key: 'khataShop', icon: '🏪', label: 'Dukaan / aapka naam', sub: 'Message aur report mein dikhega', placeholder: 'Jaise: Mahi Traders' },
     { t: 'text', key: 'khataShopPhone', icon: '📞', label: 'Aapka mobile number', sub: 'Message mein {phone} ki jagah', placeholder: '98xxxxxxxx' },
     { t: 'text', key: 'khataUpi', icon: '💳', label: 'Aapki UPI ID', sub: 'Baaki wale message mein apne aap judegi – log seedha pay kar sakein', placeholder: 'jaise: mahi@okaxis' },
+    { t: 'switch', key: 'khataLink', icon: '🔗', label: 'Har message ke saath khate ka link', sub: 'Grahak link kholkar poora hisaab dekhe aur PhonePe / GPay se seedha pay kare' },
+    { t: 'switch', key: 'khataLinkSms', icon: '✉️', label: 'SMS mein bhi link', sub: 'Link lamba hai – SMS 2-6 hisson mein jaata hai', when: () => settings.khataLink },
+    { t: 'info', icon: '🌐', label: 'Link page', sub: () => KH.linkState && KH.linkState.ok === false ? '⚠ Link wala page abhi online nahi hai – link nahi bheja jaayega' : 'Link mein hisaab chhupa rehta hai – kisi server pe save nahi hota', when: () => settings.khataLink },
+    { t: 'action', icon: '↻', label: 'Link page check karein', run: async () => { const ok = await khCheckLinkPage(true); toast(ok ? '✓ Link page online hai' : '⚠ Link page online nahi hai'); refreshOpenPage(); }, when: () => settings.khataLink },
     { t: 'chips', key: 'khataLang', icon: '🔤', label: 'Message ki bhasha', options: [opt('hinglish', 'Hinglish'), opt('hindi', 'हिंदी'), opt('english', 'English')] },
     { t: 'note', text: 'Apna message format (khali chhodein to bhasha wala format lagega). Jagah: {naam} {entries} {baaki} {dukaan} {phone} {date}' },
     { t: 'textarea', key: 'khataMsg', rows: 6 },
@@ -1249,11 +1279,104 @@ function khMoreMenu() {
   dialogMenu('📒 Khata book', [
     { key: 'remind', icon: '📨', label: 'Sabko yaad dilayein', sub: 'Jin par baaki hai – SMS / WhatsApp' },
     { key: 'undo', icon: '↶', label: 'Pichhla publish wapas lein', sub: u ? `"${u.title}" · ${khAgo(u.at)} · ${u.ops.length} badlav` : 'Abhi kuch nahi' },
+    { key: 'pdf', icon: '📄', label: 'Sabka baaki – PDF', sub: 'Saare khate ek list mein' },
     { key: 'reasons', icon: '🏷', label: 'Reasons (Udhaar, Jama…)' },
     { key: 'settings', icon: '⚙️', label: 'Khata settings' },
     { key: 'help', icon: '❓', label: 'Kaise use karein' }
   ]).then(k => {
-    if (k === 'remind') khBulkRemind(); else if (k === 'undo') khUndoPublish(); else if (k === 'reasons') openPage('kreasons');
+    if (k === 'remind') khBulkRemind(); else if (k === 'pdf') khBalancesPdf(); else if (k === 'undo') khUndoPublish(); else if (k === 'reasons') openPage('kreasons');
     else if (k === 'settings') openPage('khataset'); else if (k === 'help') khHelp();
+  });
+}
+
+/* ---------------- khata PDF ---------------- */
+function khReportPdfPages(p, D) {
+  const cols = p ? [{ label: 'TAREEKH', w: 170 }, { label: 'DETAIL', w: 430 }, { label: 'DIYE', w: 170, align: 'right' }, { label: 'MILE', w: 170, align: 'right' }, { label: 'BAAKI', w: 172, align: 'right' }]
+    : [{ label: 'TAREEKH', w: 170 }, { label: 'NAAM · DETAIL', w: 600 }, { label: 'DIYE', w: 171, align: 'right' }, { label: 'MILE', w: 171, align: 'right' }];
+  const rows = D.rows.map(r => {
+    const det = (p ? '' : ((khParty(r.e.partyId) || {}).name || '') + ' · ') + [khReasonOf(r.e).name, r.e.note].filter(Boolean).join(' · ');
+    const cells = [{ t: khShortDate(r.e.date) + ' ' + String(r.e.date).slice(2, 4), color: '#444' }, { t: det },
+      { t: r.e.effect === 'gave' ? khMoney(r.e.amount) : r.e.effect === 'none' ? '(' + khMoney(r.e.amount) + ')' : '', color: r.e.effect === 'none' ? '#777' : '#C62828', bold: true },
+      { t: r.e.effect === 'got' ? khMoney(r.e.amount) : '', color: '#1B7F4B', bold: true }];
+    if (p) cells.push({ t: r.run != null ? khMoney(r.run) : '', color: r.run > 0.5 ? '#C62828' : r.run < -0.5 ? '#1B7F4B' : '#555' });
+    return { kind: 'row', cells };
+  });
+  const bal = p ? D.opening + D.gave - D.got : D.gave - D.got;
+  const footer = [{ t: 'Aapne diye: ' + khMoney(D.gave), color: '#C62828', r: 'Aapko mile: ' + khMoney(D.got) }];
+  if (!D.filtered) footer.push(p ? { t: khBalanceLine(bal), big: true, color: bal > 0.5 ? '#B71C1C' : '#1B5E20', bg: bal > 0.5 ? '#FDEEEE' : '#E8F5EE' } : { t: 'Fark (diye − mile)', r: khMoney(bal), big: true });
+  const qr = p && !D.filtered && bal > 0.5 && settings.khataUpi ? { canvas: qrCanvas(upiLink(bal, p.name), 300), label: `Scan karke ${khMoney(bal)} pay karein`, lines: ['PhonePe · Google Pay · Paytm · koi bhi UPI', 'UPI: ' + settings.khataUpi] } : null;
+  const sub = [p ? (p.phone ? '📞 ' + p.phone : '') : 'Sab khate', D.label, p && !D.filtered ? `Shuru ka baaki: ${khMoney(D.opening)} ${khWord(D.opening)}` : ''].filter(Boolean).join('   ·   ');
+  return pdfPages({ title: (settings.khataShop || APP.name) + ' — ' + (p ? p.name : 'Khata report'), right: khLongDate(khToday()), sub, cols, rows, footer, qr });
+}
+async function khReportPdf(p, D) {
+  toast('PDF ban rahi hai…', 1200); await new Promise(r => setTimeout(r, 30));
+  try { const blob = pdfFromCanvases(khReportPdfPages(p, D)); await shareBlobFile(blob, safeName('Khata ' + (p ? p.name : 'report') + ' ' + khToday()) + '.pdf', p ? p.name : 'Khata'); }
+  catch (e) { console.error(e); toast('PDF nahi bani'); }
+}
+async function khBalancesPdf() {
+  toast('PDF ban rahi hai…', 1200); await new Promise(r => setTimeout(r, 30));
+  const M = khMaps(); const list = KH.data.parties.map(p => ({ p, b: M.bal.get(p.id) || 0 })).sort((a, b) => b.b - a.b);
+  let get = 0, give = 0; for (const x of list) { if (x.b > 0.5) get += x.b; else if (x.b < -0.5) give -= x.b; }
+  const rows = list.map((x, i) => ({ kind: 'row', cells: [{ t: String(i + 1), color: '#777' }, { t: x.p.name }, { t: x.p.phone || '', color: '#555' }, { t: x.b > 0.5 ? khMoney(x.b) : '', color: '#C62828', bold: true }, { t: x.b < -0.5 ? khMoney(x.b) : '', color: '#1B7F4B', bold: true }] }));
+  try {
+    const pages = pdfPages({ title: (settings.khataShop || APP.name) + ' — Sabka baaki', right: khLongDate(khToday()), sub: `${list.length} khate`, cols: [{ label: 'S.NO', w: 80 }, { label: 'NAAM', w: 440 }, { label: 'MOBILE', w: 230 }, { label: 'LENA HAI', w: 181, align: 'right' }, { label: 'DENA HAI', w: 181, align: 'right' }], rows, footer: [{ t: 'Aapko milenge', r: khMoney(get), color: '#C62828', big: true, bg: '#FDEEEE' }, { t: 'Aapko dene hain', r: khMoney(give), color: '#1B7F4B', big: true, bg: '#E8F5EE' }] });
+    await shareBlobFile(pdfFromCanvases(pages), safeName('Sabka baaki ' + khToday()) + '.pdf', 'Sabka baaki');
+  } catch (e) { console.error(e); toast('PDF nahi bani'); }
+}
+
+/* ---------------- customer link: their whole hisaab + pay button + QR ----------------
+   The data travels inside the link itself (after #), so it is never stored on any server. */
+const KH_LINK_BASE = 'https://mahi85180.github.io/calcnote-freedom/k/';
+const khLinkBase = () => (settings.khataLinkBase || KH_LINK_BASE).replace(/[#?].*$/, '').replace(/\/?$/, '/');
+function khB64url(bytes) { let s = ''; for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+async function khDeflate(str) {
+  const data = new TextEncoder().encode(str);
+  for (const [fmt, tag] of [['deflate-raw', 'r'], ['deflate', 'd']]) {
+    try { const cs = new CompressionStream(fmt); const out = new Uint8Array(await new Response(new Blob([data]).stream().pipeThrough(cs)).arrayBuffer()); return tag + khB64url(out); } catch (e) {}
+  }
+  return 'j' + khB64url(data);
+}
+function khLinkData(p, max = 30) {
+  const rows = khWithRunning(khPartyEntries(p.id), p.id);
+  const keep = rows.slice(-max);
+  const opening = rows.length > keep.length ? rows[rows.length - keep.length - 1].run : khRound(+p.opening || 0);
+  const d0 = keep.length ? keep[0].e.date : khToday(); const base = khDate(d0).getTime();
+  const e = keep.map(r => { const a = [Math.round((khDate(r.e.date).getTime() - base) / 864e5), r.e.effect === 'gave' ? 1 : r.e.effect === 'got' ? -1 : 0, r.e.amount, khReasonOf(r.e).name]; if (r.e.note) a.push(String(r.e.note).slice(0, 40)); return a; });
+  const now = new Date();
+  return { v: 1, s: settings.khataShop || '', sp: settings.khataShopPhone || '', u: (settings.khataUpi || '').trim(), n: p.name, at: `${khToday()} ${pad2(now.getHours())}:${pad2(now.getMinutes())}`, d0, o: opening, b: khBalance(p.id), e, m: rows.length - keep.length, l: settings.khataLang || 'hinglish' };
+}
+async function khLink(p) { return khLinkBase() + '#1' + await khDeflate(JSON.stringify(khLinkData(p))); }
+/* is the page that opens the link online? (checked at most every 12 h) */
+async function khCheckLinkPage(force) {
+  const st = KH.linkState || (KH.linkState = { ok: settings.khataLinkOk, at: 0 });
+  if (!force && Date.now() - st.at < 12 * 3600e3 && st.ok !== undefined && st.ok !== '') return st.ok;
+  try {
+    const ctl = typeof AbortController !== 'undefined' ? new AbortController() : null; const t = ctl ? setTimeout(() => ctl.abort(), 5000) : null;
+    const r = await fetch(khLinkBase() + 'ok.txt?t=' + Date.now(), { cache: 'no-store', signal: ctl ? ctl.signal : undefined }); if (t) clearTimeout(t);
+    st.ok = r.ok; st.at = Date.now(); setQuiet('khataLinkOk', r.ok);
+  } catch (e) { /* offline – keep the last answer */ if (st.ok === undefined || st.ok === '') st.ok = settings.khataLinkOk !== false; }
+  return st.ok;
+}
+/* replaces {link} in a message with the party's link – or drops that line when links are off / the page is not online */
+async function khResolveLink(text, p) {
+  if (!/\{link\}/.test(text)) return text;
+  let link = '';
+  if (settings.khataLink && p && p.id && (await khCheckLinkPage())) { try { link = await khLink(p); } catch (e) { link = ''; } }
+  return text.split('\n').map(l => /\{link\}/.test(l) ? (link ? l.replace(/\{link\}/g, link) : null) : l).filter(l => l !== null).join('\n');
+}
+async function khOpenLinkPreview(p) { const l = await khLink(p); openLink(l); }
+
+function khLinkMenu(p) {
+  dialogMenu('🔗 ' + p.name + ' ka hisaab link', [
+    { key: 'see', icon: '👁', label: 'Link khol kar dekhein', sub: 'Grahak ko aisa dikhega' },
+    khHasPhone(p.phone) ? { key: 'wa', icon: '💬', label: 'WhatsApp pe bhejein' } : null,
+    khHasPhone(p.phone) ? { key: 'sms', icon: '✉️', label: 'SMS se bhejein' } : null,
+    { key: 'copy', icon: '📋', label: 'Link copy karein' }
+  ]).then(async k => {
+    if (!k) return;
+    const l = await khLink(p);
+    if (k === 'see') openLink(l);
+    else if (k === 'copy') toast((await copyText(l)) ? 'Link copy hua ✓' : 'Copy nahi hua');
+    else khSendJobs([{ party: p, ch: k, text: khFill(khWords().tpl.split('\n').filter(x => !/\{entries\}/.test(x)).join('\n'), { naam: p.name, baaki: khBalanceLine(khBalance(p.id)), dukaan: settings.khataShop, phone: settings.khataShopPhone, upi: khUpiLine(khBalance(p.id)), link: '{link}' }), ids: [] }], '🔗 ' + p.name, true);
   });
 }

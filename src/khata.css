@@ -194,3 +194,5 @@ html[data-theme="dark"],html[data-theme="black"]{--kk-get:#FF8A80;--kk-get-soft:
 .sg.kh{background:color-mix(in srgb,var(--primary) 16%,var(--surface));font-weight:700}
 .kk-cloud{border-color:#1565C0;background:color-mix(in srgb,#1565C0 8%,var(--kk-card))}
 .kk-cloud small{color:#1565C0}
+.kk-btns.three{grid-template-columns:1fr 1fr 1.25fr}
+.kk-btns.three .btn{font-size:15px;padding:14px 4px}

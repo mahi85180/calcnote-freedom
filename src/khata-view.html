@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<title>Khata – hisaab</title>
+<style>
+:root{--g:#2E7D32;--red:#C62828;--red-s:#FDEEEE;--grn:#1B7F4B;--grn-s:#E8F5EE;--bg:#F3F6F3;--card:#fff;--line:#E2E8E2;--ink:#1B1F1C;--soft:#5F6A62}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,"Segoe UI",Roboto,"Noto Sans","Noto Sans Devanagari",Arial,sans-serif}
+header{background:var(--g);color:#fff;padding:18px 16px 16px}
+header .shop{font-size:21px;font-weight:800}
+header .sub{opacity:.9;font-size:13.5px;margin-top:2px}
+main{max-width:620px;margin:0 auto;padding:12px 12px 40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.who{font-size:20px;font-weight:800}
+.bal{display:flex;justify-content:space-between;align-items:center;border-radius:12px;padding:14px;margin-top:10px;font-weight:800}
+.bal b{font-size:28px}
+.bal.due{background:var(--red-s);color:var(--red)}.bal.adv{background:var(--grn-s);color:var(--grn)}.bal.clear{background:#EEF1EE;color:var(--soft)}
+.pay{display:block;width:100%;text-align:center;text-decoration:none;background:#5F259F;color:#fff;font-weight:800;font-size:18px;padding:15px;border-radius:14px;margin-top:12px}
+.pay small{display:block;font-weight:600;font-size:12.5px;opacity:.9}
+.qr{display:flex;gap:14px;align-items:center;margin-top:12px}
+.qr canvas{width:150px;height:150px;border-radius:8px;border:1px solid var(--line);flex-shrink:0}
+.qr .t{font-size:14px;color:var(--soft)}
+.qr .t b{display:block;color:var(--ink);font-size:15px;margin-bottom:4px;word-break:break-all}
+.copy{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:7px 10px;font-weight:700;margin-top:8px;cursor:pointer}
+h2{font-size:14px;color:var(--soft);margin:18px 4px 8px;text-transform:uppercase;letter-spacing:.4px}
+.cols,.e{display:grid;grid-template-columns:minmax(0,1fr) 88px 88px}
+.cols{font-size:11.5px;font-weight:800;color:var(--soft);padding:0 2px 6px}
+.cols span:not(:first-child){text-align:right;padding-right:10px}
+.e{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:7px;overflow:hidden;min-height:58px}
+.e .l{padding:8px 10px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.e .d{font-size:12px;color:var(--soft)}
+.e .w{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.e .r{font-size:11.5px;font-weight:800;color:var(--soft)}
+.e .c{display:flex;align-items:center;justify-content:flex-end;padding:0 10px;font-weight:800;font-variant-numeric:tabular-nums}
+.e .c.t{background:var(--red-s);color:var(--red)}.e .c.g{background:var(--grn-s);color:var(--grn)}.e .c:empty{background:none}
+.more{text-align:center;color:var(--soft);font-size:13px;margin:8px}
+.foot{text-align:center;color:#8A938C;font-size:12.5px;margin-top:22px;line-height:1.6}
+.foot a{color:var(--g);font-weight:700}
+.err{text-align:center;padding:60px 20px;color:var(--soft)}
+.call{display:inline-block;margin-top:8px;color:var(--g);font-weight:800;text-decoration:none}
+@media (max-width:360px){.cols,.e{grid-template-columns:minmax(0,1fr) 76px 76px}}
+</style>
+</head>
+<body>
+<div id="app"><div class="err">Hisaab khul raha hai…</div></div>
+<script>/*QR_INLINE*/</script>
+<script>
+(function () {
+  var L = {
+    hinglish: { title: 'Aapka hisaab', due: 'Aapko dene hain', adv: 'Aapke jama hain', clear: 'Hisaab barabar', pay: 'Pay karein', any: 'PhonePe · Google Pay · Paytm · koi bhi UPI', scan: 'Doosre phone se scan karke pay karein', copy: 'UPI ID copy karein', copied: 'Copy ho gaya ✓', took: 'LIYA', gave: 'DIYA', entries: 'Entries', opening: 'Pehle ka baaki', older: 'aur purani entry', upto: 'Hisaab', call: 'Dukaan ko call karein', bad: 'Ye link poora nahi hai ya kharab hai. Dukaan se naya link maangein.', old: 'Ye browser purana hai – Chrome update karke dobara kholein.', note: 'Ye hisaab dukaan ne bheja hai. Kuch galat lage to dukaan se baat karein.', rec: 'record' },
+    hindi: { title: 'आपका हिसाब', due: 'आपको देने हैं', adv: 'आपके जमा हैं', clear: 'हिसाब बराबर', pay: 'पेमेंट करें', any: 'PhonePe · Google Pay · Paytm · कोई भी UPI', scan: 'दूसरे फ़ोन से स्कैन करके पेमेंट करें', copy: 'UPI ID कॉपी करें', copied: 'कॉपी हो गया ✓', took: 'लिया', gave: 'दिया', entries: 'एंट्री', opening: 'पहले का बाकी', older: 'और पुरानी एंट्री', upto: 'हिसाब', call: 'दुकान को कॉल करें', bad: 'यह लिंक अधूरा या खराब है। दुकान से नया लिंक मांगें।', old: 'यह ब्राउज़र पुराना है – Chrome अपडेट करके फिर खोलें।', note: 'यह हिसाब दुकान ने भेजा है। कुछ गलत लगे तो दुकान से बात करें।', rec: 'रिकॉर्ड' },
+    english: { title: 'Your statement', due: 'You have to pay', adv: 'Your advance', clear: 'All settled', pay: 'Pay now', any: 'PhonePe · Google Pay · Paytm · any UPI', scan: 'Scan from another phone to pay', copy: 'Copy UPI ID', copied: 'Copied ✓', took: 'TAKEN', gave: 'PAID', entries: 'Entries', opening: 'Opening balance', older: 'older entries', upto: 'Statement', call: 'Call the shop', bad: 'This link is incomplete or broken. Ask the shop for a new link.', old: 'This browser is too old – update Chrome and open again.', note: 'This statement was sent by the shop. Please contact them if something looks wrong.', rec: 'record' }
+  };
+  var M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var app = document.getElementById('app');
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function money(v) { v = Math.abs(+v || 0); return '₹' + v.toLocaleString('en-IN', { maximumFractionDigits: 2 }); }
+  function day(iso, add) { var p = String(iso).split('-'); var d = new Date(+p[0], +p[1] - 1, +p[2] + (add || 0)); return ('0' + d.getDate()).slice(-2) + ' ' + M[d.getMonth()] + ' ' + d.getFullYear(); }
+  function b64(s) { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; var b = atob(s), u = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
+  function fail(msg) { app.innerHTML = '<div class="err">' + esc(msg) + '</div>'; }
+  async function decode() {
+    var h = location.hash.replace(/^#/, ''); if (h.charAt(0) !== '1') throw new Error('bad');
+    var kind = h.charAt(1), bytes = b64(h.slice(2));
+    if (kind === 'j') return JSON.parse(new TextDecoder().decode(bytes));
+    if (typeof DecompressionStream === 'undefined') throw new Error('old');
+    var ds = new DecompressionStream(kind === 'r' ? 'deflate-raw' : 'deflate');
+    var txt = await new Response(new Blob([bytes]).stream().pipeThrough(ds)).text();
+    return JSON.parse(txt);
+  }
+  function qr(text, px) {
+    if (typeof qrcode !== 'function') return null;
+    var q = qrcode(0, 'M'); q.addData(text); q.make(); var n = q.getModuleCount(), quiet = 3, cell = Math.max(3, Math.floor(px / (n + quiet * 2))), size = cell * (n + quiet * 2);
+    var c = document.createElement('canvas'); c.width = c.height = size; var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, size, size); x.fillStyle = '#000';
+    for (var r = 0; r < n; r++) for (var k = 0; k < n; k++) if (q.isDark(r, k)) x.fillRect((k + quiet) * cell, (r + quiet) * cell, cell, cell);
+    return c;
+  }
+  function render(d) {
+    var t = L[d.l] || L.hinglish, b = +d.b || 0;
+    document.title = (d.s ? d.s + ' – ' : '') + d.n;
+    var cls = b > 0.5 ? 'due' : b < -0.5 ? 'adv' : 'clear', word = b > 0.5 ? t.due : b < -0.5 ? t.adv : t.clear;
+    var upi = d.u ? 'upi://pay?pa=' + encodeURIComponent(d.u) + '&pn=' + encodeURIComponent(d.s || 'Shop') + (b > 0.5 ? '&am=' + b.toFixed(2) : '') + '&cu=INR&tn=' + encodeURIComponent(('Khata ' + d.n).slice(0, 40)) : '';
+    var h = '<header><div class="shop">' + esc(d.s || t.title) + '</div><div class="sub">' + esc(t.upto) + ': ' + esc(day(d.at.slice(0, 10))) + ' ' + esc(d.at.slice(11)) + '</div></header><main>';
+    h += '<div class="card"><div class="who">' + esc(d.n) + '</div><div class="bal ' + cls + '"><span>' + esc(word) + '</span><b>' + money(b) + '</b></div>';
+    if (upi && b > 0.5) h += '<a class="pay" id="pay" href="' + esc(upi) + '">💳 ' + esc(t.pay) + ' ' + money(b) + '<small>' + esc(t.any) + '</small></a><div class="qr"><span id="qr"></span><div class="t"><b>UPI: ' + esc(d.u) + '</b>' + esc(t.scan) + '<br><button class="copy" id="copy">' + esc(t.copy) + '</button></div></div>';
+    if (d.sp) h += '<a class="call" href="tel:' + esc(String(d.sp).replace(/[^\d+]/g, '')) + '">📞 ' + esc(t.call) + '</a>';
+    h += '</div>';
+    var run = +d.o || 0, rows = (d.e || []).map(function (e) { if (e[1] === 1) run += e[2]; else if (e[1] === -1) run -= e[2]; return { e: e, run: Math.round(run * 100) / 100 }; });
+    h += '<h2>' + esc(t.entries) + '</h2><div class="cols"><span></span><span style="color:var(--red)">' + esc(t.took) + '</span><span style="color:var(--grn)">' + esc(t.gave) + '</span></div>';
+    rows.slice().reverse().forEach(function (r) {
+      var e = r.e, what = esc(e[3] || '') + (e[4] ? ' · ' + esc(e[4]) : '');
+      h += '<div class="e"><div class="l"><span class="d">' + esc(day(d.d0, e[0])) + '</span><span class="w">' + what + (e[1] === 0 ? ' (' + esc(t.rec) + ' ' + money(e[2]) + ')' : '') + '</span><span class="r">' + money(r.run) + '</span></div><div class="c t">' + (e[1] === 1 ? money(e[2]) : '') + '</div><div class="c g">' + (e[1] === -1 ? money(e[2]) : '') + '</div></div>';
+    });
+    if (d.m > 0) h += '<div class="more">+ ' + d.m + ' ' + esc(t.older) + ' · ' + esc(t.opening) + ': ' + money(d.o) + '</div>';
+    else if (Math.abs(+d.o || 0) >= 0.5) h += '<div class="more">' + esc(t.opening) + ': ' + money(d.o) + '</div>';
+    h += '<div class="foot">' + esc(t.note) + '<br>CalcNote Freedom</div></main>';
+    app.innerHTML = h;
+    var q = document.getElementById('qr'); if (q && upi) { var c = qr(upi, 300); if (c) q.appendChild(c); }
+    var cp = document.getElementById('copy'); if (cp) cp.onclick = function () { (navigator.clipboard ? navigator.clipboard.writeText(d.u) : Promise.reject()).then(function () { cp.textContent = t.copied; }, function () { prompt('UPI', d.u); }); };
+  }
+  decode().then(render, function (e) { fail((L.hinglish)[e && e.message === 'old' ? 'old' : 'bad']); });
+})();
+</script>
+</body>
+</html>

@@ -14,9 +14,15 @@ html = html.replace('/*MATHJS_INLINE*/', () => '/* math.js 11.8.0 | Apache-2.0 |
 html = html.replace(/version: '[\d.]+'/, `version: '${pkg.version}'`).replace(/build: 0,/, `build: ${parseInt(process.env.BUILD_NUMBER || '0', 10) || 0},`);
 const cap = fs.readFileSync(require.resolve('@capacitor/core/dist/capacitor.js'), 'utf8').replace(/\/\/# sourceMappingURL=.*$/m, '').replace(/<\/script/gi, '<\\/script');
 html = html.replace('/*CAPACITOR_INLINE*/', () => cap);
+const qrLib = fs.readFileSync(require.resolve('qrcode-generator/qrcode.js'), 'utf8').replace(/<\/script/gi, '<\\/script');
+html = html.replace('/*QR_INLINE*/', () => '/* qrcode-generator 1.4.4 | MIT | Kazuhiko Arase */\n' + qrLib);
 html = html.replace('/*KHATA_CSS*/', () => fs.readFileSync(path.join(root, 'src/khata.css'), 'utf8'));
-html = html.replace('/*KHATA_JS*/', () => (fs.readFileSync(path.join(root, 'src/khata.js'), 'utf8') + '\n' + fs.readFileSync(path.join(root, 'src/backup.js'), 'utf8')).replace(/<\/script/gi, '<\\/script'));
+html = html.replace('/*KHATA_JS*/', () => (['khata.js', 'backup.js', 'pdf.js'].map(f => fs.readFileSync(path.join(root, 'src', f), 'utf8')).join('\n')).replace(/<\/script/gi, '<\\/script'));
 fs.writeFileSync(path.join(out, 'index.html'), html);
+// the page a customer opens from the khata link (data travels inside the link after #)
+fs.mkdirSync(path.join(out, 'k'), { recursive: true });
+fs.writeFileSync(path.join(out, 'k', 'index.html'), fs.readFileSync(path.join(root, 'src/khata-view.html'), 'utf8').replace('/*QR_INLINE*/', () => qrLib));
+fs.writeFileSync(path.join(out, 'k', 'ok.txt'), 'ok\n');
 
 fs.copyFileSync(path.join(root, 'assets/icon.svg'), path.join(out, 'icon.svg'));
 fs.writeFileSync(path.join(out, 'manifest.webmanifest'), JSON.stringify({

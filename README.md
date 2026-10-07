@@ -13,6 +13,8 @@ Every push to `main` builds a new APK automatically (see the **Actions** tab).
 
 ## ✨ Features
 
+- **PDF** – any note (one tab or all tabs) and any khata report as an A4 PDF; "Sabka baaki" PDF. **Customer link** – every SMS / WhatsApp can carry a link: the customer sees their whole hisaab, a **Pay** button (PhonePe / GPay / Paytm / any UPI) and a UPI QR. The data travels inside the link (after #), nothing is stored on a server; the page is `docs/k/` (needs GitHub Pages on). UPI QR also on khata pictures and PDFs.
+
 - **Google Drive backup** – choose "Drive" once in Android's Save screen; the app rewrites that backup file automatically (every few hours when changed, and when you leave the app). Notes, tabs and khata are all in it. New phone: install → "Wapas laayein" → pick the file. An empty phone never overwrites a good backup.
 
 - **Khata book** – names in your notes (`gopi 12+7`) go into each person's khata. New names show ⚠ with one-tap "create khata". Nothing is posted until you press **📤 Publish**; then only the changes go in and an SMS (straight from your SIM) or WhatsApp message goes to each person. Every tab has its own reason (Udhaar, Jama, Nagad, Cash sale, Kharcha or your own) and formula (`x*120`, `x/2`, `x+10`…); `#jama` at the end of a line changes one line's reason. Khatabook-style screens: balances, entries with running balance, reports with picture / text share, reminders.

@@ -357,8 +357,8 @@ html[data-theme="dark"] .lock,html[data-theme="black"] .lock{background:#121412}
 .share-opts .grp{display:flex;align-items:center;gap:4px}
 .share-opts button{border:1.5px solid #555;background:#2a2a2a;color:#eee;border-radius:8px;padding:6px 10px;font-size:13px;font-weight:700;cursor:pointer}
 .share-opts button.active{border-color:#81C784;background:#2E5A31;color:#fff}
-.share-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-.share-btn{padding:12px 18px;border-radius:12px;border:none;font-size:14px;font-weight:700;cursor:pointer;background:var(--primary);color:#fff;min-height:46px}
+.share-actions{display:flex;gap:8px;justify-content:center;width:100%;max-width:520px;margin:0 auto}
+.share-btn{flex:1;min-width:0;white-space:nowrap;padding:12px 6px;border-radius:12px;border:none;font-size:14px;font-weight:700;cursor:pointer;background:var(--primary);color:#fff;min-height:46px}
 .share-btn.secondary{background:#444}
 
 /* TOAST */
@@ -375,7 +375,8 @@ body.kp-open .toast{bottom:auto;top:calc(var(--header-h) + var(--safe-top) + 14p
 /*KHATA_CSS*/
 </style>
 <style id="userCss"></style>
-<script>/*CAPACITOR_INLINE*/</script>
+<script>/*CAPACITOR_INLINE*/
+/*QR_INLINE*/</script>
 <script>/*MATHJS_INLINE*/</script>
 </head>
 <body class="divider align-left fixed-col hl-line">
@@ -460,6 +461,7 @@ body.kp-open .toast{bottom:auto;top:calc(var(--header-h) + var(--safe-top) + 14p
   <div class="share-scroll"><img id="sharePreview" class="share-preview" alt="Note preview"></div>
   <div class="share-actions">
     <button class="share-btn" id="btnDoShare">📤 Share</button>
+    <button class="share-btn secondary" id="btnPdf">📄 PDF</button>
     <button class="share-btn secondary" id="btnDownload">⬇ Save</button>
     <button class="share-btn secondary" id="btnShareClose">✕ Close</button>
   </div>
@@ -627,11 +629,11 @@ const DEFAULTS = {
   xMultiply: true, currency: true, defaultTotal: 'sum',
   keypadEnabled: true, kpStart: false, vibrate: true, keySound: false, kpHeight: 'normal', kpOrder: '789',
   sciTab: true, customTab: true, customKeys: DEFAULT_KEYS,
-  sideActions: ['khata', 'publish', 'save', 'serial', 'date', 'image', 'sharetext', 'copy', 'csv', 'redo', 'clear', 'update', 'settings', 'help'],
+  sideActions: ['khata', 'publish', 'save', 'serial', 'date', 'image', 'pdf', 'sharetext', 'copy', 'csv', 'redo', 'clear', 'update', 'settings', 'help'],
   sortBy: 'updated', tabsEnabled: true, tabTotals: true, swipeTabs: true, hideTabsTyping: true, newTabName: 'date',
   imgCols: 'auto', imgSize: 'L', imgSno: true, imgSkipBlank: true, imgDate: true, textStyle: 'table',
   autoUpdate: true,
-  khataOn: true, khataMarks: true, khataChannel: 'wa', khataWaApp: 'auto', khataShop: '', khataShopPhone: '', khataLang: 'hinglish', khataMsg: '', khataReason: 'udhaar', khataUpi: '', autoBackup: true, cloudUri: '', cloudName: '', cloudWhere: '', cloudAt: '', cloudErr: '', cloudCount: 0,
+  khataOn: true, khataMarks: true, khataChannel: 'wa', khataWaApp: 'auto', khataShop: '', khataShopPhone: '', khataLang: 'hinglish', khataMsg: '', khataReason: 'udhaar', khataUpi: '', autoBackup: true, khataLink: true, khataLinkSms: true, khataLinkBase: '', khataLinkOk: '', cloudUri: '', cloudName: '', cloudWhere: '', cloudAt: '', cloudErr: '', cloudCount: 0,
   lock: false, lockDelay: 0, pinHash: '', pinSalt: '',
   extensions: '// Your own functions & constants – available in every note\n// gst(x) = x * 1.18\n// usd = 83.5\n',
   customCss: ''
@@ -661,7 +663,8 @@ const settings = (() => {
     else for (const a of ['publish', 'khata']) if (!out.toolbar.includes(a) && out.toolbar.length < 5) out.toolbar.push(a);
     for (const a of ['save', 'publish', 'khata']) if (!out.sideActions.includes(a)) out.sideActions.unshift(a);
   }
-  out._v = 34;
+  if ((s._v || 0) < 35) { if (!out.sideActions.includes('pdf')) { const i = out.sideActions.indexOf('image'); out.sideActions.splice(i >= 0 ? i + 1 : 0, 0, 'pdf'); } }
+  out._v = 35;
   return out;
 })();
 function persistSettings() { LS.set(SKEY, JSON.stringify(settings)); }
@@ -1794,6 +1797,7 @@ const ACTIONS = {
   date: { label: "Insert today's date", icon: 'calendar', emoji: '📅', run: () => { closeSidebar(); insertTodayHeading(); } },
   copy: { label: 'Copy all', icon: 'copy', emoji: '📋', run: () => copyAllMenu(), quick: () => copyAll() },
   image: { label: 'Share as image', icon: 'image', emoji: '🖼️', run: () => shareImage() },
+  pdf: { label: 'Share as PDF', icon: 'file', emoji: '📄', run: () => { closeSidebar(); pdfMenu(); } },
   sharetext: { label: 'Share as text', icon: 'share', emoji: '📝', run: () => shareText() },
   csv: { label: 'Export CSV', icon: 'file', emoji: '📊', run: () => exportCsv() },
   newline: { label: 'Insert new line', icon: 'newline', emoji: '↵', run: () => { closeSidebar(); newLineAfterCaretLine(); } },
@@ -2043,7 +2047,7 @@ function imageRows() {
     if (l.kind === 'label') return { type: 'head', text: l.text.trim().replace(/:$/, '') };
     if (l.kind === 'comment') return { type: 'note', text: l.text.trim().replace(/^(\/\/|#)\s*/, '') };
     if (l.kind === 'empty') return { type: 'gap' };
-    const text = l.text.trim();
+    const text = l.text.trim().replace(/\s#[^\s#\d][^\s#]*/g, '');
     const lbl = (l.label || '').trim();
     return { type: l.agg ? 'sum' : 'item', no: l.kind === 'num' && l.countable ? ++n : '', text, label: lbl && text.startsWith(lbl) ? lbl : '', amt: l.result, neg: l.kind === 'num' && Number(l.raw) < 0 };
   });
@@ -2374,7 +2378,7 @@ function openHelp() {
 }
 function docSheet(title, text) { Sheet.show(el('div', {}, el('h3', { text: title }), el('div', { class: 'doc', text }), el('div', { class: 'sheet-actions' }, el('button', { class: 'btn ok', text: 'Close', onclick: () => Sheet.close() })))); }
 const PRIVACY = `${APP.name} does not collect, send or sell any data.\n\n• All files and settings are stored only on this device.\n• The only network request is the update check (GitHub Releases), which you can switch off in Settings → Features.\n• Backups and exports are created only when you ask for them, and you choose where they go.\n• Uninstalling the app (or clearing its data) deletes everything, so keep a backup.`;
-const LICENSES = `math.js 11.8.0 – Apache License 2.0\nCopyright (C) 2013-2023 Jos de Jong\nhttps://mathjs.org\n\nCapacitor – MIT License\nCopyright (c) 2017-present Ionic\nhttps://capacitorjs.com\n\n${APP.name} – MIT License\n${APP.repo}`;
+const LICENSES = `qrcode-generator 1.4.4 – MIT License\nCopyright (c) 2009 Kazuhiko Arase\nhttps://github.com/kazuhikoarase/qrcode-generator\n\nmath.js 11.8.0 – Apache License 2.0\nCopyright (C) 2013-2023 Jos de Jong\nhttps://mathjs.org\n\nCapacitor – MIT License\nCopyright (c) 2017-present Ionic\nhttps://capacitorjs.com\n\n${APP.name} – MIT License\n${APP.repo}`;
 
 /* ---------------- Settings pages (schema driven) ---------------- */
 const opt = (v, l) => [v, l];
@@ -2652,7 +2656,7 @@ function listEditor({ all, key, max, label, sub, icon }) {
 }
 async function resetSettings() {
   const ok = await dialogConfirm({ title: 'Reset all settings?', message: 'Theme, keypad, toolbar, extensions etc. go back to default. Files and app lock are kept.', okText: 'Reset', danger: true }); if (!ok) return;
-  const keep = { lock: settings.lock, pinHash: settings.pinHash, pinSalt: settings.pinSalt, _v: 34 }; CLOUD_KEYS.forEach(k => { keep[k] = settings[k]; });
+  const keep = { lock: settings.lock, pinHash: settings.pinHash, pinSalt: settings.pinSalt, _v: 35 }; CLOUD_KEYS.forEach(k => { keep[k] = settings[k]; });
   Object.keys(settings).forEach(k => delete settings[k]); Object.assign(settings, JSON.parse(JSON.stringify(DEFAULTS)), keep);
   persistSettings(); fmtCache.clear(); applySettings(); render(true); refreshOpenPage(); toast('Settings reset ✓');
 }
@@ -2678,6 +2682,7 @@ $('#sideNewFolder').addEventListener('click', () => newFolderFlow());
 $('#sideTrash').addEventListener('click', openTrash);
 $('#btnDoShare').addEventListener('click', doShareImage);
 $('#btnDownload').addEventListener('click', downloadImage);
+$('#btnPdf').addEventListener('click', () => { Overlays.remove('share'); setTimeout(pdfMenu, 250); });
 $('#btnShareClose').addEventListener('click', () => Overlays.remove('share'));
 ws.addEventListener('click', e => { if (e.target === ws || e.target.id === 'note') ED.focus(); });
 
